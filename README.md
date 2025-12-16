@@ -1,20 +1,94 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
 
-# Run and deploy your AI Studio app
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error("Could not find root element to mount to");
+}
 
-This contains everything you need to run your app locally.
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+}
 
-View your app in AI Studio: https://ai.studio/apps/drive/1wl9fzNMtehETmN2Wt9dJN5heHbK9o9J8
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: any;
+}
 
-## Run Locally
+// Error Boundary Component to catch runtime errors
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
 
-**Prerequisites:**  Node.js
+  static getDerivedStateFromError(error: any): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
 
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("Uncaught error:", error, errorInfo);
+  }
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          height: '100vh', 
+          padding: '20px', 
+          textAlign: 'center', 
+          backgroundColor: '#f9fafb',
+          fontFamily: 'sans-serif'
+        }}>
+          <h1 style={{ color: '#dc2626', marginBottom: '10px' }}>عذراً، حدث خطأ غير متوقع.</h1>
+          <p style={{ color: '#4b5563', marginBottom: '20px' }}>يرجى تحديث الصفحة أو المحاولة لاحقاً.</p>
+          <div style={{ 
+            textAlign: 'left', 
+            direction: 'ltr', 
+            background: '#e5e7eb', 
+            padding: '15px', 
+            borderRadius: '8px', 
+            overflow: 'auto', 
+            maxWidth: '100%',
+            fontSize: '12px',
+            color: '#374151'
+          }}>
+            <strong>Error Details:</strong>
+            <pre style={{ margin: 0 }}>{this.state.error?.toString()}</pre>
+          </div>
+          <button 
+            onClick={() => window.location.reload()} 
+            style={{
+              marginTop: '20px',
+              padding: '10px 20px',
+              backgroundColor: '#1e3a8a',
+              color: 'white',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer',
+              fontWeight: 'bold'
+            }}
+          >
+            تحديث الصفحة
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+const root = ReactDOM.createRoot(rootElement);
+root.render(
+  <React.StrictMode>
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  </React.StrictMode>
+);
