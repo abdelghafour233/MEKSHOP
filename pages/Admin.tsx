@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useProducts } from '../context/ProductContext';
 import { useSettings } from '../context/SettingsContext';
@@ -9,7 +9,7 @@ import {
   Plus, Edit, Trash2, X, Lock, Settings as SettingsIcon, 
   Package, LogOut, Eye, EyeOff, ShoppingBag, 
   Search, Hash, DollarSign, Clock, ClipboardList, Award, Truck, AlertCircle,
-  Link as LinkIcon, Database, Facebook, Chrome, Target, MapPin, Shield
+  Link as LinkIcon, Database, Facebook, Chrome, Target, MapPin, Shield, Upload, Image as ImageIcon
 } from 'lucide-react';
 
 const Admin: React.FC = () => {
@@ -33,6 +33,9 @@ const Admin: React.FC = () => {
   // States for Order Search
   const [orderSearch, setOrderSearch] = useState('');
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+
+  const mainImageInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,10 +62,44 @@ const Admin: React.FC = () => {
     setNewPassword('');
   };
 
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  const handleMainImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const base64 = await fileToBase64(file);
+      setCurrentProduct(prev => ({ ...prev, imageUrl: base64 }));
+    }
+  };
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Fix: Explicitly cast Array.from result to File[] to prevent 'unknown' type inference in files.map
+    const files = Array.from(e.target.files || []) as File[];
+    const base64Images = await Promise.all(files.map(file => fileToBase64(file)));
+    setCurrentProduct(prev => ({ 
+      ...prev, 
+      additionalImages: [...(prev.additionalImages || []), ...base64Images] 
+    }));
+  };
+
+  const removeGalleryImage = (index: number) => {
+    setCurrentProduct(prev => ({
+      ...prev,
+      additionalImages: (prev.additionalImages || []).filter((_, i) => i !== index)
+    }));
+  };
+
   const handleProductSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentProduct.title || !currentProduct.price || !currentProduct.imageUrl) {
-      alert("المرجو ملء جميع الحقول الأساسية");
+      alert("المرجو ملء جميع الحقول الأساسية ورفع صورة رئيسية");
       return;
     }
 
@@ -82,13 +119,6 @@ const Admin: React.FC = () => {
     setIsEditingProduct(false);
     setCurrentProduct({});
   };
-
-  const stats = useMemo(() => {
-    const confirmed = orders.filter(o => o.status === 'Confirmed' || o.status === 'Shipped');
-    const totalSales = confirmed.reduce((acc, curr) => acc + curr.total, 0);
-    const pendingOrders = orders.filter(o => o.status === 'Pending').length;
-    return { totalSales, pendingOrders, totalOrders: orders.length };
-  }, [orders]);
 
   const filteredOrders = useMemo(() => {
     return orders.filter(o => 
@@ -204,8 +234,8 @@ const Admin: React.FC = () => {
                     <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-600" size={20} />
                     <input type="text" placeholder="ابحث عن زبون، رقم هاتف، أو رقم طلب..." value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} className="w-full pr-16 pl-6 py-5 bg-[#0a0a0a] border border-white/5 rounded-3xl text-white outline-none focus:border-green-500 transition-all font-bold" />
                 </div>
-                <div className="bg-[#0a0a0a] rounded-[40px] border border-white/5 overflow-hidden shadow-2xl">
-                    <table className="w-full text-right">
+                <div className="bg-[#0a0a0a] rounded-[40px] border border-white/5 overflow-hidden shadow-2xl overflow-x-auto">
+                    <table className="w-full text-right min-w-[800px]">
                         <thead className="bg-black/50 text-gray-500 text-[10px] font-black uppercase border-b border-white/5">
                             <tr>
                                 <th className="p-6">رقم الطلب</th>
@@ -400,14 +430,14 @@ const Admin: React.FC = () => {
         {/* Product Modal */}
         {isEditingProduct && (
           <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[110] p-4 overflow-y-auto">
-            <div className="bg-[#0a0a0a] p-8 md:p-12 rounded-[56px] border border-white/10 w-full max-w-4xl my-8 relative animate-in zoom-in duration-300">
+            <div className="bg-[#0a0a0a] p-8 md:p-12 rounded-[56px] border border-white/10 w-full max-w-5xl my-8 relative animate-in zoom-in duration-300">
               <button onClick={() => setIsEditingProduct(false)} className="absolute left-8 top-8 p-3 bg-black border border-white/5 rounded-2xl text-gray-500 hover:text-white transition-all"><X size={24} /></button>
               <h2 className="text-3xl font-black text-white mb-10 flex items-center gap-4">
                 <div className="p-3 bg-green-500/10 rounded-2xl text-green-500"><Package size={28} /></div>
                 {currentProduct.id ? 'تعديل المنتج' : 'إضافة منتج جديد'}
               </h2>
               
-              <form onSubmit={handleProductSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <form onSubmit={handleProductSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                 <div className="space-y-6">
                   <div>
                     <label className="block text-[10px] font-black text-gray-500 mb-2 uppercase tracking-widest">اسم المنتج</label>
@@ -429,20 +459,66 @@ const Admin: React.FC = () => {
                       {Object.values(Category).map(cat => <option key={cat} value={cat}>{cat}</option>)}
                     </select>
                   </div>
-                </div>
-
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-500 mb-2 uppercase tracking-widest">رابط الصورة الرئيسية</label>
-                    <input required value={currentProduct.imageUrl || ''} onChange={(e) => setCurrentProduct({...currentProduct, imageUrl: e.target.value})} className="w-full p-4 bg-black border border-white/5 rounded-2xl text-white font-mono text-xs" />
-                  </div>
-                  <div>
+                   <div>
                     <label className="block text-[10px] font-black text-gray-500 mb-2 uppercase tracking-widest">وصف المنتج</label>
                     <textarea rows={4} value={currentProduct.description || ''} onChange={(e) => setCurrentProduct({...currentProduct, description: e.target.value})} className="w-full p-4 bg-black border border-white/5 rounded-2xl text-white font-medium resize-none"></textarea>
                   </div>
                 </div>
 
-                <div className="md:col-span-2 flex gap-4 mt-4">
+                <div className="space-y-8">
+                  {/* Main Image Upload */}
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 mb-3 uppercase tracking-widest">الصورة الرئيسية</label>
+                    <input type="file" accept="image/*" ref={mainImageInputRef} className="hidden" onChange={handleMainImageUpload} />
+                    <div 
+                      onClick={() => mainImageInputRef.current?.click()}
+                      className={`relative aspect-video rounded-3xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all ${currentProduct.imageUrl ? 'border-green-500/50' : 'border-white/10 hover:border-green-500/30 bg-white/5'}`}
+                    >
+                      {currentProduct.imageUrl ? (
+                        <>
+                          <img src={currentProduct.imageUrl} className="w-full h-full object-cover rounded-[22px]" alt="Preview" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center rounded-[22px]">
+                            <p className="text-white font-black flex items-center gap-2"><ImageIcon size={20} /> تغيير الصورة</p>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-center p-6">
+                          <Upload className="w-10 h-10 text-gray-600 mb-3 mx-auto" />
+                          <p className="text-gray-500 font-bold text-sm">اضغط لرفع الصورة الأساسية</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Gallery Upload */}
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-500 mb-3 uppercase tracking-widest">معرض الصور الإضافية</label>
+                    <input type="file" multiple accept="image/*" ref={galleryInputRef} className="hidden" onChange={handleGalleryUpload} />
+                    <div className="grid grid-cols-4 gap-3">
+                      {(currentProduct.additionalImages || []).map((img, idx) => (
+                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group">
+                          <img src={img} className="w-full h-full object-cover" />
+                          <button 
+                            type="button"
+                            onClick={() => removeGalleryImage(idx)}
+                            className="absolute inset-0 bg-red-600/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        </div>
+                      ))}
+                      <button 
+                        type="button"
+                        onClick={() => galleryInputRef.current?.click()}
+                        className="aspect-square rounded-xl border-2 border-dashed border-white/10 hover:border-green-500/30 bg-white/5 flex items-center justify-center text-gray-500 hover:text-green-500 transition-all"
+                      >
+                        <Plus size={24} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="lg:col-span-2 flex gap-4 mt-6">
                   <button type="submit" className="flex-1 bg-green-500 text-black py-5 rounded-2xl font-black text-xl hover:bg-green-400 transition-all shadow-xl shadow-green-500/10">حفظ المنتج</button>
                   <button type="button" onClick={() => setIsEditingProduct(false)} className="px-10 py-5 bg-white/5 text-white rounded-2xl font-black border border-white/5">إلغاء</button>
                 </div>
