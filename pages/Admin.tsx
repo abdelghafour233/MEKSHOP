@@ -37,11 +37,10 @@ const Admin: React.FC = () => {
   const [orderSearch, setOrderSearch] = useState('');
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
 
-  // Settings Local State to maintain responsiveness while editing
+  // Settings Local State
   const [localSettings, setLocalSettings] = useState(settings);
 
   const mainImageInputRef = useRef<HTMLInputElement>(null);
-  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const categoryLabels: Record<Category, string> = {
     [Category.ELECTRONICS]: 'إلكترونيات',
@@ -89,22 +88,6 @@ const Admin: React.FC = () => {
     }
   };
 
-  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []) as File[];
-    const base64Images = await Promise.all(files.map(file => fileToBase64(file)));
-    setCurrentProduct(prev => ({ 
-      ...prev, 
-      additionalImages: [...(prev.additionalImages || []), ...base64Images] 
-    }));
-  };
-
-  const removeGalleryImage = (index: number) => {
-    setCurrentProduct(prev => ({
-      ...prev,
-      additionalImages: (prev.additionalImages || []).filter((_, i) => i !== index)
-    }));
-  };
-
   const handleProductSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentProduct.title || !currentProduct.price || !currentProduct.imageUrl) {
@@ -133,7 +116,7 @@ const Admin: React.FC = () => {
     e.preventDefault();
     if (editingOrder) {
       updateOrderDetails(editingOrder);
-      alert("✅ تم تحديث بيانات الطلب");
+      alert("✅ تم تحديث بيانات الطلب بنجاح");
       setEditingOrder(null);
     }
   };
@@ -182,7 +165,7 @@ const Admin: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-[#050505] px-4">
         <div className="bg-[#0a0a0a] p-10 md:p-16 rounded-[48px] border border-white/5 w-full max-w-md shadow-3xl text-center relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent"></div>
-          <div className="w-24 h-24 bg-emerald-500/10 rounded-3xl flex items-center justify-center mx-auto mb-10 border border-emerald-500/20 rotate-3 hover:rotate-0 transition-transform shadow-2xl">
+          <div className="w-24 h-24 bg-emerald-500/10 rounded-3xl flex items-center justify-center mx-auto mb-10 border border-emerald-500/20 rotate-3 transition-transform shadow-2xl">
             <Lock className="w-10 h-10 text-emerald-500" />
           </div>
           <h2 className="text-4xl font-black text-white mb-3 tracking-tighter">نظام الإدارة</h2>
@@ -304,8 +287,8 @@ const Admin: React.FC = () => {
                                           </td>
                                           <td className="p-6">
                                               <div className="flex justify-center gap-3">
-                                                <button onClick={() => setEditingOrder(order)} className="p-3 bg-white/5 text-white rounded-xl hover:bg-emerald-500 hover:text-black transition-all shadow-sm"><Edit size={18} /></button>
-                                                <button onClick={() => { if(confirm('حذف الطلب؟')) deleteOrder(order.id) }} className="p-3 bg-white/5 text-rose-500 hover:bg-rose-500 hover:text-white transition-all rounded-xl shadow-sm"><Trash2 size={18} /></button>
+                                                <button onClick={() => setEditingOrder(order)} className="p-3 bg-white/5 text-white rounded-xl hover:bg-emerald-500 hover:text-black transition-all shadow-sm" title="معاينة وتحرير"><Edit size={18} /></button>
+                                                <button onClick={() => { if(confirm('هل أنت متأكد من حذف هذا الطلب نهائياً؟')) deleteOrder(order.id) }} className="p-3 bg-white/5 text-rose-500 hover:bg-rose-500 hover:text-white transition-all rounded-xl shadow-sm" title="حذف الطلب"><Trash2 size={18} /></button>
                                               </div>
                                           </td>
                                       </tr>
@@ -418,85 +401,132 @@ const Admin: React.FC = () => {
 
         {/* --- MODALS SECTION --- */}
 
-        {/* ORDER EDITOR MODAL */}
+        {/* ORDER EDITOR MODAL - PREVIEW & EDIT FULLY ACTIVATED */}
         {editingOrder && (
           <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[200] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-300">
             <div className="flex items-center justify-between p-6 border-b border-white/10 bg-[#0a0a0a]">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-2xl"><FileText size={24} /></div>
-                <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">تحرير الطلب <span className="text-xs opacity-40 ml-2">#{editingOrder.id.split('-')[1]}</span></h2>
+                <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">معاينة وتحرير الطلب <span className="text-xs opacity-40 ml-2">#{editingOrder.id.split('-')[1]}</span></h2>
               </div>
               <button onClick={() => setEditingOrder(null)} className="p-3 bg-white/10 rounded-full text-white hover:bg-rose-500 transition-colors"><X size={24} /></button>
             </div>
             
             <div className="flex-1 overflow-y-auto p-6 md:p-12 bg-black">
-                <form onSubmit={handleOrderSave} className="max-w-4xl mx-auto space-y-10 pb-20">
+                <form onSubmit={handleOrderSave} className="max-w-5xl mx-auto space-y-10 pb-20">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Customer Data Form */}
                     <div className="bg-[#0a0a0a] p-8 rounded-[40px] border border-white/5 space-y-8">
-                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-3"><User size={16} className="text-emerald-500"/> هوية الزبون</p>
+                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-3"><User size={16} className="text-emerald-500"/> بيانات الزبون (قابلة للتعديل)</p>
                         <div className="space-y-5">
                             <div className="space-y-2">
-                                <label className="text-[10px] text-gray-600 font-black mr-2">الاسم بالكامل</label>
-                                <input type="text" value={editingOrder.customer.fullName} onChange={(e) => setEditingOrder({...editingOrder, customer: {...editingOrder.customer, fullName: e.target.value}})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-black outline-none focus:border-emerald-500 shadow-inner" />
+                                <label className="text-[10px] text-gray-600 font-black mr-2">الاسم الكامل</label>
+                                <input 
+                                    type="text" 
+                                    value={editingOrder.customer.fullName} 
+                                    onChange={(e) => setEditingOrder({...editingOrder, customer: {...editingOrder.customer, fullName: e.target.value}})} 
+                                    className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-black outline-none focus:border-emerald-500 shadow-inner" 
+                                />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[10px] text-gray-600 font-black mr-2">رقم الهاتف</label>
-                                <input type="tel" value={editingOrder.customer.phone} onChange={(e) => setEditingOrder({...editingOrder, customer: {...editingOrder.customer, phone: e.target.value}})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-emerald-500 font-mono text-xl outline-none focus:border-emerald-500 shadow-inner" />
+                                <div className="relative">
+                                    <input 
+                                        type="tel" 
+                                        value={editingOrder.customer.phone} 
+                                        onChange={(e) => setEditingOrder({...editingOrder, customer: {...editingOrder.customer, phone: e.target.value}})} 
+                                        className="w-full p-5 bg-black border border-white/10 rounded-2xl text-emerald-500 font-mono text-xl outline-none focus:border-emerald-500 shadow-inner" 
+                                    />
+                                    <a href={`tel:${editingOrder.customer.phone}`} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-emerald-500/10 text-emerald-500 rounded-xl"><Phone size={16}/></a>
+                                </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[10px] text-gray-600 font-black mr-2">المدينة</label>
-                                <select value={editingOrder.customer.city} onChange={(e) => setEditingOrder({...editingOrder, customer: {...editingOrder.customer, city: e.target.value}})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-black outline-none focus:border-emerald-500 shadow-inner appearance-none">
+                                <select 
+                                    value={editingOrder.customer.city} 
+                                    onChange={(e) => setEditingOrder({...editingOrder, customer: {...editingOrder.customer, city: e.target.value}})} 
+                                    className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-black outline-none focus:border-emerald-500 shadow-inner appearance-none"
+                                >
                                     {MOROCCAN_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                             </div>
                         </div>
                     </div>
 
+                    {/* Status and Notes */}
                     <div className="bg-[#0a0a0a] p-8 rounded-[40px] border border-white/5 flex flex-col space-y-8">
-                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-3"><Truck size={16} className="text-emerald-500"/> حالة التوصيل</p>
+                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-3"><Truck size={16} className="text-emerald-500"/> حالة الطلب الحالية</p>
                         <div className="grid grid-cols-2 gap-3">
                             {(['Pending', 'Confirmed', 'Shipped', 'Cancelled'] as OrderStatus[]).map(s => (
-                              <button key={s} type="button" onClick={() => setEditingOrder({...editingOrder, status: s})} className={`py-4 rounded-2xl text-[10px] font-black border transition-all ${editingOrder.status === s ? getStatusColor(s) + ' border-emerald-500 scale-[1.05]' : 'text-gray-800 border-white/5 hover:border-white/20'}`}>{getStatusLabel(s)}</button>
+                              <button 
+                                key={s} 
+                                type="button" 
+                                onClick={() => setEditingOrder({...editingOrder, status: s})} 
+                                className={`py-4 rounded-2xl text-[10px] font-black border transition-all ${editingOrder.status === s ? getStatusColor(s) + ' border-emerald-500 scale-[1.05]' : 'text-gray-800 border-white/5 hover:border-white/20'}`}
+                              >
+                                {getStatusLabel(s)}
+                              </button>
                             ))}
                         </div>
                         <div className="mt-auto">
-                           <label className="text-[10px] text-gray-600 font-black mb-3 block mr-2">ملاحظات داخلية</label>
-                           <textarea rows={4} value={editingOrder.notes || ''} onChange={(e) => setEditingOrder({...editingOrder, notes: e.target.value})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-medium text-sm resize-none outline-none focus:border-emerald-500 shadow-inner" placeholder="سجل هنا أي ملاحظات خاصة..." />
+                           <label className="text-[10px] text-gray-600 font-black mb-3 block mr-2">ملاحظات الإدارة</label>
+                           <textarea 
+                             rows={4} 
+                             value={editingOrder.notes || ''} 
+                             onChange={(e) => setEditingOrder({...editingOrder, notes: e.target.value})} 
+                             className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-medium text-sm resize-none outline-none focus:border-emerald-500 shadow-inner" 
+                             placeholder="سجل ملاحظاتك هنا (مثلاً: اتصلنا ولم يجب، يطلب التوصيل بعد الـ 6 مساءً...)" 
+                           />
                         </div>
                     </div>
                   </div>
 
+                  {/* Order Preview (Items Table) */}
                   <div className="bg-[#0a0a0a] p-8 rounded-[40px] border border-white/5">
-                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-8 flex items-center gap-3"><ShoppingCart size={16} className="text-emerald-500"/> مراجعة السلة</p>
+                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-8 flex items-center gap-3"><ShoppingCart size={16} className="text-emerald-500"/> محتويات الطلب (معاينة)</p>
                     <div className="space-y-4">
                       {editingOrder.items.map((it, i) => (
                         <div key={i} className="flex items-center justify-between bg-black p-5 rounded-2xl border border-white/5">
                           <div className="flex items-center gap-5">
-                            <div className="w-16 h-16 rounded-xl overflow-hidden bg-white/5 border border-white/10"><img src={it.imageUrl} className="w-full h-full object-cover" /></div>
+                            <div className="w-16 h-16 rounded-xl overflow-hidden bg-white/5 border border-white/10">
+                                <img src={it.imageUrl} className="w-full h-full object-cover" />
+                            </div>
                             <div>
                                 <h5 className="text-white font-black text-base">{it.title}</h5>
-                                <p className="text-emerald-500/50 text-[10px] font-black uppercase">الكمية: {it.quantity}</p>
+                                <p className="text-emerald-500/50 text-[11px] font-black uppercase">الكمية: {it.quantity} قطعة</p>
                             </div>
                           </div>
-                          <span className="text-emerald-500 font-black text-xl">{it.price * it.quantity} د.م</span>
+                          <div className="text-left">
+                            <p className="text-emerald-500 font-black text-xl">{it.price * it.quantity} د.م</p>
+                            <p className="text-[9px] text-gray-600 font-bold">{it.price} د.م للواحدة</p>
+                          </div>
                         </div>
                       ))}
                     </div>
                     <div className="mt-10 pt-8 border-t border-white/10 flex justify-between items-end">
-                      <div><span className="text-gray-500 font-black text-[10px] uppercase tracking-widest block mb-2">القيمة الإجمالية</span><span className="text-4xl font-black text-emerald-500">{editingOrder.total} د.م</span></div>
+                      <div>
+                        <span className="text-gray-500 font-black text-[10px] uppercase tracking-widest block mb-2">إجمالي الطلب</span>
+                        <span className="text-4xl font-black text-emerald-500">{editingOrder.total} د.م</span>
+                      </div>
+                      <div className="text-gray-700 text-[10px] font-black uppercase tracking-widest">الدفع عند الاستلام</div>
                     </div>
                   </div>
 
+                  {/* Actions */}
                   <div className="flex flex-col sm:flex-row gap-4">
-                    <button type="submit" className="flex-1 bg-emerald-500 text-black py-6 rounded-3xl font-black text-xl shadow-2xl shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-4"><Save size={24} /> حفظ التعديلات</button>
-                    <button type="button" onClick={() => { if(confirm('حذف نهائي؟')) { deleteOrder(editingOrder.id); setEditingOrder(null); } }} className="sm:w-20 py-6 bg-rose-500/10 text-rose-500 rounded-3xl flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all border border-rose-500/20"><Trash2 size={24} /></button>
+                    <button type="submit" className="flex-1 bg-emerald-500 text-black py-6 rounded-[28px] font-black text-xl shadow-2xl shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-4">
+                        <Save size={24} /> حفظ كافة التعديلات
+                    </button>
+                    <button type="button" onClick={() => { if(confirm('هل أنت متأكد من حذف هذا الطلب نهائياً؟')) { deleteOrder(editingOrder.id); setEditingOrder(null); } }} className="sm:px-10 py-6 bg-rose-500/10 text-rose-500 rounded-[28px] flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all border border-rose-500/20">
+                        <Trash2 size={24} />
+                    </button>
                   </div>
                 </form>
             </div>
           </div>
         )}
 
-        {/* PRODUCT EDITOR MODAL - FIXED MOBILE VISIBILITY */}
+        {/* PRODUCT EDITOR MODAL */}
         {isEditingProduct && (
           <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[200] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom duration-500">
             <div className="flex items-center justify-between p-6 border-b border-white/10 bg-[#0a0a0a]">
@@ -509,20 +539,11 @@ const Admin: React.FC = () => {
             
             <div className="flex-1 overflow-y-auto p-6 md:p-12 bg-black">
               <form onSubmit={handleProductSubmit} className="max-w-4xl mx-auto space-y-10 pb-20">
-                
-                {/* PRODUCT NAME - ULTRA PROMINENT FOR MOBILE FIX */}
                 <div className="bg-[#0a0a0a] p-8 rounded-[40px] border-2 border-emerald-500/30 shadow-2xl shadow-emerald-500/5">
                   <label className="block text-[11px] font-black text-emerald-500 mb-4 uppercase tracking-[0.3em] flex items-center gap-3">
                     <FileText size={16}/> اسم المنتج الاحترافي *
                   </label>
-                  <input 
-                    required 
-                    autoFocus 
-                    value={currentProduct.title || ''} 
-                    onChange={(e) => setCurrentProduct({...currentProduct, title: e.target.value})} 
-                    className="w-full p-6 bg-black border border-white/10 rounded-3xl text-white outline-none focus:border-emerald-500 font-black text-2xl placeholder:text-gray-800 transition-all shadow-inner" 
-                    placeholder="اكتب اسم المنتج بوضوح هنا..."
-                  />
+                  <input required autoFocus value={currentProduct.title || ''} onChange={(e) => setCurrentProduct({...currentProduct, title: e.target.value})} className="w-full p-6 bg-black border border-white/10 rounded-3xl text-white outline-none focus:border-emerald-500 font-black text-2xl placeholder:text-gray-800 transition-all shadow-inner" placeholder="اكتب اسم المنتج بوضوح هنا..." />
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
@@ -550,25 +571,23 @@ const Admin: React.FC = () => {
 
                 <div className="bg-[#0a0a0a] p-8 rounded-[40px] border border-white/5">
                   <label className="block text-[10px] font-black text-gray-500 mb-6 uppercase tracking-widest flex items-center gap-2"><ImageIcon size={16} className="text-emerald-500"/> صور المنتج</label>
-                  <div className="space-y-8">
-                    <div className="group relative">
-                        <input type="file" accept="image/*" ref={mainImageInputRef} className="hidden" onChange={handleMainImageUpload} />
-                        <div onClick={() => mainImageInputRef.current?.click()} className="relative aspect-video rounded-3xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500/50 hover:bg-white/[0.02] transition-all overflow-hidden">
-                          {currentProduct.imageUrl ? (
-                             <img src={currentProduct.imageUrl} className="w-full h-full object-cover" />
-                          ) : (
-                             <>
-                                <Upload size={40} className="text-gray-800 mb-3 group-hover:text-emerald-500" />
-                                <p className="text-gray-600 font-black text-sm uppercase">اضغط لرفع الصورة الرئيسية</p>
-                             </>
-                          )}
-                        </div>
-                    </div>
+                  <div className="group relative">
+                      <input type="file" accept="image/*" ref={mainImageInputRef} className="hidden" onChange={handleMainImageUpload} />
+                      <div onClick={() => mainImageInputRef.current?.click()} className="relative aspect-video rounded-3xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500/50 hover:bg-white/[0.02] transition-all overflow-hidden">
+                        {currentProduct.imageUrl ? (
+                           <img src={currentProduct.imageUrl} className="w-full h-full object-cover" />
+                        ) : (
+                           <>
+                              <Upload size={40} className="text-gray-800 mb-3 group-hover:text-emerald-500" />
+                              <p className="text-gray-600 font-black text-sm uppercase">اضغط لرفع الصورة الرئيسية</p>
+                           </>
+                        )}
+                      </div>
                   </div>
                 </div>
 
                 <div className="pt-10 flex flex-col sm:flex-row gap-4">
-                  <button type="submit" className="flex-1 bg-emerald-500 text-black py-7 rounded-[32px] font-black text-2xl shadow-2xl shadow-emerald-500/20 active:scale-95 transition-all">حفظ المنتج في المتجر</button>
+                  <button type="submit" className="flex-1 bg-emerald-500 text-black py-7 rounded-[32px] font-black text-2xl shadow-2xl shadow-emerald-500/20 active:scale-95 transition-all">حفظ المنتج</button>
                   <button type="button" onClick={() => setIsEditingProduct(false)} className="sm:px-12 py-7 bg-white/5 text-white rounded-[32px] font-black text-xl border border-white/10">إلغاء</button>
                 </div>
               </form>
