@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-interface Settings {
+export interface Settings {
   customDomain: string;
   facebookPixelId: string;
+  fbTestEventCode: string; // الحقل الجديد لكود الاختبار
   googleTagId: string;
   tiktokPixelId: string;
   googleSheetUrl: string;
@@ -24,6 +25,7 @@ interface SettingsContextType {
 const defaultSettings: Settings = {
   customDomain: '',
   facebookPixelId: '',
+  fbTestEventCode: '',
   googleTagId: '',
   tiktokPixelId: '',
   googleSheetUrl: '',
