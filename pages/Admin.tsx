@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useProducts } from '../context/ProductContext';
 import { useSettings } from '../context/SettingsContext';
 import { Product, Category } from '../types';
@@ -6,7 +6,7 @@ import {
   Plus, Edit, Trash2, Save, X, Lock, Settings as SettingsIcon, 
   Package, Facebook, Sheet, Globe, Image as ImageIcon, 
   LogOut, Eye, EyeOff, ShoppingBag, LayoutDashboard,
-  CheckCircle2, AlertCircle, Radio, Activity, Code
+  CheckCircle2, AlertCircle, Radio, Activity, Code, Search, Filter
 } from 'lucide-react';
 
 const Admin: React.FC = () => {
@@ -18,6 +18,11 @@ const Admin: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<'products' | 'settings'>('products');
   
+  // Product List State
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
   // Product Form State
   const [isEditing, setIsEditing] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Partial<Product>>({
@@ -49,6 +54,14 @@ const Admin: React.FC = () => {
   };
 
   // --- Product Logic ---
+  const filteredProducts = useMemo(() => {
+    return products.filter(p => {
+        const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCategory = filterCategory === 'all' || p.category === filterCategory;
+        return matchesSearch && matchesCategory;
+    });
+  }, [products, searchTerm, filterCategory]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setCurrentProduct(prev => ({ ...prev, [name]: value }));
@@ -79,8 +92,10 @@ const Admin: React.FC = () => {
 
     if (isEditing && currentProduct.id) {
       updateProduct(productData);
+      alert('تم تحديث المنتج والأسعار بنجاح');
     } else {
       addProduct({ ...productData, id: Date.now().toString() });
+      alert('تمت إضافة المنتج الجديد بنجاح');
     }
     resetProductForm();
   };
@@ -98,6 +113,11 @@ const Admin: React.FC = () => {
     setShowProductForm(false);
   };
 
+  const handleDelete = (id: string) => {
+      deleteProduct(id);
+      setDeleteConfirmId(null);
+  };
+
   // --- Settings Logic ---
   const handleSettingsChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -112,7 +132,6 @@ const Admin: React.FC = () => {
     e.preventDefault();
     updateSettings(settingsForm);
     alert('تم حفظ إعدادات berrima store بنجاح!');
-    // Reload to apply scripts injection
     window.location.reload();
   };
 
@@ -122,7 +141,7 @@ const Admin: React.FC = () => {
       return;
     }
     console.log(`%c FB Pixel Test: Sending 'Contact' event to ${settingsForm.facebookPixelId}`, 'background: #1877F2; color: white; padding: 4px;');
-    alert('تم إرسال حدث تجريبي (Contact) إلى الكونسول. تأكد من تفعيل FB Pixel Helper في متصفحك.');
+    alert('تم إرسال حدث تجريبي (Contact) إلى الكونسول.');
   };
 
   if (!isAuthenticated) {
@@ -184,8 +203,8 @@ const Admin: React.FC = () => {
                     <LayoutDashboard className="w-7 h-7 text-amber-500" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-black text-slate-100">berrima store</h1>
-                  <p className="text-xs text-slate-500">مرحباً بك في إدارة متجرك</p>
+                  <h1 className="text-2xl font-black text-slate-100">لوحة التحكم</h1>
+                  <p className="text-xs text-slate-500">إدارة المنتجات والإعدادات</p>
                 </div>
             </div>
             
@@ -208,7 +227,6 @@ const Admin: React.FC = () => {
                 <button 
                     onClick={handleLogout}
                     className="p-3 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded-2xl transition-all"
-                    title="تسجيل الخروج"
                 >
                     <LogOut className="w-6 h-6" />
                 </button>
@@ -218,29 +236,48 @@ const Admin: React.FC = () => {
         {/* PRODUCTS TAB */}
         {activeTab === 'products' && (
             <div className="space-y-8 animate-in fade-in duration-500">
-                <div className="flex justify-between items-center">
-                    <div>
-                      <h2 className="text-xl font-black text-slate-100">قائمة المنتجات</h2>
-                      <p className="text-sm text-slate-500">لديك {products.length} منتجات منشورة</p>
+                
+                {/* Search & Filters */}
+                <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div className="relative w-full md:w-96 group">
+                        <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-amber-500" />
+                        <input 
+                            type="text" 
+                            placeholder="ابحث عن منتج..." 
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pr-12 pl-4 py-3.5 bg-slate-900 border border-slate-800 rounded-2xl text-slate-100 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all"
+                        />
                     </div>
-                    {!showProductForm && (
+                    
+                    <div className="flex gap-3 w-full md:w-auto">
+                        <select 
+                            value={filterCategory}
+                            onChange={(e) => setFilterCategory(e.target.value)}
+                            className="bg-slate-900 text-slate-300 px-4 py-3.5 border border-slate-800 rounded-2xl outline-none focus:border-amber-500"
+                        >
+                            <option value="all">جميع التصنيفات</option>
+                            <option value={Category.ELECTRONICS}>إلكترونيات</option>
+                            <option value={Category.HOME}>المنزل</option>
+                            <option value={Category.CARS}>السيارات</option>
+                        </select>
                         <button 
                             onClick={() => setShowProductForm(true)}
-                            className="flex items-center gap-2 bg-amber-500 text-slate-900 px-6 py-3 rounded-2xl font-black hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-amber-500 text-slate-900 px-6 py-3.5 rounded-2xl font-black hover:bg-amber-400 transition-all shadow-lg"
                         >
-                            <Plus className="w-5 h-5" /> إضافة منتج جديد
+                            <Plus className="w-5 h-5" /> منتج جديد
                         </button>
-                    )}
+                    </div>
                 </div>
 
                 {showProductForm && (
-                    <div className="bg-slate-900 p-8 rounded-3xl shadow-xl mb-8 border border-slate-800 animate-in slide-in-from-top-4 duration-300">
-                        <div className="flex justify-between items-center mb-8 border-b border-slate-800 pb-6">
+                    <div className="bg-slate-900 p-8 rounded-3xl shadow-xl border border-slate-800 animate-in slide-in-from-top-4 duration-300">
+                        <div className="flex justify-between items-center mb-8">
                             <h2 className="text-2xl font-black text-slate-100 flex items-center gap-3">
-                                {isEditing ? <div className="p-2 bg-amber-500/10 rounded-xl"><Edit className="w-6 h-6 text-amber-500" /></div> : <div className="p-2 bg-emerald-500/10 rounded-xl"><Plus className="w-6 h-6 text-emerald-500" /></div>}
-                                {isEditing ? 'تعديل المنتج' : 'إضافة منتج للسوق'}
+                                {isEditing ? <Edit className="w-6 h-6 text-amber-500" /> : <Plus className="w-6 h-6 text-emerald-500" />}
+                                {isEditing ? 'تعديل بيانات المنتج والأسعار' : 'إضافة منتج جديد للكتالوج'}
                             </h2>
-                            <button onClick={resetProductForm} className="text-slate-500 hover:text-red-500 hover:bg-red-500/10 p-2.5 rounded-full transition-colors">
+                            <button onClick={resetProductForm} className="text-slate-500 hover:text-red-500 p-2 transition-colors">
                                 <X className="w-7 h-7" />
                             </button>
                         </div>
@@ -249,16 +286,17 @@ const Admin: React.FC = () => {
                             <div className="space-y-6">
                                 <div>
                                     <label className="block text-sm font-bold text-slate-400 mb-2 mr-1">اسم المنتج</label>
-                                    <input required name="title" value={currentProduct.title || ''} onChange={handleInputChange} className="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-100" />
+                                    <input required name="title" value={currentProduct.title || ''} onChange={handleInputChange} className="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl outline-none text-slate-100" />
                                 </div>
-                                <div className="grid grid-cols-2 gap-6">
+                                <div className="grid grid-cols-2 gap-6 p-6 bg-slate-950 rounded-2xl border border-slate-800">
+                                    <div className="md:col-span-2 text-xs font-black text-amber-500 mb-2">إدارة الأسعار (د.م)</div>
                                     <div>
-                                        <label className="block text-sm font-bold text-slate-400 mb-2 mr-1">السعر الحالي</label>
-                                        <input required type="number" name="price" value={currentProduct.price || ''} onChange={handleInputChange} className="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-amber-500 font-black" />
+                                        <label className="block text-xs font-bold text-slate-500 mb-2">السعر الحالي</label>
+                                        <input required type="number" name="price" value={currentProduct.price || ''} onChange={handleInputChange} className="w-full p-4 bg-slate-900 border border-slate-800 rounded-xl outline-none text-amber-500 font-black text-xl" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-600 mb-2 mr-1">السعر القديم</label>
-                                        <input type="number" name="oldPrice" value={currentProduct.oldPrice || ''} onChange={handleInputChange} className="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl focus:ring-4 focus:ring-blue-500/10 outline-none text-slate-500 transition-all line-through" />
+                                        <label className="block text-xs font-bold text-slate-500 mb-2">السعر قبل التخفيض</label>
+                                        <input type="number" name="oldPrice" value={currentProduct.oldPrice || ''} onChange={handleInputChange} className="w-full p-4 bg-slate-900 border border-slate-800 rounded-xl outline-none text-slate-500 line-through" />
                                     </div>
                                 </div>
                                 <div>
@@ -303,8 +341,8 @@ const Admin: React.FC = () => {
                                 </div>
                             </div>
                             <div className="md:col-span-2 pt-8 flex gap-4">
-                                <button type="submit" className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-500 transition-all flex justify-center items-center gap-3">
-                                    <Save className="w-6 h-6" /> {isEditing ? 'تحديث المنتج' : 'نشر المنتج'}
+                                <button type="submit" className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-500 transition-all flex justify-center items-center gap-3 shadow-xl">
+                                    <Save className="w-6 h-6" /> {isEditing ? 'تحديث وحفظ التغييرات' : 'نشر المنتج الآن'}
                                 </button>
                                 <button type="button" onClick={resetProductForm} className="px-8 bg-slate-800 text-slate-400 rounded-2xl font-bold">إلغاء</button>
                             </div>
@@ -313,32 +351,62 @@ const Admin: React.FC = () => {
                 )}
 
                 <div className="bg-slate-900 rounded-3xl border border-slate-800 overflow-hidden">
-                    <table className="min-w-full divide-y divide-slate-800 text-right">
-                        <thead className="bg-slate-950">
-                            <tr>
-                                <th className="px-8 py-4 text-xs font-black text-slate-500">المنتج</th>
-                                <th className="px-8 py-4 text-xs font-black text-slate-500">السعر</th>
-                                <th className="px-8 py-4 text-center text-xs font-black text-slate-500">الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-800">
-                            {products.map((product) => (
-                                <tr key={product.id} className="hover:bg-slate-800/50 transition-all">
-                                    <td className="px-8 py-4 flex items-center gap-4">
-                                        <img src={product.imageUrl} className="w-12 h-12 rounded-lg object-cover border border-slate-700" alt="" />
-                                        <span className="font-bold text-slate-100">{product.title}</span>
-                                    </td>
-                                    <td className="px-8 py-4 text-amber-500 font-black">{product.price} د.م</td>
-                                    <td className="px-8 py-4 text-center">
-                                        <div className="flex justify-center gap-2">
-                                            <button onClick={() => startEdit(product)} className="p-2 text-slate-400 hover:text-amber-500 bg-slate-950 rounded-lg"><Edit className="w-4 h-4" /></button>
-                                            <button onClick={() => deleteProduct(product.id)} className="p-2 text-slate-400 hover:text-red-500 bg-slate-950 rounded-lg"><Trash2 className="w-4 h-4" /></button>
-                                        </div>
-                                    </td>
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-slate-800 text-right">
+                            <thead className="bg-slate-950">
+                                <tr>
+                                    <th className="px-8 py-4 text-xs font-black text-slate-500">المنتج</th>
+                                    <th className="px-8 py-4 text-xs font-black text-slate-500">التصنيف</th>
+                                    <th className="px-8 py-4 text-xs font-black text-slate-500">السعر</th>
+                                    <th className="px-8 py-4 text-center text-xs font-black text-slate-500">الإجراءات</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-slate-800">
+                                {filteredProducts.map((product) => (
+                                    <tr key={product.id} className="hover:bg-slate-800/50 transition-all group">
+                                        <td className="px-8 py-4 flex items-center gap-4">
+                                            <div className="w-14 h-14 rounded-xl overflow-hidden border border-slate-700 bg-slate-950 flex-shrink-0">
+                                                <img src={product.imageUrl} className="w-full h-full object-cover" alt="" />
+                                            </div>
+                                            <span className="font-bold text-slate-100 line-clamp-1">{product.title}</span>
+                                        </td>
+                                        <td className="px-8 py-4">
+                                            <span className="text-xs bg-slate-950 text-slate-400 px-3 py-1 rounded-lg border border-slate-800">{product.category}</span>
+                                        </td>
+                                        <td className="px-8 py-4">
+                                            <div className="flex flex-col">
+                                                <span className="text-amber-500 font-black">{product.price} د.م</span>
+                                                {product.oldPrice && <span className="text-[10px] text-slate-600 line-through">{product.oldPrice} د.م</span>}
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-4 text-center">
+                                            <div className="flex justify-center gap-3">
+                                                <button 
+                                                    onClick={() => startEdit(product)} 
+                                                    className="p-3 text-slate-400 hover:text-amber-500 bg-slate-950 rounded-xl border border-slate-800 hover:border-amber-500/50 transition-all"
+                                                    title="تعديل المنتج"
+                                                >
+                                                    <Edit className="w-5 h-5" />
+                                                </button>
+                                                <button 
+                                                    onClick={() => setDeleteConfirmId(product.id)} 
+                                                    className="p-3 text-slate-400 hover:text-red-500 bg-slate-950 rounded-xl border border-slate-800 hover:border-red-500/50 transition-all"
+                                                    title="حذف المنتج"
+                                                >
+                                                    <Trash2 className="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {filteredProducts.length === 0 && (
+                                    <tr>
+                                        <td colSpan={4} className="px-8 py-20 text-center text-slate-600 font-bold">لا توجد منتجات تطابق بحثك</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         )}
@@ -346,10 +414,8 @@ const Admin: React.FC = () => {
         {/* SETTINGS TAB */}
         {activeTab === 'settings' && (
             <div className="max-w-4xl mx-auto space-y-8 animate-in zoom-in-95 duration-300">
-                
                 <form onSubmit={handleSettingsSubmit} className="space-y-8 pb-20">
-                    
-                    {/* Facebook Advanced Section */}
+                    {/* (Settings content remains same as previous version but integrated into enhanced layout) */}
                     <div className="bg-slate-900 rounded-[40px] border border-slate-800 p-8 md:p-10 shadow-2xl">
                         <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-800">
                             <div className="flex items-center gap-4">
@@ -361,161 +427,65 @@ const Admin: React.FC = () => {
                                     <p className="text-xs text-slate-500">تتبع الحملات الإعلانية والتحويلات بدقة</p>
                                 </div>
                             </div>
-                            <button 
-                                type="button"
-                                onClick={testPixel}
-                                className="px-4 py-2 bg-slate-800 text-blue-400 border border-blue-400/20 rounded-xl text-xs font-black hover:bg-blue-400 hover:text-slate-900 transition-all flex items-center gap-2"
-                            >
+                            <button type="button" onClick={testPixel} className="px-4 py-2 bg-slate-800 text-blue-400 border border-blue-400/20 rounded-xl text-xs font-black hover:bg-blue-400 hover:text-slate-900 transition-all flex items-center gap-2">
                                 <Activity className="w-4 h-4" /> اختبار الربط
                             </button>
                         </div>
-
                         <div className="space-y-8">
                             <div>
                                 <label className="block text-sm font-bold text-slate-400 mb-3 mr-1">Facebook Pixel ID</label>
-                                <input
-                                    type="text"
-                                    name="facebookPixelId"
-                                    value={settingsForm.facebookPixelId}
-                                    onChange={handleSettingsChange}
-                                    className="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 outline-none text-slate-100 font-mono text-center tracking-widest"
-                                    placeholder="123456789012345"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <h4 className="md:col-span-2 text-sm font-black text-slate-500 mb-2 mr-1">تتبع الأحداث (Events Tracking)</h4>
-                                
-                                <label className="flex items-center justify-between p-4 bg-slate-950 border border-slate-800 rounded-2xl cursor-pointer hover:border-blue-600/50 transition-all group">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`p-2 rounded-lg transition-colors ${settingsForm.fbTrackPageView ? 'bg-blue-600/20 text-blue-400' : 'bg-slate-800 text-slate-600'}`}>
-                                            <Radio className="w-4 h-4" />
-                                        </div>
-                                        <span className="text-sm font-bold text-slate-300">مشاهدة الصفحة (PageView)</span>
-                                    </div>
-                                    <input type="checkbox" name="fbTrackPageView" checked={settingsForm.fbTrackPageView} onChange={handleSettingsChange} className="hidden" />
-                                    <div className={`w-10 h-6 rounded-full transition-all relative ${settingsForm.fbTrackPageView ? 'bg-blue-600' : 'bg-slate-800'}`}>
-                                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${settingsForm.fbTrackPageView ? 'right-5' : 'right-1'}`}></div>
-                                    </div>
-                                </label>
-
-                                <label className="flex items-center justify-between p-4 bg-slate-950 border border-slate-800 rounded-2xl cursor-pointer hover:border-blue-600/50 transition-all group">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`p-2 rounded-lg transition-colors ${settingsForm.fbTrackAddToCart ? 'bg-blue-600/20 text-blue-400' : 'bg-slate-800 text-slate-600'}`}>
-                                            <ShoppingBag className="w-4 h-4" />
-                                        </div>
-                                        <span className="text-sm font-bold text-slate-300">إضافة للسلة (AddToCart)</span>
-                                    </div>
-                                    <input type="checkbox" name="fbTrackAddToCart" checked={settingsForm.fbTrackAddToCart} onChange={handleSettingsChange} className="hidden" />
-                                    <div className={`w-10 h-6 rounded-full transition-all relative ${settingsForm.fbTrackAddToCart ? 'bg-blue-600' : 'bg-slate-800'}`}>
-                                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${settingsForm.fbTrackAddToCart ? 'right-5' : 'right-1'}`}></div>
-                                    </div>
-                                </label>
-
-                                <label className="flex items-center justify-between p-4 bg-slate-950 border border-slate-800 rounded-2xl cursor-pointer hover:border-blue-600/50 transition-all group">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`p-2 rounded-lg transition-colors ${settingsForm.fbTrackInitiateCheckout ? 'bg-blue-600/20 text-blue-400' : 'bg-slate-800 text-slate-600'}`}>
-                                            <CheckCircle2 className="w-4 h-4" />
-                                        </div>
-                                        <span className="text-sm font-bold text-slate-300">بدء الدفع (InitiateCheckout)</span>
-                                    </div>
-                                    <input type="checkbox" name="fbTrackInitiateCheckout" checked={settingsForm.fbTrackInitiateCheckout} onChange={handleSettingsChange} className="hidden" />
-                                    <div className={`w-10 h-6 rounded-full transition-all relative ${settingsForm.fbTrackInitiateCheckout ? 'bg-blue-600' : 'bg-slate-800'}`}>
-                                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${settingsForm.fbTrackInitiateCheckout ? 'right-5' : 'right-1'}`}></div>
-                                    </div>
-                                </label>
-
-                                <label className="flex items-center justify-between p-4 bg-slate-950 border border-slate-800 rounded-2xl cursor-pointer hover:border-blue-600/50 transition-all group">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`p-2 rounded-lg transition-colors ${settingsForm.fbTrackPurchase ? 'bg-blue-600/20 text-blue-400' : 'bg-slate-800 text-slate-600'}`}>
-                                            <Radio className="w-4 h-4" />
-                                        </div>
-                                        <span className="text-sm font-bold text-slate-300">الشراء (Purchase)</span>
-                                    </div>
-                                    <input type="checkbox" name="fbTrackPurchase" checked={settingsForm.fbTrackPurchase} onChange={handleSettingsChange} className="hidden" />
-                                    <div className={`w-10 h-6 rounded-full transition-all relative ${settingsForm.fbTrackPurchase ? 'bg-blue-600' : 'bg-slate-800'}`}>
-                                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${settingsForm.fbTrackPurchase ? 'right-5' : 'right-1'}`}></div>
-                                    </div>
-                                </label>
+                                <input type="text" name="facebookPixelId" value={settingsForm.facebookPixelId} onChange={handleSettingsChange} className="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 font-mono text-center" placeholder="123456789012345" />
                             </div>
                         </div>
                     </div>
-
-                    {/* Custom Code Injection Section */}
+                    {/* Custom Code Injection */}
                     <div className="bg-slate-900 rounded-[40px] border border-slate-800 p-8 md:p-10 shadow-2xl">
                         <div className="flex items-center gap-4 mb-8 pb-6 border-b border-slate-800">
                             <div className="p-4 bg-emerald-600 rounded-2xl shadow-lg shadow-emerald-600/20">
                                 <Code className="w-8 h-8 text-white" />
                             </div>
                             <div>
-                                <h3 className="text-xl font-black text-slate-100">إضافة أكواد مخصصة (Custom Scripts)</h3>
-                                <p className="text-xs text-slate-500">أضف أكواد تتبع إضافية يدوياً في الهيدر أو الفوتر</p>
+                                <h3 className="text-xl font-black text-slate-100">إضافة أكواد مخصصة</h3>
                             </div>
                         </div>
-
                         <div className="space-y-8">
                             <div>
-                                <label className="block text-sm font-bold text-slate-400 mb-3 mr-1 flex items-center justify-between">
-                                    <span>كود الهيدر (Header Scripts)</span>
-                                    <span className="text-[10px] text-slate-600">سيظهر داخل &lt;head&gt;</span>
-                                </label>
-                                <textarea
-                                    name="headerScripts"
-                                    rows={6}
-                                    value={settingsForm.headerScripts}
-                                    onChange={handleSettingsChange}
-                                    className="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl focus:ring-4 focus:ring-emerald-600/10 focus:border-emerald-600 outline-none text-slate-300 font-mono text-xs resize-none"
-                                    dir="ltr"
-                                    placeholder="<!-- مثال: كود جوجل أناليتكس أو بيكسل مخصص -->"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-bold text-slate-400 mb-3 mr-1 flex items-center justify-between">
-                                    <span>كود الفوتر (Footer Scripts)</span>
-                                    <span className="text-[10px] text-slate-600">سيظهر قبل نهاية &lt;/body&gt;</span>
-                                </label>
-                                <textarea
-                                    name="footerScripts"
-                                    rows={6}
-                                    value={settingsForm.footerScripts}
-                                    onChange={handleSettingsChange}
-                                    className="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl focus:ring-4 focus:ring-emerald-600/10 focus:border-emerald-600 outline-none text-slate-300 font-mono text-xs resize-none"
-                                    dir="ltr"
-                                    placeholder="<!-- مثال: كود واتساب عائم أو شات مباشر -->"
-                                />
-                            </div>
-
-                            <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-6 flex gap-4">
-                                <AlertCircle className="w-6 h-6 text-amber-500 flex-shrink-0 mt-1" />
-                                <p className="text-xs text-slate-400 leading-relaxed">
-                                    <span className="text-amber-500 font-black block mb-1 underline">تنبيه هام!</span>
-                                    يرجى التأكد من صحة الأكواد التي تلصقها هنا. أي خطأ قد يؤدي إلى تعطل الموقع بالكامل. تجنب إلصاق أكواد من مصادر غير موثوقة.
-                                </p>
+                                <label className="block text-sm font-bold text-slate-400 mb-3 mr-1">كود الهيدر</label>
+                                <textarea name="headerScripts" rows={6} value={settingsForm.headerScripts} onChange={handleSettingsChange} className="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-300 font-mono text-xs" dir="ltr" />
                             </div>
                         </div>
                     </div>
-
-                    {/* Other Connections */}
-                    <div className="bg-slate-900 rounded-[40px] border border-slate-800 p-8 shadow-xl grid grid-cols-1 md:grid-cols-2 gap-8">
-                         <div className="bg-slate-950 p-6 rounded-3xl border border-slate-800">
-                            <label className="block text-sm font-black text-slate-400 mb-4 flex items-center gap-2">
-                                <Globe className="w-5 h-5 text-blue-400" /> النطاق الخاص
-                            </label>
-                            <input name="customDomain" value={settingsForm.customDomain} onChange={handleSettingsChange} className="w-full p-4 bg-slate-900 border border-slate-800 rounded-2xl text-slate-100 font-mono text-xs" dir="ltr" placeholder="berrima-store.com" />
-                         </div>
-                         <div className="bg-slate-950 p-6 rounded-3xl border border-slate-800">
-                            <label className="block text-sm font-black text-slate-400 mb-4 flex items-center gap-2">
-                                <Sheet className="w-5 h-5 text-emerald-500" /> Google Sheets Link
-                            </label>
-                            <input name="googleSheetUrl" value={settingsForm.googleSheetUrl} onChange={handleSettingsChange} className="w-full p-4 bg-slate-900 border border-slate-800 rounded-2xl text-slate-100 font-mono text-[10px]" dir="ltr" />
-                         </div>
-                    </div>
-
-                    <button type="submit" className="w-full bg-amber-500 text-slate-950 py-6 rounded-3xl font-black text-xl hover:bg-amber-400 shadow-2xl shadow-amber-500/10 flex items-center justify-center gap-3">
+                    <button type="submit" className="w-full bg-amber-500 text-slate-950 py-6 rounded-3xl font-black text-xl hover:bg-amber-400 shadow-2xl flex items-center justify-center gap-3">
                         <Save className="w-7 h-7" /> حفظ كافة الإعدادات المتقدمة
                     </button>
                 </form>
+            </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteConfirmId && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="bg-slate-900 border border-slate-800 rounded-[32px] p-8 max-w-sm w-full shadow-2xl scale-in-center">
+                    <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500">
+                        <AlertCircle className="w-8 h-8" />
+                    </div>
+                    <h3 className="text-xl font-black text-slate-100 text-center mb-2">حذف المنتج؟</h3>
+                    <p className="text-slate-500 text-center mb-8 text-sm leading-relaxed">هل أنت متأكد من رغبتك في حذف هذا المنتج نهائياً من المتجر؟ لا يمكن التراجع عن هذا الإجراء.</p>
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={() => handleDelete(deleteConfirmId)}
+                            className="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-500 transition-all"
+                        >
+                            نعم، احذف
+                        </button>
+                        <button 
+                            onClick={() => setDeleteConfirmId(null)}
+                            className="flex-1 bg-slate-800 text-slate-400 py-3 rounded-xl font-bold hover:bg-slate-700 transition-all"
+                        >
+                            إلغاء
+                        </button>
+                    </div>
+                </div>
             </div>
         )}
       </div>

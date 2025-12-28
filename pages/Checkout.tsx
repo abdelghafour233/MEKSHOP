@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trash2, CheckCircle, AlertCircle, ShoppingCart, User, Phone, MapPin } from 'lucide-react';
@@ -17,10 +18,9 @@ const Checkout: React.FC = () => {
     fullName: '',
     phone: '',
     city: '',
-    address: ''
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -68,16 +68,16 @@ const Checkout: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
         <div className="bg-slate-900 p-10 md:p-16 rounded-[40px] shadow-2xl max-w-2xl w-full text-center border border-slate-800">
-          <div className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-10">
-            <CheckCircle className="h-12 w-12 text-emerald-500" />
+          <div className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-10 text-emerald-500">
+            <CheckCircle className="h-12 w-12" />
           </div>
-          <h2 className="text-4xl font-black text-slate-100 mb-6">شكراً لطلبك من berrima store!</h2>
-          <p className="text-slate-400 text-lg mb-10 leading-relaxed font-light">تم استلام طلبك بنجاح. سيقوم أحد موظفينا بالتواصل معك عبر الهاتف خلال الساعات القادمة لتأكيد العنوان وموعد التوصيل.</p>
+          <h2 className="text-4xl font-black text-slate-100 mb-6">تم تسجيل طلبك بنجاح!</h2>
+          <p className="text-slate-400 text-lg mb-10 leading-relaxed font-light">شكراً لثقتك في berrima store. سنتصل بك قريباً عبر الهاتف لتأكيد طلبك وبدء عملية الشحن.</p>
           <button 
             onClick={() => navigate('/')}
             className="w-full bg-amber-500 text-slate-950 py-5 rounded-2xl font-black text-xl hover:bg-amber-400 transition-all shadow-xl shadow-amber-500/10"
           >
-            العودة للرئيسية وتصفح المزيد
+            العودة للرئيسية
           </button>
         </div>
       </div>
@@ -88,13 +88,14 @@ const Checkout: React.FC = () => {
     <div className="bg-slate-950 min-h-screen py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-12">
-            <h1 className="text-4xl font-black text-slate-100 mb-4">إتمام عملية الشراء</h1>
-            <div className="h-1.5 w-20 bg-amber-500 rounded-full"></div>
+            <h1 className="text-4xl font-black text-slate-100 mb-4">أكد طلبك الآن</h1>
+            <p className="text-slate-500 font-bold">يرجى إدخال معلوماتك الشخصية لنتواصل معك</p>
+            <div className="h-1.5 w-20 bg-amber-500 rounded-full mt-4"></div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           
-          {/* Order Summary - Dark Side */}
+          {/* Order Summary */}
           <div className="order-2 lg:order-1">
             <div className="bg-slate-900 rounded-[32px] shadow-xl border border-slate-800 overflow-hidden sticky top-24">
               <div className="p-8 border-b border-slate-800 flex items-center gap-4">
@@ -104,7 +105,7 @@ const Checkout: React.FC = () => {
               <div className="p-8">
                 {cart.length === 0 ? (
                   <div className="text-center py-12">
-                    <p className="text-slate-500 mb-6 font-bold">سلة المشتريات فارغة تماماً</p>
+                    <p className="text-slate-500 mb-6 font-bold">سلة المشتريات فارغة</p>
                     <button onClick={() => navigate('/products')} className="text-amber-500 font-black hover:text-amber-400">تصفح المنتجات الآن</button>
                   </div>
                 ) : (
@@ -134,67 +135,45 @@ const Checkout: React.FC = () => {
                 
                 {cart.length > 0 && (
                   <div className="mt-10 pt-10 border-t border-slate-800 space-y-5">
-                    <div className="flex justify-between text-slate-400 font-bold">
-                      <span>المجموع الجزئي</span>
-                      <span>{totalAmount} د.م</span>
-                    </div>
-                    <div className="flex justify-between text-slate-400 font-bold">
-                      <span>مصاريف التوصيل</span>
-                      <span className="text-emerald-500">مجاني (0.00 د.م)</span>
-                    </div>
-                    <div className="flex justify-between text-2xl font-black text-slate-100 pt-5 border-t border-slate-800">
-                      <span>الإجمالي النهائي</span>
+                    <div className="flex justify-between text-2xl font-black text-slate-100">
+                      <span>الإجمالي</span>
                       <span className="text-amber-500">{totalAmount} د.م</span>
                     </div>
+                    <p className="text-emerald-500 text-xs font-bold text-center bg-emerald-500/5 py-3 rounded-xl border border-emerald-500/20">
+                       ✓ التوصيل مجاني لجميع المدن المغربية
+                    </p>
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Customer Form - Dark Form */}
+          {/* Customer Form - Minimized to 3 Fields */}
           <div className="order-1 lg:order-2">
             <div className="bg-slate-900 rounded-[32px] shadow-2xl border border-slate-800 p-8 md:p-10">
               <h2 className="text-2xl font-black text-slate-100 mb-8 flex items-center gap-3">
-                  معلومات التوصيل
+                  معلومات الشحن
               </h2>
               
-              <form onSubmit={handleSubmit} className="space-y-8">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="relative group">
-                        <label className="block text-xs font-black text-slate-500 mb-2 mr-1 flex items-center gap-2 group-focus-within:text-amber-500 transition-colors">
-                            <User className="w-4 h-4" /> الاسم الكامل
-                        </label>
-                        <input
-                            type="text"
-                            name="fullName"
-                            required
-                            value={formData.fullName}
-                            onChange={handleInputChange}
-                            className="w-full px-5 py-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all placeholder-slate-700"
-                            placeholder="محمد العلوي"
-                        />
-                    </div>
-
-                    <div className="relative group">
-                        <label className="block text-xs font-black text-slate-500 mb-2 mr-1 flex items-center gap-2 group-focus-within:text-amber-500 transition-colors">
-                            <Phone className="w-4 h-4" /> رقم الهاتف
-                        </label>
-                        <input
-                            type="tel"
-                            name="phone"
-                            required
-                            value={formData.phone}
-                            onChange={handleInputChange}
-                            className="w-full px-5 py-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all placeholder-slate-700 font-mono"
-                            placeholder="0600000000"
-                        />
-                    </div>
+                <div className="relative group">
+                    <label className="block text-sm font-bold text-slate-400 mb-3 mr-1 flex items-center gap-2 group-focus-within:text-amber-500 transition-colors">
+                        <User className="w-4 h-4" /> الاسم الكامل
+                    </label>
+                    <input
+                        type="text"
+                        name="fullName"
+                        required
+                        value={formData.fullName}
+                        onChange={handleInputChange}
+                        className="w-full px-5 py-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all placeholder-slate-700"
+                        placeholder="أدخل اسمك الكامل"
+                    />
                 </div>
 
                 <div className="relative group">
-                    <label className="block text-xs font-black text-slate-500 mb-2 mr-1 flex items-center gap-2 group-focus-within:text-amber-500 transition-colors">
+                    <label className="block text-sm font-bold text-slate-400 mb-3 mr-1 flex items-center gap-2 group-focus-within:text-amber-500 transition-colors">
                         <MapPin className="w-4 h-4" /> المدينة
                     </label>
                     <input
@@ -204,29 +183,31 @@ const Checkout: React.FC = () => {
                         value={formData.city}
                         onChange={handleInputChange}
                         className="w-full px-5 py-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all placeholder-slate-700"
-                        placeholder="الدار البيضاء، الرباط، طنجة..."
+                        placeholder="أدخل اسم مدينتك"
                     />
                 </div>
-                
+
                 <div className="relative group">
-                  <label className="block text-xs font-black text-slate-500 mb-2 mr-1 flex items-center gap-2 group-focus-within:text-amber-500 transition-colors">
-                      العنوان بالتفصيل
-                  </label>
-                  <textarea
-                    name="address"
-                    rows={3}
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    className="w-full px-5 py-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all placeholder-slate-700 resize-none"
-                    placeholder="اسم الشارع، رقم المنزل، الطابق..."
-                  />
+                    <label className="block text-sm font-bold text-slate-400 mb-3 mr-1 flex items-center gap-2 group-focus-within:text-amber-500 transition-colors">
+                        <Phone className="w-4 h-4" /> رقم الهاتف
+                    </label>
+                    <input
+                        type="tel"
+                        name="phone"
+                        required
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className="w-full px-5 py-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all placeholder-slate-700 font-mono text-left"
+                        dir="ltr"
+                        placeholder="06 XX XX XX XX"
+                    />
                 </div>
 
-                <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-6 flex gap-4 items-start">
-                  <div className="p-2 bg-amber-500/10 rounded-lg"><AlertCircle className="h-6 w-6 text-amber-500 flex-shrink-0" /></div>
-                  <p className="text-sm text-slate-400 leading-relaxed font-bold">
-                    <span className="text-amber-500 block mb-1">دفع نقداً عند الاستلام (COD)</span>
-                    خدمة الدفع متوفرة بعد استلام الطلب. يرجى إبقاء هاتفك متاحاً لتلقي اتصال تأكيد الطلب من فريقنا.
+                <div className="bg-blue-600/5 border border-blue-500/20 rounded-2xl p-6 flex gap-4 items-start">
+                  <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500"><AlertCircle className="h-6 w-6 flex-shrink-0" /></div>
+                  <p className="text-xs text-slate-400 leading-relaxed font-bold">
+                    <span className="text-blue-400 block mb-1">طريقة الدفع: عند الاستلام</span>
+                    سيقوم فريقنا بالاتصال بك قريباً لتأكيد الطلب. الدفع يكون نقداً عند باب منزلك.
                   </p>
                 </div>
 
@@ -240,7 +221,7 @@ const Checkout: React.FC = () => {
                     }
                   `}
                 >
-                  {isSubmitting ? 'جاري الإرسال...' : 'تأكيد الشراء الآن'}
+                  {isSubmitting ? 'جاري التسجيل...' : 'اشتري الآن'}
                 </button>
 
               </form>
