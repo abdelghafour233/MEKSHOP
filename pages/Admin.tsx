@@ -5,14 +5,22 @@ import { useProducts } from '../context/ProductContext';
 import { useSettings } from '../context/SettingsContext';
 import { useOrders } from '../context/OrderContext';
 import { Product, Category, Order, OrderStatus } from '../types';
+// Fix: Added missing User import from lucide-react to resolve "Cannot find name 'User'" error
 import { 
   Plus, Edit, Trash2, X, Lock, Settings as SettingsIcon, 
   Package, LogOut, Eye, EyeOff, ShoppingBag, 
   Search, Hash, DollarSign, Clock, ClipboardList, Award, Truck, AlertCircle,
   Link as LinkIcon, Database, Facebook, Chrome, Target, MapPin, Shield, Upload, 
-  Image as ImageIcon, TrendingUp, Users, Activity, CheckCircle2,
-  Phone, ShoppingCart, Code2, ShieldAlert
+  Image as ImageIcon, TrendingUp, User, Users, Activity, CheckCircle2,
+  Phone, ShoppingCart, Code2, ShieldAlert, Save, FileText
 } from 'lucide-react';
+
+const MOROCCAN_CITIES = [
+  "الدار البيضاء", "الرباط", "مراكش", "طنجة", "فاس", "أغادير", "مكناس", "وجدة",
+  "القنيطرة", "تطوان", "تمارة", "آسفي", "العيون", "المحمدية", "بني ملال", "الجديدة",
+  "تازة", "الناظور", "سطات", "القصر الكبير", "العرائش", "خميسات", "تيزنيت", "برشيد",
+  "وادي زم", "الفقيه بن صالح", "تاوريرت", "بركان", "سيدي سليمان", "الرشيدية", "سيدي قاسم", "خنيفرة"
+].sort();
 
 const Admin: React.FC = () => {
   const { products, addProduct, updateProduct, deleteProduct } = useProducts();
@@ -24,9 +32,6 @@ const Admin: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'settings'>('orders');
   
-  const [newPassword, setNewPassword] = useState('');
-  const [showNewPassword, setShowNewPassword] = useState(false);
-
   const [isEditingProduct, setIsEditingProduct] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Partial<Product>>({});
   
@@ -125,6 +130,15 @@ const Admin: React.FC = () => {
     setCurrentProduct({});
   };
 
+  const handleOrderSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingOrder) {
+      updateOrderDetails(editingOrder);
+      alert("✅ تم تحديث بيانات الطلب");
+      setEditingOrder(null);
+    }
+  };
+
   const dashboardStats = useMemo(() => {
     const confirmedOrders = orders.filter(o => o.status === 'Confirmed' || o.status === 'Shipped');
     const totalRevenue = confirmedOrders.reduce((sum, o) => sum + o.total, 0);
@@ -173,7 +187,6 @@ const Admin: React.FC = () => {
             <Lock className="w-8 h-8 text-emerald-500" />
           </div>
           <h2 className="text-3xl font-black text-white mb-2 tracking-tight">بريمة ستور</h2>
-          <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em] mb-8">نظام إدارة التجارة</p>
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="relative group">
               <input 
@@ -183,17 +196,11 @@ const Admin: React.FC = () => {
                 placeholder="كلمة المرور"
                 className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white text-center outline-none focus:border-emerald-500 transition-all font-mono placeholder:text-gray-700 shadow-inner"
               />
-              <button 
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-emerald-500 transition-colors p-2"
-              >
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-emerald-500 transition-colors p-2">
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-            <button type="submit" className="w-full bg-emerald-500 text-black py-5 rounded-2xl font-black text-lg shadow-2xl shadow-emerald-500/20 active:scale-95 transition-all">
-                دخول للنظام
-            </button>
+            <button type="submit" className="w-full bg-emerald-500 text-black py-5 rounded-2xl font-black text-lg shadow-2xl shadow-emerald-500/20 active:scale-95 transition-all">دخول</button>
           </form>
         </div>
       </div>
@@ -212,17 +219,13 @@ const Admin: React.FC = () => {
                 </div>
                 <div>
                     <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">لوحة الإدارة</h1>
-                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-1">Berrima Professional Control</p>
+                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-1">Berrima Control Center</p>
                 </div>
             </div>
             
             <div className="flex items-center gap-2 w-full md:w-auto">
-                <Link to="/" className="flex-1 md:flex-none text-center bg-white/5 text-white px-6 py-4 rounded-xl border border-white/5 font-black hover:bg-emerald-500 hover:text-black transition-all text-sm">
-                    معاينة المتجر
-                </Link>
-                <button onClick={handleLogout} className="flex-1 md:flex-none bg-rose-500/10 text-rose-500 px-6 py-4 rounded-xl border border-rose-500/20 font-black hover:bg-rose-500 hover:text-white transition-all text-sm">
-                    خروج
-                </button>
+                <Link to="/" className="flex-1 md:flex-none text-center bg-white/5 text-white px-6 py-4 rounded-xl border border-white/5 font-black hover:bg-emerald-500 hover:text-black transition-all text-sm">معاينة المتجر</Link>
+                <button onClick={handleLogout} className="flex-1 md:flex-none bg-rose-500/10 text-rose-500 px-6 py-4 rounded-xl border border-rose-500/20 font-black hover:bg-rose-500 hover:text-white transition-all text-sm">خروج</button>
             </div>
         </div>
 
@@ -234,7 +237,7 @@ const Admin: React.FC = () => {
              { label: 'الطلبات', value: dashboardStats.totalOrders, color: 'text-blue-500', bg: 'bg-blue-500/10' },
              { label: 'المنتجات', value: dashboardStats.productCount, color: 'text-purple-500', bg: 'bg-purple-500/10' },
            ].map((stat, i) => (
-             <div key={i} className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5">
+             <div key={i} className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 shadow-lg">
                <p className="text-gray-500 text-[9px] font-black uppercase tracking-widest mb-2">{stat.label}</p>
                <h3 className={`text-xl font-black ${stat.color}`}>{stat.value}</h3>
              </div>
@@ -244,11 +247,7 @@ const Admin: React.FC = () => {
         {/* Tabs */}
         <div className="bg-[#0a0a0a] p-1.5 rounded-2xl border border-white/5 mb-8 flex gap-1.5 overflow-x-auto scrollbar-hide">
             {(['orders', 'products', 'settings'] as const).map(tab => (
-              <button 
-                key={tab}
-                onClick={() => setActiveTab(tab)} 
-                className={`flex-1 min-w-[100px] py-3.5 rounded-xl font-black transition-all text-xs ${activeTab === tab ? 'bg-emerald-500 text-black shadow-lg' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
-              >
+              <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 min-w-[100px] py-3.5 rounded-xl font-black transition-all text-xs ${activeTab === tab ? 'bg-emerald-500 text-black shadow-lg' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}>
                 {tab === 'orders' ? 'الطلبات' : tab === 'products' ? 'المنتجات' : 'الإعدادات'}
               </button>
             ))}
@@ -256,37 +255,46 @@ const Admin: React.FC = () => {
 
         {/* Contents */}
         {activeTab === 'orders' && (
-            <div className="space-y-4">
-                <input 
-                  type="text" 
-                  placeholder="ابحث عن زبون..." 
-                  value={orderSearch} 
-                  onChange={(e) => setOrderSearch(e.target.value)} 
-                  className="w-full p-4 bg-[#0a0a0a] border border-white/5 rounded-xl text-white outline-none focus:border-emerald-500 font-bold" 
-                />
+            <div className="space-y-4 animate-in fade-in duration-500">
+                <div className="relative">
+                    <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600" size={18} />
+                    <input type="text" placeholder="ابحث عن زبون أو معرف الطلب..." value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} className="w-full pr-12 pl-4 py-4 bg-[#0a0a0a] border border-white/5 rounded-xl text-white outline-none focus:border-emerald-500 font-bold" />
+                </div>
                 <div className="bg-[#0a0a0a] rounded-2xl border border-white/5 overflow-x-auto shadow-2xl">
-                    <table className="w-full text-right min-w-[600px]">
+                    <table className="w-full text-right min-w-[700px]">
                         <thead className="bg-black/50 text-gray-500 text-[9px] font-black uppercase border-b border-white/5">
                             <tr>
+                                <th className="p-5">التاريخ</th>
                                 <th className="p-5">المعرف</th>
                                 <th className="p-5">الزبون</th>
                                 <th className="p-5">القيمة</th>
+                                <th className="p-5">الحالة</th>
                                 <th className="p-5 text-center">الإجراءات</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {filteredOrders.map(order => (
-                                <tr key={order.id} className="hover:bg-white/[0.01]">
-                                    <td className="p-5 text-white font-mono opacity-50 text-xs">#{order.id.split('-')[1]}</td>
+                                <tr key={order.id} className="hover:bg-white/[0.02] transition-colors">
+                                    <td className="p-5 text-gray-500 text-[10px]">{new Date(order.date).toLocaleDateString('ar-MA')}</td>
+                                    <td className="p-5 text-white font-mono text-xs opacity-40">#{order.id.split('-')[1]}</td>
                                     <td className="p-5">
                                         <div className="font-black text-white text-sm">{order.customer.fullName}</div>
                                         <div className="text-emerald-500 text-[10px] font-mono">{order.customer.phone}</div>
                                     </td>
                                     <td className="p-5 text-white font-black">{order.total} د.م</td>
                                     <td className="p-5">
+                                        <span className={`px-3 py-1 rounded-lg text-[9px] font-black border uppercase ${getStatusColor(order.status)}`}>
+                                            {getStatusLabel(order.status)}
+                                        </span>
+                                    </td>
+                                    <td className="p-5">
                                         <div className="flex justify-center gap-2">
-                                          <button onClick={() => setEditingOrder(order)} className="p-2.5 bg-white/5 text-white rounded-lg hover:bg-emerald-500 hover:text-black transition-all"><Eye size={16} /></button>
-                                          <button onClick={() => { if(confirm('حذف؟')) deleteOrder(order.id) }} className="p-2.5 bg-white/5 text-rose-500 hover:bg-rose-500 hover:text-white transition-all rounded-lg"><Trash2 size={16} /></button>
+                                          <button onClick={() => setEditingOrder(order)} className="p-2.5 bg-white/5 text-white rounded-lg hover:bg-emerald-500 hover:text-black transition-all shadow-sm" title="معاينة وتحرير">
+                                            <Edit size={16} />
+                                          </button>
+                                          <button onClick={() => { if(confirm('هل أنت متأكد من حذف هذا الطلب؟')) deleteOrder(order.id) }} className="p-2.5 bg-white/5 text-rose-500 hover:bg-rose-500 hover:text-white transition-all rounded-lg shadow-sm" title="حذف الطلب">
+                                            <Trash2 size={16} />
+                                          </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -298,26 +306,26 @@ const Admin: React.FC = () => {
         )}
 
         {activeTab === 'products' && (
-          <div className="space-y-6">
-            <button 
-              onClick={() => { setCurrentProduct({}); setIsEditingProduct(true); }}
-              className="w-full bg-emerald-500 text-black py-4 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-lg"
-            >
+          <div className="space-y-6 animate-in fade-in duration-500">
+            <button onClick={() => { setCurrentProduct({}); setIsEditingProduct(true); }} className="w-full bg-emerald-500 text-black py-4 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-lg">
               <Plus size={18} /> إضافة منتج جديد
             </button>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {products.map(product => (
-                <div key={product.id} className="bg-[#0a0a0a] rounded-2xl border border-white/5 overflow-hidden shadow-xl">
-                  <div className="aspect-[4/3] bg-black">
-                    <img src={product.imageUrl} className="w-full h-full object-cover opacity-80" />
+                <div key={product.id} className="bg-[#0a0a0a] rounded-2xl border border-white/5 overflow-hidden shadow-xl group hover:border-emerald-500/30 transition-all">
+                  <div className="aspect-[4/3] bg-black overflow-hidden relative">
+                    <img src={product.imageUrl} className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700" />
+                    <div className="absolute top-2 right-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-md text-[8px] font-black text-emerald-500 uppercase tracking-widest border border-emerald-500/20">
+                      {categoryLabels[product.category] || product.category}
+                    </div>
                   </div>
                   <div className="p-4">
                     <h3 className="text-white font-black text-sm mb-3 line-clamp-1">{product.title}</h3>
                     <div className="flex items-center justify-between">
                       <span className="text-emerald-500 font-black text-base">{product.price} د.م</span>
                       <div className="flex gap-1.5">
-                        <button onClick={() => { setCurrentProduct(product); setIsEditingProduct(true); }} className="p-2 bg-white/5 text-emerald-500 rounded-lg"><Edit size={14} /></button>
-                        <button onClick={() => { if(confirm('حذف؟')) deleteProduct(product.id) }} className="p-2 bg-white/5 text-rose-500 rounded-lg"><Trash2 size={14} /></button>
+                        <button onClick={() => { setCurrentProduct(product); setIsEditingProduct(true); }} className="p-2 bg-white/5 text-emerald-500 rounded-lg hover:bg-emerald-500 hover:text-black transition-all"><Edit size={14} /></button>
+                        <button onClick={() => { if(confirm('حذف المنتج؟')) deleteProduct(product.id) }} className="p-2 bg-white/5 text-rose-500 rounded-lg hover:bg-rose-500 hover:text-white transition-all"><Trash2 size={14} /></button>
                       </div>
                     </div>
                   </div>
@@ -328,123 +336,184 @@ const Admin: React.FC = () => {
         )}
 
         {activeTab === 'settings' && (
-          <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
+          <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500 pb-20">
             <form onSubmit={handleSaveSettings} className="space-y-8">
-              
-              {/* Facebook Pixel Settings */}
+              {/* FB Pixel */}
               <div className="bg-[#0a0a0a] p-8 rounded-[32px] border border-white/5 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-1.5 h-full bg-blue-600"></div>
                 <div className="flex items-center gap-4 mb-8">
-                  <div className="p-3 bg-blue-600/10 text-blue-500 rounded-2xl">
-                    <Facebook size={24} />
-                  </div>
+                  <div className="p-3 bg-blue-600/10 text-blue-500 rounded-2xl"><Facebook size={24} /></div>
                   <div>
-                    <h2 className="text-xl font-black text-white">إعدادات فيسبوك بيكسل</h2>
-                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-1">تتبع الحملات الإعلانية والمبيعات</p>
+                    <h2 className="text-xl font-black text-white">فيسبوك بيكسل</h2>
+                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-1">تتبع المبيعات والزيارات</p>
                   </div>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <label className="block text-[10px] font-black text-gray-500 mr-1 uppercase tracking-widest">Facebook Pixel ID</label>
-                    <div className="relative">
-                      <input 
-                        type="text" 
-                        value={localSettings.facebookPixelId} 
-                        onChange={(e) => setLocalSettings({...localSettings, facebookPixelId: e.target.value})} 
-                        className="w-full p-4 bg-black border border-white/10 rounded-xl text-white outline-none focus:border-blue-500 font-mono text-sm" 
-                        placeholder="أدخل المعرف هنا..."
-                      />
-                      <Hash className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700" size={16} />
-                    </div>
+                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest">Facebook Pixel ID</label>
+                    <input type="text" value={localSettings.facebookPixelId} onChange={(e) => setLocalSettings({...localSettings, facebookPixelId: e.target.value})} className="w-full p-4 bg-black border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-blue-500" placeholder="ID هنا..." />
                   </div>
                   <div className="space-y-3">
-                    <label className="block text-[10px] font-black text-gray-500 mr-1 uppercase tracking-widest">Test Event Code</label>
-                    <div className="relative">
-                      <input 
-                        type="text" 
-                        value={localSettings.fbTestEventCode} 
-                        onChange={(e) => setLocalSettings({...localSettings, fbTestEventCode: e.target.value})} 
-                        className="w-full p-4 bg-black border border-white/10 rounded-xl text-white outline-none focus:border-blue-500 font-mono text-sm" 
-                        placeholder="مثال: TEST12345"
-                      />
-                      <Code2 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700" size={16} />
-                    </div>
+                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest">Test Event Code</label>
+                    <input type="text" value={localSettings.fbTestEventCode} onChange={(e) => setLocalSettings({...localSettings, fbTestEventCode: e.target.value})} className="w-full p-4 bg-black border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-blue-500" placeholder="مثال: TEST12345" />
                   </div>
-                </div>
-                
-                <div className="mt-8 pt-6 border-t border-white/5 flex flex-wrap gap-4">
-                  {[
-                    { key: 'fbTrackPageView', label: 'تتبع الزيارات' },
-                    { key: 'fbTrackAddToCart', label: 'تتبع إضافة للسلة' },
-                    { key: 'fbTrackPurchase', label: 'تتبع المشتريات' }
-                  ].map(toggle => (
-                    <label key={toggle.key} className="flex items-center gap-3 cursor-pointer group">
-                      <input 
-                        type="checkbox" 
-                        checked={(localSettings as any)[toggle.key]} 
-                        onChange={(e) => setLocalSettings({...localSettings, [toggle.key]: e.target.checked})}
-                        className="w-5 h-5 rounded-md border-white/10 bg-black checked:bg-blue-600 transition-all cursor-pointer"
-                      />
-                      <span className="text-xs font-black text-gray-400 group-hover:text-white">{toggle.label}</span>
-                    </label>
-                  ))}
                 </div>
               </div>
 
-              {/* Security & System Settings */}
+              {/* Security */}
               <div className="bg-[#0a0a0a] p-8 rounded-[32px] border border-white/5 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-1.5 h-full bg-rose-600"></div>
                 <div className="flex items-center gap-4 mb-8">
-                  <div className="p-3 bg-rose-600/10 text-rose-500 rounded-2xl">
-                    <Shield size={24} />
-                  </div>
+                  <div className="p-3 bg-rose-600/10 text-rose-500 rounded-2xl"><Shield size={24} /></div>
                   <div>
-                    <h2 className="text-xl font-black text-white">الأمان والنظام</h2>
-                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-1">إدارة كلمة السر وجداول البيانات</p>
+                    <h2 className="text-xl font-black text-white">الأمان</h2>
+                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-1">إدارة كلمة سر لوحة التحكم</p>
                   </div>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <label className="block text-[10px] font-black text-gray-500 mr-1 uppercase tracking-widest">Google Sheet URL (API)</label>
-                    <div className="relative">
-                      <input 
-                        type="url" 
-                        value={localSettings.googleSheetUrl} 
-                        onChange={(e) => setLocalSettings({...localSettings, googleSheetUrl: e.target.value})} 
-                        className="w-full p-4 bg-black border border-white/10 rounded-xl text-white outline-none focus:border-rose-500 text-sm" 
-                        placeholder="رابط Google Script..."
-                      />
-                      <Database className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700" size={16} />
-                    </div>
+                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest">Google Sheet URL (POST)</label>
+                    <input type="url" value={localSettings.googleSheetUrl} onChange={(e) => setLocalSettings({...localSettings, googleSheetUrl: e.target.value})} className="w-full p-4 bg-black border border-white/10 rounded-xl text-white text-sm outline-none focus:border-emerald-500" placeholder="رابط سكربت جوجل..." />
                   </div>
                   <div className="space-y-3">
-                    <label className="block text-[10px] font-black text-gray-500 mr-1 uppercase tracking-widest">كلمة سر لوحة التحكم</label>
-                    <div className="relative">
-                      <input 
-                        type="text" 
-                        value={localSettings.adminPassword} 
-                        onChange={(e) => setLocalSettings({...localSettings, adminPassword: e.target.value})} 
-                        className="w-full p-4 bg-black border border-white/10 rounded-xl text-white outline-none focus:border-rose-500 font-mono text-sm" 
-                        placeholder="أدخل كلمة السر الجديدة"
-                      />
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700" size={16} />
-                    </div>
+                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest">كلمة السر الجديدة</label>
+                    <input type="text" value={localSettings.adminPassword} onChange={(e) => setLocalSettings({...localSettings, adminPassword: e.target.value})} className="w-full p-4 bg-black border border-white/10 rounded-xl text-white font-mono text-sm outline-none focus:border-rose-500" placeholder="كلمة السر..." />
                   </div>
                 </div>
               </div>
 
-              <div className="pt-4">
-                <button 
-                  type="submit" 
-                  className="w-full bg-emerald-500 text-black py-5 rounded-[24px] font-black text-xl shadow-xl shadow-emerald-500/10 active:scale-95 transition-all flex items-center justify-center gap-3"
-                >
-                  <CheckCircle2 size={24} /> حفظ جميع الإعدادات
-                </button>
-              </div>
-
+              <button type="submit" className="w-full bg-emerald-500 text-black py-5 rounded-[24px] font-black text-xl shadow-xl shadow-emerald-500/10 active:scale-95 transition-all flex items-center justify-center gap-3">
+                <CheckCircle2 size={24} /> حفظ الإعدادات
+              </button>
             </form>
+          </div>
+        )}
+
+        {/* ORDER MODAL - PREVIEW & EDIT */}
+        {editingOrder && (
+          <div className="fixed inset-0 bg-black/95 backdrop-blur-md z-[150] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between p-4 md:p-6 border-b border-white/10 bg-[#0a0a0a]">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg"><ClipboardList size={20} /></div>
+                <h2 className="text-lg md:text-xl font-black text-white">تفاصيل الطلب <span className="opacity-40 text-xs font-mono ml-2">#{editingOrder.id.split('-')[1]}</span></h2>
+              </div>
+              <button onClick={() => setEditingOrder(null)} className="p-2 bg-white/10 rounded-full text-white hover:bg-rose-500 transition-colors"><X size={20} /></button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-black">
+                <form onSubmit={handleOrderSave} className="max-w-4xl mx-auto space-y-8">
+                  
+                  {/* Customer Information (Editable) */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 space-y-6">
+                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-2"><User size={14}/> معلومات الزبون</p>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-[9px] text-gray-600 mb-1 font-bold">الاسم الكامل</label>
+                                <input 
+                                    type="text" 
+                                    value={editingOrder.customer.fullName} 
+                                    onChange={(e) => setEditingOrder({...editingOrder, customer: {...editingOrder.customer, fullName: e.target.value}})}
+                                    className="w-full p-3 bg-black border border-white/10 rounded-xl text-white font-bold outline-none focus:border-emerald-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[9px] text-gray-600 mb-1 font-bold">رقم الهاتف</label>
+                                <div className="relative">
+                                    <input 
+                                        type="tel" 
+                                        value={editingOrder.customer.phone} 
+                                        onChange={(e) => setEditingOrder({...editingOrder, customer: {...editingOrder.customer, phone: e.target.value}})}
+                                        className="w-full p-3 bg-black border border-white/10 rounded-xl text-emerald-500 font-mono text-lg outline-none focus:border-emerald-500"
+                                    />
+                                    <a href={`tel:${editingOrder.customer.phone}`} className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 bg-emerald-500/10 text-emerald-500 rounded-lg hover:bg-emerald-500 hover:text-black transition-all"><Phone size={14}/></a>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-[9px] text-gray-600 mb-1 font-bold">المدينة</label>
+                                <select 
+                                    value={editingOrder.customer.city} 
+                                    onChange={(e) => setEditingOrder({...editingOrder, customer: {...editingOrder.customer, city: e.target.value}})}
+                                    className="w-full p-3 bg-black border border-white/10 rounded-xl text-white font-bold outline-none focus:border-emerald-500"
+                                >
+                                    {MOROCCAN_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 space-y-6 flex flex-col">
+                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-2"><Truck size={14}/> حالة الطلب</p>
+                        
+                        <div className="grid grid-cols-2 gap-3 mb-6">
+                            {(['Pending', 'Confirmed', 'Shipped', 'Cancelled'] as OrderStatus[]).map(s => (
+                              <button 
+                                key={s} 
+                                type="button"
+                                onClick={() => setEditingOrder({...editingOrder, status: s})} 
+                                className={`py-3 rounded-xl text-[10px] font-black border transition-all ${editingOrder.status === s ? getStatusColor(s) + ' border-current' : 'text-gray-800 border-white/5'}`}
+                              >
+                                {getStatusLabel(s)}
+                              </button>
+                            ))}
+                        </div>
+
+                        <div className="mt-auto">
+                           <label className="block text-[9px] text-gray-600 mb-2 font-bold flex items-center gap-2"><FileText size={12}/> ملاحظات الإدارة (خاصة)</label>
+                           <textarea 
+                              rows={3} 
+                              value={editingOrder.notes || ''} 
+                              onChange={(e) => setEditingOrder({...editingOrder, notes: e.target.value})}
+                              className="w-full p-3 bg-black border border-white/10 rounded-xl text-white font-medium text-sm resize-none outline-none focus:border-emerald-500"
+                              placeholder="أضف ملاحظة هنا..."
+                           />
+                        </div>
+                    </div>
+                  </div>
+
+                  {/* Order Items Preview */}
+                  <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5">
+                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-6 flex items-center gap-2"><ShoppingCart size={14}/> السلة والمجموع</p>
+                    <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 scrollbar-hide">
+                      {editingOrder.items.map((it, i) => (
+                        <div key={i} className="flex items-center justify-between bg-black p-4 rounded-xl border border-white/5 group">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-lg bg-white/5 overflow-hidden flex-shrink-0">
+                                <img src={it.imageUrl} className="w-full h-full object-cover" />
+                            </div>
+                            <div>
+                                <h5 className="text-white font-black text-sm">{it.title}</h5>
+                                <p className="text-gray-600 text-[10px] font-bold">الكمية: {it.quantity} × {it.price} د.م</p>
+                            </div>
+                          </div>
+                          <span className="text-emerald-500 font-black text-base">{it.price * it.quantity} د.م</span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="mt-8 pt-6 border-t border-white/10 flex justify-between items-end">
+                      <div className="flex flex-col">
+                        <span className="text-gray-600 font-black text-[9px] uppercase tracking-widest mb-1">المجموع الكلي</span>
+                        <span className="text-3xl font-black text-emerald-500">{editingOrder.total} د.م</span>
+                      </div>
+                      <div className="text-[10px] font-black text-white/40 uppercase tracking-tighter">
+                        الدفع عند الاستلام (COD)
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-6 pb-20 flex flex-col sm:flex-row gap-4">
+                    <button type="submit" className="flex-1 bg-emerald-500 text-black py-5 rounded-2xl font-black text-lg shadow-xl shadow-emerald-500/10 active:scale-95 transition-all flex items-center justify-center gap-3">
+                      <Save size={20} /> حفظ جميع التغييرات
+                    </button>
+                    <button type="button" onClick={() => setEditingOrder(null)} className="sm:px-10 py-5 bg-white/5 text-white rounded-2xl font-black text-lg border border-white/10">إلغاء</button>
+                    <button type="button" onClick={() => { if(confirm('حذف الطلب نهائياً؟')) { deleteOrder(editingOrder.id); setEditingOrder(null); } }} className="sm:px-6 py-5 bg-rose-500/10 text-rose-500 rounded-2xl font-black text-lg border border-rose-500/20 hover:bg-rose-500 hover:text-white transition-all">
+                        <Trash2 size={24} />
+                    </button>
+                  </div>
+                </form>
+            </div>
           </div>
         )}
 
@@ -462,8 +531,8 @@ const Admin: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-4 md:p-10 bg-black">
               <form onSubmit={handleProductSubmit} className="max-w-4xl mx-auto space-y-8">
                 <div className="bg-[#0a0a0a] p-5 rounded-2xl border border-emerald-500/30">
-                  <label className="block text-[11px] font-black text-emerald-500 mb-3 uppercase tracking-[0.2em]">اسم المنتج الاحترافي *</label>
-                  <input required autoFocus value={currentProduct.title || ''} onChange={(e) => setCurrentProduct({...currentProduct, title: e.target.value})} className="w-full p-4 bg-black border border-white/10 rounded-xl text-white outline-none focus:border-emerald-500 font-black text-lg" placeholder="اكتب اسم المنتج هنا..." />
+                  <label className="block text-[11px] font-black text-emerald-500 mb-3 uppercase tracking-[0.2em]">اسم المنتج *</label>
+                  <input required autoFocus value={currentProduct.title || ''} onChange={(e) => setCurrentProduct({...currentProduct, title: e.target.value})} className="w-full p-4 bg-black border border-white/10 rounded-xl text-white outline-none focus:border-emerald-500 font-black text-lg" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -485,7 +554,7 @@ const Admin: React.FC = () => {
                 </div>
 
                 <div className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5">
-                  <label className="block text-[10px] font-black text-gray-500 mb-3 uppercase tracking-widest">وصف المنتج</label>
+                  <label className="block text-[10px] font-black text-gray-500 mb-3 uppercase tracking-widest">الوصف</label>
                   <textarea rows={4} value={currentProduct.description || ''} onChange={(e) => setCurrentProduct({...currentProduct, description: e.target.value})} className="w-full p-4 bg-black border border-white/10 rounded-xl text-white font-medium resize-none"></textarea>
                 </div>
 
@@ -504,45 +573,6 @@ const Admin: React.FC = () => {
                   <button type="button" onClick={() => setIsEditingProduct(false)} className="w-full py-5 bg-white/5 text-white rounded-2xl font-black text-lg">إلغاء</button>
                 </div>
               </form>
-            </div>
-          </div>
-        )}
-
-        {/* Order Modal */}
-        {editingOrder && (
-          <div className="fixed inset-0 bg-black z-[150] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-white/10 bg-[#0a0a0a]">
-              <h2 className="text-lg font-black text-white">تفاصيل الطلب</h2>
-              <button onClick={() => setEditingOrder(null)} className="p-2 bg-white/10 rounded-full text-white"><X size={20} /></button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-6">
-                <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5">
-                  <h4 className="text-white text-xl font-black mb-1">{editingOrder.customer.fullName}</h4>
-                  <p className="text-emerald-500 font-mono text-lg mb-3" dir="ltr">{editingOrder.customer.phone}</p>
-                  <div className="text-gray-400 bg-white/5 p-3 rounded-xl w-fit text-sm"><MapPin size={16} className="inline mr-2" /> {editingOrder.customer.city}</div>
-                </div>
-
-                <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5">
-                  <div className="space-y-3">
-                    {editingOrder.items.map((it, i) => (
-                      <div key={i} className="flex justify-between items-center bg-black p-4 rounded-xl">
-                        <span className="text-white font-black text-sm">{it.title} (x{it.quantity})</span>
-                        <span className="text-emerald-500 font-black">{it.price * it.quantity} د.م</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5">
-                    <p className="text-[10px] font-black text-gray-500 uppercase mb-4 tracking-widest">تحديث الحالة</p>
-                    <div className="grid grid-cols-2 gap-2">
-                        {(['Pending', 'Confirmed', 'Shipped', 'Cancelled'] as OrderStatus[]).map(s => (
-                          <button key={s} onClick={() => { updateOrderDetails({...editingOrder, status: s}); setEditingOrder({...editingOrder, status: s}); }} className={`py-3 rounded-xl text-[10px] font-black border ${editingOrder.status === s ? getStatusColor(s) + ' border-current' : 'text-gray-800 border-white/5'}`}>
-                            {getStatusLabel(s)}
-                          </button>
-                        ))}
-                    </div>
-                </div>
             </div>
           </div>
         )}
