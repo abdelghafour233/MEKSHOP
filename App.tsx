@@ -25,7 +25,7 @@ const ScrollToTop = () => {
 };
 
 const AnnouncementBar = () => (
-  <div className="bg-amber-500 text-slate-950 py-2 px-4 text-center text-xs md:text-sm font-black flex items-center justify-center gap-2 shadow-inner">
+  <div className="bg-green-600 text-black py-2 px-4 text-center text-xs md:text-sm font-black flex items-center justify-center gap-2 shadow-inner">
     <Truck className="w-4 h-4" />
     <span>توصيل منزلي مجاني وسريع لجميع المدن المغربية 🚚</span>
   </div>
@@ -40,7 +40,7 @@ function App() {
             <Router>
               <ScrollToTop />
               <TrackingScripts />
-              <div className="flex flex-col min-h-screen font-sans bg-slate-950 text-slate-100">
+              <div className="flex flex-col min-h-screen font-sans bg-black text-slate-100">
                 <AnnouncementBar />
                 <Navbar />
                 <main className="flex-grow">
