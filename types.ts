@@ -1,10 +1,10 @@
 
 export enum Category {
-  ELECTRONICS = 'electronics',
-  CAR_ACCESSORIES = 'car_accessories',
-  WATCHES = 'watches',
-  GLASSES = 'glasses',
-  OTHER = 'other',
+  ELECTRONICS = 'إلكترونيات',
+  CAR_ACCESSORIES = 'إكسسوارات السيارات',
+  WATCHES = 'ساعات',
+  GLASSES = 'نظارات',
+  OTHER = 'أخرى',
 }
 
 export type OrderStatus = 'Pending' | 'Confirmed' | 'Shipped' | 'Cancelled';
