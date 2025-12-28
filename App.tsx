@@ -32,7 +32,10 @@ const AnnouncementBar = () => (
 );
 
 function App() {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const saved = localStorage.getItem('berrima_theme');
+    return (saved as 'dark' | 'light') || 'dark';
+  });
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -40,13 +43,18 @@ function App() {
     localStorage.setItem('berrima_theme', newTheme);
   };
 
+  // Apply theme class to document element for Tailwind dark: variants to work globally
   useEffect(() => {
-    const savedTheme = localStorage.getItem('berrima_theme') as 'dark' | 'light';
-    if (savedTheme) setTheme(savedTheme);
-  }, []);
+    const root = window.document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [theme]);
 
   return (
-    <div className={theme}>
+    <div className="min-h-screen transition-colors duration-500">
       <SettingsProvider>
         <ProductProvider>
           <OrderProvider>
