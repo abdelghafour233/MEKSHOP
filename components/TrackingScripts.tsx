@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useSettings, Settings } from '../context/SettingsContext';
@@ -53,6 +54,7 @@ const TrackingScripts: React.FC = () => {
   const location = useLocation();
   const { settings } = useSettings();
 
+  // Facebook and General Tracking
   useEffect(() => {
     if (settings.facebookPixelId && settings.fbTrackPageView) {
         // @ts-ignore
@@ -66,6 +68,21 @@ const TrackingScripts: React.FC = () => {
         }
     }
   }, [location, settings]);
+
+  // Google AdSense Injection
+  useEffect(() => {
+    if (settings.googleAdsenseId) {
+      const scriptId = 'google-adsense-script';
+      if (!document.getElementById(scriptId)) {
+        const script = document.createElement('script');
+        script.id = scriptId;
+        script.async = true;
+        script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${settings.googleAdsenseId}`;
+        script.crossOrigin = "anonymous";
+        document.head.appendChild(script);
+      }
+    }
+  }, [settings.googleAdsenseId]);
 
   return null;
 };

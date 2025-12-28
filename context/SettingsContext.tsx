@@ -6,9 +6,10 @@ export interface Settings {
   facebookPixelId: string;
   fbTestEventCode: string; 
   googleTagId: string;
+  googleAdsenseId: string; // الحقل الجديد لجوجل أدسينس
   tiktokPixelId: string;
   googleSheetUrl: string;
-  adminPassword: string; // الحقل الجديد لكلمة سر لوحة التحكم
+  adminPassword: string;
   // Facebook Event Toggles
   fbTrackPageView: boolean;
   fbTrackAddToCart: boolean;
@@ -19,19 +20,15 @@ export interface Settings {
   footerScripts: string;
 }
 
-interface SettingsContextType {
-  settings: Settings;
-  updateSettings: (newSettings: Settings) => void;
-}
-
 const defaultSettings: Settings = {
   customDomain: '',
   facebookPixelId: '',
   fbTestEventCode: '',
   googleTagId: '',
+  googleAdsenseId: '', // القيمة الافتراضية
   tiktokPixelId: '',
   googleSheetUrl: '',
-  adminPassword: 'admin123', // كلمة السر الافتراضية
+  adminPassword: 'admin123',
   fbTrackPageView: true,
   fbTrackAddToCart: true,
   fbTrackInitiateCheckout: true,
@@ -39,6 +36,11 @@ const defaultSettings: Settings = {
   headerScripts: '',
   footerScripts: '',
 };
+
+interface SettingsContextType {
+  settings: Settings;
+  updateSettings: (newSettings: Settings) => void;
+}
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
