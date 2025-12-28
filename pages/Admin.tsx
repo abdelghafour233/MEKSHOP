@@ -33,7 +33,6 @@ const Admin: React.FC = () => {
 
   // Sync States
   const [showQRModal, setShowQRModal] = useState(false);
-  const [qrSize, setQrSize] = useState(window.innerWidth < 768 ? 300 : 500);
   const [localSettings, setLocalSettings] = useState(settings);
 
   useEffect(() => {
@@ -54,6 +53,7 @@ const Admin: React.FC = () => {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setPasswordInput('');
+    setShowPassword(false);
   };
 
   const handleSaveSettings = (e: React.FormEvent) => {
@@ -62,9 +62,7 @@ const Admin: React.FC = () => {
     alert("✅ تم حفظ التغييرات بنجاح!");
   };
 
-  // تحسين تشفير البيانات لتقليل كثافة الـ QR
   const syncDataString = useMemo(() => {
-    // نرسل فقط البيانات الضرورية لتقليل "الضوضاء" في الـ QR
     const minimalProducts = products.map(p => ({
         id: p.id,
         t: p.title,
@@ -76,13 +74,11 @@ const Admin: React.FC = () => {
     return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
   }, [products, localSettings]);
 
-  // استخدام حجم أكبر ودقة أعلى (500x500)
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(syncDataString)}&bgcolor=ffffff&color=000000&margin=20`;
 
   const importFromText = (code: string) => {
     try {
       const decodedData = JSON.parse(decodeURIComponent(escape(atob(code))));
-      // التعامل مع الاختصارات الجديدة أو القديمة
       const productsData = decodedData.p || decodedData.products;
       const settingsData = decodedData.s || decodedData.settings;
       
@@ -118,8 +114,23 @@ const Admin: React.FC = () => {
           </div>
           <h2 className="text-4xl font-black text-white mb-3 tracking-tighter">نظام الإدارة</h2>
           <form onSubmit={handleLogin} className="space-y-6">
-            <input type={showPassword ? "text" : "password"} value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} placeholder="كلمة المرور" className="w-full p-6 bg-black border border-white/10 rounded-2xl text-white text-center outline-none focus:border-emerald-500" />
-            <button type="submit" className="w-full bg-emerald-500 text-black py-6 rounded-2xl font-black text-xl shadow-2xl">دخول</button>
+            <div className="relative group">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                value={passwordInput} 
+                onChange={(e) => setPasswordInput(e.target.value)} 
+                placeholder="كلمة المرور" 
+                className="w-full p-6 bg-black border border-white/10 rounded-2xl text-white text-center outline-none focus:border-emerald-500 font-mono placeholder:text-gray-800 shadow-inner" 
+              />
+              <button 
+                type="button" 
+                onClick={() => setShowPassword(!showPassword)} 
+                className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-700 hover:text-emerald-500 p-2 transition-colors"
+              >
+                {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+              </button>
+            </div>
+            <button type="submit" className="w-full bg-emerald-500 text-black py-6 rounded-2xl font-black text-xl shadow-2xl active:scale-95 transition-transform">دخول</button>
           </form>
         </div>
       </div>
@@ -158,8 +169,9 @@ const Admin: React.FC = () => {
               <button 
                 key={tab} 
                 onClick={() => setActiveTab(tab)} 
-                className={`flex-1 min-w-[120px] py-4 rounded-2xl font-black transition-all text-sm uppercase ${activeTab === tab ? 'bg-emerald-500 text-black' : 'text-gray-500 hover:text-white'}`}
+                className={`flex-1 min-w-[120px] py-4 rounded-2xl font-black transition-all text-sm uppercase ${activeTab === tab ? 'bg-emerald-500 text-black shadow-xl shadow-emerald-500/20 scale-[1.02]' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
               >
+                {tab === 'orders' ? <ShoppingCart size={18}/> : tab === 'products' ? <Package size={18}/> : <SettingsIcon size={18}/>}
                 {tab === 'orders' ? 'الطلبات' : tab === 'products' ? 'المنتجات' : 'الإعدادات'}
               </button>
             ))}
@@ -216,8 +228,6 @@ const Admin: React.FC = () => {
           </div>
         )}
 
-        {/* باقي التبويبات تظل كما هي في الكود الأصلي... */}
-
         {/* QR MODAL IMPROVED - LARGE & CLEAR */}
         {showQRModal && (
           <div className="fixed inset-0 bg-black/98 backdrop-blur-3xl z-[300] flex items-center justify-center p-4 animate-in fade-in zoom-in">
@@ -230,7 +240,6 @@ const Admin: React.FC = () => {
                     <p className="text-gray-500 text-xs leading-relaxed max-w-sm mx-auto">تأكد من رفع سطوع شاشة الحاسوب لتسهيل عملية المسح. هذا الرمز يحتوي على جميع منتجاتك وإعداداتك.</p>
                 </div>
                 
-                {/* QR Container - High Visibility */}
                 <div className="bg-white p-6 md:p-10 rounded-[48px] shadow-[0_0_100px_rgba(16,185,129,0.2)] inline-block mb-10 relative group">
                     <div className="absolute inset-0 bg-emerald-500/5 rounded-[48px] blur-2xl group-hover:bg-emerald-500/10 transition-all"></div>
                     <img 
@@ -257,7 +266,5 @@ const Admin: React.FC = () => {
     </div>
   );
 };
-
-// ... باقي وظائف getStatusColor و getStatusLabel ...
 
 export default Admin;
