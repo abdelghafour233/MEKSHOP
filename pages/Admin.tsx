@@ -1,15 +1,15 @@
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useProducts } from '../context/ProductContext';
 import { useSettings } from '../context/SettingsContext';
 import { useOrders } from '../context/OrderContext';
-import { Product, Category, Order, OrderStatus } from '../types';
+import { Product, Category, Order, OrderStatus, CartItem } from '../types';
 import { 
   Plus, Edit, Trash2, Save, X, Lock, Settings as SettingsIcon, 
   Package, Facebook, Image as ImageIcon, 
   LogOut, Eye, EyeOff, ShoppingBag, LayoutDashboard,
   AlertCircle, Activity, Code, Search, Upload, FileImage,
-  Globe, Database, Share2, ClipboardList, Clock, CheckCircle2, Truck, Ban
+  Globe, Database, Share2, ClipboardList, Clock, CheckCircle2, Truck, Ban,
+  MessageSquare, Hash, DollarSign, Calendar, MoreVertical
 } from 'lucide-react';
 
 const Admin: React.FC = () => {
@@ -65,12 +65,14 @@ const Admin: React.FC = () => {
   const filteredOrders = useMemo(() => {
     return orders.filter(o => 
         o.customer.fullName.toLowerCase().includes(orderSearch.toLowerCase()) || 
-        o.customer.phone.includes(orderSearch)
+        o.customer.phone.includes(orderSearch) ||
+        o.id.toLowerCase().includes(orderSearch.toLowerCase())
     );
   }, [orders, orderSearch]);
 
   const stats = useMemo(() => {
-    const totalSales = orders.filter(o => o.status === 'Confirmed' || o.status === 'Shipped').reduce((acc, curr) => acc + curr.total, 0);
+    const confirmed = orders.filter(o => o.status === 'Confirmed' || o.status === 'Shipped');
+    const totalSales = confirmed.reduce((acc, curr) => acc + curr.total, 0);
     const pendingOrders = orders.filter(o => o.status === 'Pending').length;
     return { totalSales, pendingOrders, totalOrders: orders.length };
   }, [orders]);
@@ -86,21 +88,46 @@ const Admin: React.FC = () => {
     setSettingsForm(prev => ({ ...prev, [name]: val }));
   };
 
-  // Fix: Added missing handleSettingsSubmit to correctly process and persist admin setting changes.
   const handleSettingsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateSettings(settingsForm);
-    alert('تم حفظ الإعدادات بنجاح');
+    alert('✅ تم حفظ الإعدادات بنجاح');
   };
 
   const handleOrderSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingOrder) {
-        updateOrderDetails(editingOrder);
+        // إعادة حساب المجموع قبل الحفظ لضمان الدقة إذا تم تعديل الكميات
+        const newTotal = editingOrder.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const finalOrder = { ...editingOrder, total: newTotal };
+        updateOrderDetails(finalOrder);
         setEditingOrder(null);
-        alert('تم تحديث بيانات الطلب');
+        alert('✅ تم تحديث الطلبية بنجاح');
     }
   };
+
+  const updateItemQuantity = (productId: string, newQty: number) => {
+    if (!editingOrder) return;
+    if (newQty < 1) return;
+    
+    const updatedItems = editingOrder.items.map(item => 
+        item.id === productId ? { ...item, quantity: newQty } : item
+    );
+    
+    const newTotal = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    setEditingOrder({ ...editingOrder, items: updatedItems, total: newTotal });
+  };
+
+  const removeItemFromOrder = (productId: string) => {
+    if (!editingOrder) return;
+    if (editingOrder.items.length <= 1) {
+        alert('لا يمكن حذف جميع المنتجات. يمكنك إلغاء الطلبية بدلاً من ذلك.');
+        return;
+    }
+    const updatedItems = editingOrder.items.filter(item => item.id !== productId);
+    const newTotal = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    setEditingOrder({ ...editingOrder, items: updatedItems, total: newTotal });
+  }
 
   const processFile = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -152,7 +179,7 @@ const Admin: React.FC = () => {
     else addProduct({ ...productData, id: Date.now().toString() });
     
     resetProductForm();
-    alert('تم حفظ المنتج');
+    alert('✅ تم حفظ المنتج بنجاح');
   };
 
   const resetProductForm = () => {
@@ -183,10 +210,13 @@ const Admin: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
-        <div className="bg-slate-900 p-8 rounded-[40px] border border-slate-800 w-full max-w-md shadow-2xl">
+        <div className="bg-slate-900 p-10 rounded-[40px] border border-slate-800 w-full max-w-md shadow-2xl">
           <div className="text-center mb-10">
-            <Lock className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+            <div className="w-20 h-20 bg-amber-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <Lock className="w-10 h-10 text-amber-500" />
+            </div>
             <h2 className="text-2xl font-black text-slate-100">بريمة ستور - الإدارة</h2>
+            <p className="text-slate-500 text-sm mt-2 font-bold">يرجى تسجيل الدخول للمتابعة</p>
           </div>
           <form onSubmit={handleLogin} className="space-y-6">
             <input 
@@ -194,9 +224,9 @@ const Admin: React.FC = () => {
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
               placeholder="كلمة السر"
-              className="w-full p-5 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 text-center outline-none focus:border-amber-500"
+              className="w-full p-5 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 text-center outline-none focus:border-amber-500 transition-all font-mono"
             />
-            <button type="submit" className="w-full bg-amber-500 text-slate-950 p-5 rounded-2xl font-black text-lg">دخول</button>
+            <button type="submit" className="w-full bg-amber-500 text-slate-950 p-5 rounded-2xl font-black text-lg shadow-xl shadow-amber-500/10 active:scale-95 transition-all">دخول للنظام</button>
           </form>
         </div>
       </div>
@@ -209,94 +239,117 @@ const Admin: React.FC = () => {
         
         {/* Stats Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex items-center justify-between">
+            <div className="bg-slate-900 p-8 rounded-[32px] border border-slate-800 flex items-center justify-between shadow-lg">
                 <div>
-                    <p className="text-slate-500 text-sm font-bold">إجمالي المبيعات</p>
-                    <p className="text-2xl font-black text-emerald-500 mt-1">{stats.totalSales} د.م</p>
+                    <p className="text-slate-500 text-sm font-black uppercase tracking-wider">إجمالي المبيعات</p>
+                    <p className="text-3xl font-black text-emerald-500 mt-2">{stats.totalSales} د.م</p>
                 </div>
-                <div className="p-4 bg-emerald-500/10 rounded-2xl text-emerald-500"><Activity /></div>
+                <div className="p-5 bg-emerald-500/10 rounded-2xl text-emerald-500 shadow-inner"><DollarSign size={28} /></div>
             </div>
-            <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex items-center justify-between">
+            <div className="bg-slate-900 p-8 rounded-[32px] border border-slate-800 flex items-center justify-between shadow-lg">
                 <div>
-                    <p className="text-slate-500 text-sm font-bold">طلبات قيد الانتظار</p>
-                    <p className="text-2xl font-black text-amber-500 mt-1">{stats.pendingOrders}</p>
+                    <p className="text-slate-500 text-sm font-black uppercase tracking-wider">طلبيات جديدة</p>
+                    <p className="text-3xl font-black text-amber-500 mt-2">{stats.pendingOrders}</p>
                 </div>
-                <div className="p-4 bg-amber-500/10 rounded-2xl text-amber-500"><Clock /></div>
+                <div className="p-5 bg-amber-500/10 rounded-2xl text-amber-500 shadow-inner"><Clock size={28} /></div>
             </div>
-            <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex items-center justify-between">
+            <div className="bg-slate-900 p-8 rounded-[32px] border border-slate-800 flex items-center justify-between shadow-lg">
                 <div>
-                    <p className="text-slate-500 text-sm font-bold">إجمالي الطلبيات</p>
-                    <p className="text-2xl font-black text-blue-500 mt-1">{stats.totalOrders}</p>
+                    <p className="text-slate-500 text-sm font-black uppercase tracking-wider">إجمالي الطلبات</p>
+                    <p className="text-3xl font-black text-blue-500 mt-2">{stats.totalOrders}</p>
                 </div>
-                <div className="p-4 bg-blue-500/10 rounded-2xl text-blue-500"><ClipboardList /></div>
+                <div className="p-5 bg-blue-500/10 rounded-2xl text-blue-500 shadow-inner"><ClipboardList size={28} /></div>
             </div>
         </div>
 
         {/* Header Navigation */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-10 bg-slate-900 p-4 rounded-3xl border border-slate-800 gap-4">
-            <div className="flex items-center bg-slate-950 p-1 rounded-2xl border border-slate-800 w-full md:w-auto">
-                <button onClick={() => setActiveTab('orders')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'orders' ? 'bg-amber-500 text-slate-950 shadow-lg' : 'text-slate-500'}`}>
+        <div className="flex flex-col md:flex-row justify-between items-center mb-10 bg-slate-900 p-4 rounded-3xl border border-slate-800 gap-4 shadow-xl">
+            <div className="flex items-center bg-slate-950 p-1.5 rounded-2xl border border-slate-800 w-full md:w-auto">
+                <button onClick={() => setActiveTab('orders')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-black transition-all ${activeTab === 'orders' ? 'bg-amber-500 text-slate-950 shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}>
                     <ClipboardList size={18} /> الطلبيات
                 </button>
-                <button onClick={() => setActiveTab('products')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'products' ? 'bg-amber-500 text-slate-950 shadow-lg' : 'text-slate-500'}`}>
+                <button onClick={() => setActiveTab('products')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-black transition-all ${activeTab === 'products' ? 'bg-amber-500 text-slate-950 shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}>
                     <Package size={18} /> المنتجات
                 </button>
-                <button onClick={() => setActiveTab('settings')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'settings' ? 'bg-amber-500 text-slate-950 shadow-lg' : 'text-slate-500'}`}>
+                <button onClick={() => setActiveTab('settings')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-black transition-all ${activeTab === 'settings' ? 'bg-amber-500 text-slate-950 shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}>
                     <SettingsIcon size={18} /> الإعدادات
                 </button>
             </div>
-            <button onClick={handleLogout} className="text-red-500 font-bold px-4 py-2 hover:bg-red-500/10 rounded-xl transition-all"><LogOut size={20} /></button>
+            <button onClick={handleLogout} className="text-red-500 font-black px-6 py-3 hover:bg-red-500/10 rounded-2xl transition-all flex items-center gap-2">
+                <LogOut size={20} /> خروج
+            </button>
         </div>
 
         {activeTab === 'orders' && (
-            <div className="space-y-6 animate-in fade-in duration-500">
-                <div className="flex justify-between items-center mb-6">
-                    <div className="relative w-full max-w-md">
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="relative w-full md:w-[400px]">
                         <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600" size={20} />
-                        <input type="text" placeholder="ابحث باسم الزبون أو رقم الهاتف..." value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} className="w-full pr-12 pl-4 py-4 bg-slate-900 border border-slate-800 rounded-2xl text-slate-100 outline-none focus:border-amber-500" />
+                        <input 
+                            type="text" 
+                            placeholder="ابحث برقم الطلب، اسم الزبون أو الهاتف..." 
+                            value={orderSearch} 
+                            onChange={(e) => setOrderSearch(e.target.value)} 
+                            className="w-full pr-12 pl-4 py-4 bg-slate-900 border border-slate-800 rounded-2xl text-slate-100 outline-none focus:border-amber-500 shadow-inner" 
+                        />
+                    </div>
+                    <div className="text-xs font-black text-slate-500 bg-slate-900 px-6 py-4 rounded-2xl border border-slate-800">
+                        معروض: {filteredOrders.length} طلبية
                     </div>
                 </div>
 
-                <div className="bg-slate-900 rounded-[32px] border border-slate-800 overflow-hidden shadow-2xl">
+                <div className="bg-slate-900 rounded-[40px] border border-slate-800 overflow-hidden shadow-2xl">
                     <div className="overflow-x-auto">
                         <table className="w-full text-right">
-                            <thead className="bg-slate-950 text-slate-500 text-xs font-black uppercase">
+                            <thead className="bg-slate-950 text-slate-500 text-[10px] font-black uppercase tracking-widest">
                                 <tr>
-                                    <th className="p-5">التاريخ / الطلب</th>
-                                    <th className="p-5">الزبون</th>
-                                    <th className="p-5">المنتجات</th>
-                                    <th className="p-5">الإجمالي</th>
-                                    <th className="p-5">الحالة</th>
-                                    <th className="p-5 text-center">الإجراءات</th>
+                                    <th className="p-6">الطلب</th>
+                                    <th className="p-6">الزبون</th>
+                                    <th className="p-6">المنتجات</th>
+                                    <th className="p-6">الإجمالي</th>
+                                    <th className="p-6">الحالة</th>
+                                    <th className="p-6 text-center">الإجراءات</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-800">
+                            <tbody className="divide-y divide-slate-800/50">
                                 {filteredOrders.map(order => (
-                                    <tr key={order.id} className="hover:bg-slate-800/40 transition-colors">
-                                        <td className="p-5">
-                                            <div className="text-slate-200 font-bold text-xs">{order.id}</div>
-                                            <div className="text-slate-500 text-[10px] mt-1">{new Date(order.date).toLocaleString('ar-MA')}</div>
-                                        </td>
-                                        <td className="p-5">
-                                            <div className="font-bold text-slate-200">{order.customer.fullName}</div>
-                                            <div className="text-slate-500 text-xs mt-1" dir="ltr">{order.customer.phone}</div>
-                                            <div className="text-slate-600 text-[10px]">{order.customer.city}</div>
-                                        </td>
-                                        <td className="p-5">
-                                            <div className="max-w-[200px] truncate text-slate-400 text-xs font-medium">
-                                                {order.items.map(i => `${i.title} (x${i.quantity})`).join('، ')}
+                                    <tr key={order.id} className="hover:bg-slate-800/30 transition-colors group">
+                                        <td className="p-6">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-slate-950 rounded-lg text-slate-600 group-hover:text-amber-500 transition-colors"><Hash size={14} /></div>
+                                                <div>
+                                                    <div className="text-slate-100 font-black text-sm">{order.id.split('-')[1]}</div>
+                                                    <div className="text-slate-600 text-[10px] flex items-center gap-1 mt-1"><Calendar size={10} /> {new Date(order.date).toLocaleDateString('ar-MA')}</div>
+                                                </div>
                                             </div>
                                         </td>
-                                        <td className="p-5 font-black text-amber-500">{order.total} د.م</td>
-                                        <td className="p-5">
-                                            <span className={`px-3 py-1.5 rounded-full text-[10px] font-black border ${getStatusColor(order.status)}`}>
+                                        <td className="p-6">
+                                            <div className="font-black text-slate-200 text-sm">{order.customer.fullName}</div>
+                                            <div className="text-amber-500 text-xs mt-1 font-mono" dir="ltr">{order.customer.phone}</div>
+                                            <div className="text-slate-600 text-[10px] font-bold mt-0.5">{order.customer.city}</div>
+                                        </td>
+                                        <td className="p-6">
+                                            <div className="flex -space-x-2 space-x-reverse overflow-hidden">
+                                                {order.items.slice(0, 3).map((it, i) => (
+                                                    <img key={i} src={it.imageUrl} title={it.title} className="inline-block h-8 w-8 rounded-lg ring-2 ring-slate-900 object-cover" />
+                                                ))}
+                                                {order.items.length > 3 && (
+                                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-[10px] font-black text-slate-400 ring-2 ring-slate-900">+{order.items.length - 3}</div>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="p-6">
+                                            <div className="font-black text-emerald-500 text-lg">{order.total} <span className="text-[10px]">د.م</span></div>
+                                        </td>
+                                        <td className="p-6">
+                                            <span className={`px-4 py-2 rounded-xl text-[10px] font-black border uppercase ${getStatusColor(order.status)} shadow-sm`}>
                                                 {getStatusLabel(order.status)}
                                             </span>
                                         </td>
-                                        <td className="p-5 text-center">
-                                            <div className="flex justify-center gap-2">
-                                                <button onClick={() => setEditingOrder(order)} className="p-2 bg-blue-500/10 text-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition-all"><Edit size={16} /></button>
-                                                <button onClick={() => setDeleteOrderConfirmId(order.id)} className="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all"><Trash2 size={16} /></button>
+                                        <td className="p-6 text-center">
+                                            <div className="flex justify-center gap-3">
+                                                <button onClick={() => setEditingOrder(order)} className="p-3 bg-blue-500/10 text-blue-500 rounded-xl hover:bg-blue-500 hover:text-white transition-all shadow-sm" title="تعديل"><Edit size={18} /></button>
+                                                <button onClick={() => setDeleteOrderConfirmId(order.id)} className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm" title="حذف"><Trash2 size={18} /></button>
                                             </div>
                                         </td>
                                     </tr>
@@ -304,95 +357,132 @@ const Admin: React.FC = () => {
                             </tbody>
                         </table>
                         {filteredOrders.length === 0 && (
-                            <div className="p-20 text-center text-slate-500 font-bold">لا توجد طلبيات حالياً</div>
+                            <div className="p-32 text-center">
+                                <ClipboardList size={64} className="text-slate-800 mx-auto mb-6" />
+                                <p className="text-slate-500 text-xl font-black">لا توجد طلبيات مطابقة للبحث</p>
+                            </div>
                         )}
                     </div>
                 </div>
             </div>
         )}
 
-        {/* Modal: Edit Order */}
+        {/* Modal: Edit Order Detailed */}
         {editingOrder && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
-                <div className="bg-slate-900 p-8 rounded-[40px] border border-slate-800 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
-                    <div className="flex justify-between items-center mb-8">
-                        <h2 className="text-2xl font-black text-slate-100">تعديل الطلب: {editingOrder.id}</h2>
-                        <button onClick={() => setEditingOrder(null)} className="p-2 text-slate-500 hover:text-white"><X /></button>
+            <div className="fixed inset-0 bg-black/90 backdrop-blur-xl flex items-center justify-center z-[100] p-4 overflow-y-auto">
+                <div className="bg-slate-900 p-10 rounded-[48px] border border-slate-800 w-full max-w-4xl shadow-2xl relative my-8">
+                    <button onClick={() => setEditingOrder(null)} className="absolute left-8 top-8 p-3 bg-slate-800 text-slate-400 hover:text-white rounded-2xl transition-all"><X size={20} /></button>
+                    
+                    <div className="mb-10">
+                        <h2 className="text-3xl font-black text-slate-100 flex items-center gap-4">
+                            <Edit className="text-amber-500" size={32} /> تعديل تفاصيل الطلبية
+                        </h2>
+                        <p className="text-slate-500 font-bold mt-2">رقم الطلب: {editingOrder.id}</p>
                     </div>
                     
-                    <form onSubmit={handleOrderSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-6">
-                            <div>
-                                <label className="block text-sm font-bold text-slate-400 mb-3">اسم الزبون</label>
-                                <input required value={editingOrder.customer.fullName} onChange={(e) => setEditingOrder({...editingOrder, customer: {...editingOrder.customer, fullName: e.target.value}})} className="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100" />
+                    <form onSubmit={handleOrderSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                        {/* Customer Info */}
+                        <div className="lg:col-span-4 space-y-6">
+                            <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><MessageSquare size={16} /> بيانات الزبون</h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-slate-500 mb-2 mr-1">الاسم الكامل</label>
+                                    <input required value={editingOrder.customer.fullName} onChange={(e) => setEditingOrder({...editingOrder, customer: {...editingOrder.customer, fullName: e.target.value}})} className="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 outline-none focus:border-blue-500" />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-slate-500 mb-2 mr-1">المدينة</label>
+                                    <input required value={editingOrder.customer.city} onChange={(e) => setEditingOrder({...editingOrder, customer: {...editingOrder.customer, city: e.target.value}})} className="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 outline-none focus:border-blue-500" />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-slate-500 mb-2 mr-1">رقم الهاتف</label>
+                                    <input required value={editingOrder.customer.phone} onChange={(e) => setEditingOrder({...editingOrder, customer: {...editingOrder.customer, phone: e.target.value}})} className="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 font-mono" dir="ltr" />
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-bold text-slate-400 mb-3">المدينة</label>
-                                <input required value={editingOrder.customer.city} onChange={(e) => setEditingOrder({...editingOrder, customer: {...editingOrder.customer, city: e.target.value}})} className="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-slate-400 mb-3">الهاتف</label>
-                                <input required value={editingOrder.customer.phone} onChange={(e) => setEditingOrder({...editingOrder, customer: {...editingOrder.customer, phone: e.target.value}})} className="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100" />
-                            </div>
-                        </div>
 
-                        <div className="space-y-6">
-                            <div>
-                                <label className="block text-sm font-bold text-slate-400 mb-3">تغيير حالة الطلب</label>
+                            <div className="pt-6">
+                                <label className="block text-[10px] font-black text-slate-500 mb-3 mr-1">حالة الطلبية</label>
                                 <div className="grid grid-cols-2 gap-3">
                                     {(['Pending', 'Confirmed', 'Shipped', 'Cancelled'] as OrderStatus[]).map(s => (
                                         <button 
                                             key={s} 
                                             type="button"
                                             onClick={() => setEditingOrder({...editingOrder, status: s})}
-                                            className={`px-4 py-3 rounded-xl text-xs font-black border transition-all ${editingOrder.status === s ? getStatusColor(s) + ' border-current scale-105' : 'bg-slate-950 text-slate-600 border-slate-800'}`}
+                                            className={`px-4 py-3.5 rounded-2xl text-[10px] font-black border transition-all ${editingOrder.status === s ? getStatusColor(s) + ' border-current scale-105 shadow-lg' : 'bg-slate-950 text-slate-600 border-slate-800 hover:border-slate-700'}`}
                                         >
                                             {getStatusLabel(s)}
                                         </button>
                                     ))}
                                 </div>
                             </div>
-                            <div className="bg-slate-950 p-6 rounded-3xl border border-slate-800">
-                                <h3 className="text-xs font-black text-slate-500 mb-4 uppercase">المنتجات المطلوبة</h3>
-                                <ul className="space-y-2">
-                                    {editingOrder.items.map((it, idx) => (
-                                        <li key={idx} className="flex justify-between text-xs font-bold text-slate-300">
-                                            <span>{it.title}</span>
-                                            <span className="text-amber-500">x{it.quantity}</span>
-                                        </li>
+                        </div>
+
+                        {/* Order Items & Notes */}
+                        <div className="lg:col-span-8 space-y-8">
+                            <div className="bg-slate-950 p-8 rounded-[32px] border border-slate-800 shadow-inner">
+                                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2"><Package size={18} /> المنتجات والكميات</h3>
+                                <div className="space-y-4">
+                                    {editingOrder.items.map((it) => (
+                                        <div key={it.id} className="flex items-center gap-4 bg-slate-900/50 p-4 rounded-2xl border border-slate-800 group">
+                                            <img src={it.imageUrl} className="h-12 w-12 rounded-xl object-cover border border-slate-800" />
+                                            <div className="flex-1">
+                                                <p className="text-xs font-black text-slate-200 line-clamp-1">{it.title}</p>
+                                                <p className="text-[10px] text-amber-500 font-bold mt-1">{it.price} د.م</p>
+                                            </div>
+                                            <div className="flex items-center bg-slate-950 rounded-xl border border-slate-800 px-2 py-1">
+                                                <button type="button" onClick={() => updateItemQuantity(it.id, it.quantity - 1)} className="p-1.5 text-slate-500 hover:text-white transition-colors"><X size={12} className="rotate-45" /></button>
+                                                <span className="w-8 text-center text-xs font-black text-slate-200">{it.quantity}</span>
+                                                <button type="button" onClick={() => updateItemQuantity(it.id, it.quantity + 1)} className="p-1.5 text-slate-500 hover:text-white transition-colors"><Plus size={12} /></button>
+                                            </div>
+                                            <button type="button" onClick={() => removeItemFromOrder(it.id)} className="p-2 text-slate-700 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"><Trash2 size={16} /></button>
+                                        </div>
                                     ))}
-                                </ul>
-                                <div className="mt-4 pt-4 border-t border-slate-800 flex justify-between font-black text-slate-100">
-                                    <span>المجموع:</span>
-                                    <span className="text-emerald-500">{editingOrder.total} د.م</span>
                                 </div>
+                                <div className="mt-8 pt-6 border-t border-slate-800 flex justify-between items-center px-2">
+                                    <span className="text-slate-500 font-black text-xs uppercase tracking-widest">المجموع الكلي:</span>
+                                    <span className="text-3xl font-black text-emerald-500">{editingOrder.total} <span className="text-sm">د.م</span></span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-black text-slate-400 mb-3 flex items-center gap-2"><MessageSquare size={16} /> ملاحظات الإدارة</label>
+                                <textarea 
+                                    value={editingOrder.notes || ''} 
+                                    onChange={(e) => setEditingOrder({...editingOrder, notes: e.target.value})} 
+                                    className="w-full p-5 bg-slate-950 border border-slate-800 rounded-[28px] text-slate-300 text-sm outline-none focus:border-amber-500 min-h-[120px] resize-none leading-relaxed"
+                                    placeholder="دون هنا تفاصيل التواصل مع الزبون، موعد التوصيل، أو أي ملاحظات أخرى..."
+                                />
                             </div>
                         </div>
 
-                        <div className="md:col-span-2 flex gap-4 pt-6">
-                            <button type="submit" className="flex-1 bg-amber-500 text-slate-950 py-5 rounded-2xl font-black text-xl shadow-xl shadow-amber-500/10">حفظ التغييرات</button>
-                            <button type="button" onClick={() => setEditingOrder(null)} className="px-10 py-5 bg-slate-800 text-slate-400 rounded-2xl font-bold">إلغاء</button>
+                        <div className="lg:col-span-12 flex flex-col md:flex-row gap-4 pt-10 border-t border-slate-800/50">
+                            <button type="submit" className="flex-1 bg-amber-500 text-slate-950 py-5 rounded-[24px] font-black text-xl shadow-2xl shadow-amber-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+                                <Save size={24} /> حفظ التعديلات النهائية
+                            </button>
+                            <button type="button" onClick={() => setEditingOrder(null)} className="px-12 py-5 bg-slate-800 text-slate-400 rounded-[24px] font-black hover:text-white transition-all">إلغاء</button>
                         </div>
                     </form>
                 </div>
             </div>
         )}
 
-        {/* Modal: Delete Order Confirm */}
+        {/* Modal: Delete Order Confirm Enhanced */}
         {deleteOrderConfirmId && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[110] p-4">
-                <div className="bg-slate-900 p-10 rounded-[40px] border border-slate-800 max-w-sm w-full text-center shadow-2xl">
-                    <Trash2 className="w-16 h-16 text-red-500 mx-auto mb-6" />
-                    <h3 className="text-2xl font-black text-slate-100 mb-4">حذف الطلب؟</h3>
-                    <p className="text-slate-500 mb-10 font-bold">سيتم حذف هذا الطلب نهائياً من سجل المبيعات.</p>
+            <div className="fixed inset-0 bg-black/90 backdrop-blur-xl flex items-center justify-center z-[110] p-4">
+                <div className="bg-slate-900 p-12 rounded-[48px] border border-slate-800 max-w-sm w-full text-center shadow-2xl animate-in zoom-in duration-300">
+                    <div className="w-24 h-24 bg-red-600/10 rounded-full flex items-center justify-center mx-auto mb-8 text-red-500 shadow-inner">
+                        <Trash2 size={48} />
+                    </div>
+                    <h3 className="text-2xl font-black text-slate-100 mb-4">حذف الطلبية نهائياً؟</h3>
+                    <p className="text-slate-500 mb-10 font-bold leading-relaxed">أنت على وشك حذف سجل هذه المبيعة. لا يمكن التراجع عن هذا الإجراء وسيتم مسح كافة البيانات الخاصة بهذا الزبون.</p>
                     <div className="flex gap-4">
-                        <button onClick={() => { deleteOrder(deleteOrderConfirmId); setDeleteOrderConfirmId(null); }} className="flex-1 bg-red-600 text-white py-4 rounded-2xl font-black">حذف نهائي</button>
-                        <button onClick={() => setDeleteOrderConfirmId(null)} className="flex-1 bg-slate-800 text-slate-400 py-4 rounded-2xl font-black">تراجع</button>
+                        <button onClick={() => { deleteOrder(deleteOrderConfirmId); setDeleteOrderConfirmId(null); }} className="flex-1 bg-red-600 text-white py-4.5 rounded-2xl font-black shadow-xl shadow-red-600/20 hover:bg-red-500 transition-all active:scale-95">نعم، حذف الطلب</button>
+                        <button onClick={() => setDeleteOrderConfirmId(null)} className="flex-1 bg-slate-800 text-slate-400 py-4.5 rounded-2xl font-black hover:text-white transition-all">إلغاء</button>
                     </div>
                 </div>
             </div>
         )}
 
+        {/* Existing Products and Settings tabs logic (maintained for consistency) */}
         {activeTab === 'products' && (
           <div className="space-y-8 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
@@ -516,7 +606,9 @@ const Admin: React.FC = () => {
                 </div>
             </div>
           </div>
-        ) : activeTab === 'settings' ? (
+        )}
+
+        {activeTab === 'settings' && (
           <div className="animate-in slide-in-from-left duration-500">
             <form onSubmit={handleSettingsSubmit} className="space-y-8">
                 <div className="bg-slate-900 rounded-[32px] border border-slate-800 overflow-hidden shadow-2xl p-8">
@@ -547,9 +639,9 @@ const Admin: React.FC = () => {
                 <button type="submit" className="w-full bg-amber-500 text-slate-950 py-5 rounded-2xl font-black text-xl shadow-2xl">حفظ الإعدادات</button>
             </form>
           </div>
-        ) : null}
+        )}
 
-        {/* Delete Confirm Modals */}
+        {/* Delete Product Confirm Modal */}
         {deleteConfirmId && (
             <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[110] p-4">
                 <div className="bg-slate-900 p-10 rounded-[40px] border border-slate-800 max-w-sm w-full text-center">

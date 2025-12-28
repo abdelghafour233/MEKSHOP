@@ -36,4 +36,5 @@ export interface Order {
   items: CartItem[];
   total: number;
   status: OrderStatus;
+  notes?: string; // ملاحظات الإدارة
 }
