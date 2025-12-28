@@ -6,7 +6,7 @@ interface ShareButtonsProps {
   url: string;
   title: string;
   image?: string;
-  variant?: 'large' | 'small' | 'minimal' | 'grid';
+  variant?: 'large' | 'small' | 'minimal';
 }
 
 const ShareButtons: React.FC<ShareButtonsProps> = ({ url, title, image, variant = 'large' }) => {
@@ -16,32 +16,28 @@ const ShareButtons: React.FC<ShareButtonsProps> = ({ url, title, image, variant 
 
   const shareLinks = [
     {
+      name: 'WhatsApp',
+      icon: <Send size={variant === 'minimal' ? 14 : 18} />,
+      url: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}`,
+      color: 'bg-[#25D366]',
+    },
+    {
       name: 'Facebook',
-      icon: <Facebook size={variant === 'minimal' ? 16 : 20} />,
+      icon: <Facebook size={variant === 'minimal' ? 14 : 18} />,
       url: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
       color: 'bg-[#1877F2]',
-      hover: 'hover:bg-[#166fe5]',
     },
     {
       name: 'Twitter',
-      icon: <Twitter size={variant === 'minimal' ? 16 : 20} />,
+      icon: <Twitter size={variant === 'minimal' ? 14 : 18} />,
       url: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`,
       color: 'bg-[#1DA1F2]',
-      hover: 'hover:bg-[#1a91da]',
-    },
-    {
-      name: 'WhatsApp',
-      icon: <Send size={variant === 'minimal' ? 16 : 20} />,
-      url: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}`,
-      color: 'bg-[#25D366]',
-      hover: 'hover:bg-[#20bd5a]',
     },
     {
       name: 'Pinterest',
-      icon: <Pinterest size={variant === 'minimal' ? 16 : 20} />,
+      icon: <Pinterest size={variant === 'minimal' ? 14 : 18} />,
       url: `https://pinterest.com/pin/create/button/?url=${encodedUrl}&media=${encodedImage}&description=${encodedTitle}`,
       color: 'bg-[#BD081C]',
-      hover: 'hover:bg-[#a8071a]',
     },
   ];
 
@@ -49,12 +45,12 @@ const ShareButtons: React.FC<ShareButtonsProps> = ({ url, title, image, variant 
     e.preventDefault();
     e.stopPropagation();
     navigator.clipboard.writeText(url);
-    alert('✅ تم نسخ رابط المنتج بنجاح! يمكنك الآن لصقه في إنستغرام أو أي تطبيق آخر.');
+    alert('✅ تم نسخ رابط المنتج! يمكنك مشاركته الآن على Instagram.');
   };
 
   if (variant === 'minimal') {
     return (
-      <div className="flex gap-2 items-center">
+      <div className="flex gap-1.5 items-center">
         {shareLinks.map((link) => (
           <a
             key={link.name}
@@ -62,56 +58,55 @@ const ShareButtons: React.FC<ShareButtonsProps> = ({ url, title, image, variant 
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className={`p-2 rounded-lg text-white transition-all transform hover:scale-110 shadow-md ${link.color} ${link.hover}`}
-            title={`شارك على ${link.name}`}
+            className={`w-7 h-7 flex items-center justify-center rounded-full text-white shadow-md transform hover:scale-110 transition-all ${link.color}`}
+            title={link.name}
           >
             {link.icon}
           </a>
         ))}
         <button
           onClick={copyToClipboard}
-          className="p-2 rounded-lg bg-gradient-to-tr from-[#f09433] via-[#e6683c] to-[#bc1888] text-white transition-all transform hover:scale-110 shadow-md"
-          title="مشاركة على إنستغرام"
+          className="w-7 h-7 flex items-center justify-center rounded-full bg-gradient-to-tr from-[#f09433] via-[#e6683c] to-[#bc1888] text-white shadow-md transform hover:scale-110 transition-all"
+          title="Instagram (Copy Link)"
         >
-          <Instagram size={16} />
+          <Instagram size={14} />
         </button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 w-full">
-      <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-slate-200 dark:bg-white/10"></div>
-        <p className="text-[10px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-[0.3em]">شارك العرض مع أصدقائك</p>
-        <div className="h-px flex-1 bg-slate-200 dark:bg-white/10"></div>
+    <div className="w-full">
+      <div className="flex items-center gap-3 mb-6">
+        <span className="text-[10px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-[0.3em] whitespace-nowrap">شارك هذا المنتج</span>
+        <div className="h-px w-full bg-slate-100 dark:bg-white/10"></div>
       </div>
-      <div className="flex flex-wrap gap-3 justify-center">
+      <div className="flex flex-wrap gap-3">
         {shareLinks.map((link) => (
           <a
             key={link.name}
             href={link.url}
             target="_blank"
             rel="noopener noreferrer"
-            className={`flex items-center gap-3 px-6 py-4 rounded-2xl text-white font-black text-sm transition-all transform hover:scale-105 shadow-xl ${link.color} ${link.hover}`}
+            className={`flex items-center gap-2 px-5 py-3.5 rounded-2xl text-white font-black text-xs transition-all transform hover:-translate-y-1 shadow-lg ${link.color}`}
           >
             {link.icon}
-            <span>{link.name}</span>
+            <span className="hidden sm:inline">{link.name}</span>
           </a>
         ))}
         <button
           onClick={copyToClipboard}
-          className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-gradient-to-tr from-[#f09433] via-[#e6683c] to-[#bc1888] text-white font-black text-sm transition-all transform hover:scale-105 shadow-xl"
+          className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-gradient-to-tr from-[#f09433] via-[#e6683c] to-[#bc1888] text-white font-black text-xs transition-all transform hover:-translate-y-1 shadow-lg"
         >
-          <Instagram size={20} />
-          <span>Instagram</span>
+          <Instagram size={18} />
+          <span className="hidden sm:inline">Instagram</span>
         </button>
         <button
           onClick={copyToClipboard}
-          className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 font-black text-sm hover:bg-slate-200 dark:hover:bg-white/10 transition-all shadow-xl"
+          className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-slate-800 text-white font-black text-xs transition-all transform hover:-translate-y-1 shadow-lg"
         >
-          <LinkIcon size={20} />
-          <span>نسخ الرابط</span>
+          <LinkIcon size={18} />
+          <span className="hidden sm:inline">نسخ الرابط</span>
         </button>
       </div>
     </div>

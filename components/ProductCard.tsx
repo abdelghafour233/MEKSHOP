@@ -36,38 +36,35 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         )}
       </Link>
       
-      <div className="p-6 flex-1 flex flex-col">
+      <div className="p-5 flex-1 flex flex-col">
         <div className="flex-1">
-          <p className="text-[10px] text-green-600 dark:text-green-500 font-black mb-2 uppercase tracking-[0.2em]">{product.category}</p>
+          <p className="text-[10px] text-green-600 dark:text-green-500 font-black mb-1 uppercase tracking-[0.2em]">{product.category}</p>
           <Link to={`/products/${product.id}`}>
-            <h3 className="text-slate-900 dark:text-white font-black text-lg mb-3 leading-snug hover:text-green-500 transition-colors line-clamp-2">
+            <h3 className="text-slate-900 dark:text-white font-black text-base mb-2 leading-snug hover:text-green-500 transition-colors line-clamp-2">
                 {product.title}
             </h3>
           </Link>
         </div>
 
-        <div className="mt-4 mb-6 flex items-end justify-between">
+        <div className="mt-3 mb-4 flex items-center justify-between">
           <div className="flex flex-col">
             {product.oldPrice && (
-              <span className="text-slate-400 dark:text-gray-500 text-xs line-through font-bold">{product.oldPrice} د.م</span>
+              <span className="text-slate-400 dark:text-gray-500 text-[10px] line-through font-bold">{product.oldPrice} د.م</span>
             )}
-            <span className="text-green-600 dark:text-green-500 font-black text-xl">{product.price} <span className="text-xs">د.م</span></span>
+            <span className="text-green-600 dark:text-green-500 font-black text-lg">{product.price} <span className="text-[10px]">د.م</span></span>
           </div>
           <button 
             onClick={handleAddToCart}
-            className="bg-green-600 dark:bg-green-500 text-white dark:text-black p-3.5 rounded-xl hover:bg-green-500 dark:hover:bg-green-400 transition-all shadow-lg active:scale-90"
-            aria-label="أضف إلى السلة"
+            className="bg-green-600 dark:bg-green-500 text-white dark:text-black p-3 rounded-xl hover:bg-green-500 dark:hover:bg-green-400 transition-all shadow-lg active:scale-90"
           >
-            <ShoppingCart className="h-5 w-5" />
+            <ShoppingCart className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Footer Share Buttons - Visible clearly under product */}
-        <div className="pt-5 border-t border-slate-100 dark:border-white/5 flex flex-col gap-3">
-           <div className="flex items-center justify-between overflow-hidden">
-              <span className="text-[8px] font-black text-slate-400 dark:text-gray-600 uppercase tracking-widest whitespace-nowrap ml-2">شارك المنتج:</span>
-              <ShareButtons url={productUrl} title={product.title} image={product.imageUrl} variant="minimal" />
-           </div>
+        {/* Dedicated Share Bar at the bottom of the card */}
+        <div className="mt-auto pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+          <span className="text-[9px] font-black text-slate-400 dark:text-gray-600 uppercase tracking-widest">شارك:</span>
+          <ShareButtons url={productUrl} title={product.title} image={product.imageUrl} variant="minimal" />
         </div>
       </div>
     </div>
