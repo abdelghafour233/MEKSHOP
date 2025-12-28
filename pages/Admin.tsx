@@ -42,6 +42,11 @@ const Admin: React.FC = () => {
   const [showQRModal, setShowQRModal] = useState(false);
   const [localSettings, setLocalSettings] = useState(settings);
 
+  // ميزة المزامنة التلقائية لضمان ظهور البيانات المحفوظة فور تحميل الصفحة
+  useEffect(() => {
+    setLocalSettings(settings);
+  }, [settings, activeTab]);
+
   const mainImageInputRef = useRef<HTMLInputElement>(null);
 
   const categoryLabels: Record<Category, string> = {
@@ -70,7 +75,7 @@ const Admin: React.FC = () => {
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
     updateSettings(localSettings);
-    alert("✅ تم حفظ الإعدادات بنجاح!");
+    alert("✅ تم حفظ جميع الإعدادات والبيكسل بنجاح!");
   };
 
   const syncDataString = useMemo(() => {
@@ -318,7 +323,6 @@ const Admin: React.FC = () => {
                 </div>
 
                 <form onSubmit={handleSaveSettings} className="space-y-10">
-                  {/* Facebook Tracking Card Updated to display side by side */}
                   <div className="bg-[#0a0a0a] p-10 rounded-[48px] border border-white/5 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-2 h-full bg-blue-600"></div>
                     <div className="flex items-center gap-5 mb-10">
@@ -334,7 +338,7 @@ const Admin: React.FC = () => {
                             <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2">Pixel ID</label>
                             <input 
                                 type="text" 
-                                value={localSettings.facebookPixelId} 
+                                value={localSettings.facebookPixelId || ''} 
                                 onChange={(e) => setLocalSettings({...localSettings, facebookPixelId: e.target.value})} 
                                 className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-mono text-base outline-none focus:border-blue-500 transition-all shadow-inner" 
                                 placeholder="مثال: 123456789" 
@@ -344,7 +348,7 @@ const Admin: React.FC = () => {
                             <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2">Test Event Code</label>
                             <input 
                                 type="text" 
-                                value={localSettings.fbTestEventCode} 
+                                value={localSettings.fbTestEventCode || ''} 
                                 onChange={(e) => setLocalSettings({...localSettings, fbTestEventCode: e.target.value})} 
                                 className="w-full p-5 bg-black border border-white/10 rounded-2xl text-emerald-500 font-mono text-base outline-none focus:border-blue-500 transition-all shadow-inner" 
                                 placeholder="مثال: TEST12345" 
@@ -362,7 +366,7 @@ const Admin: React.FC = () => {
                         <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">تزامن الطلبات تلقائياً</p>
                       </div>
                     </div>
-                    <input type="url" value={localSettings.googleSheetUrl} onChange={(e) => setLocalSettings({...localSettings, googleSheetUrl: e.target.value})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white text-sm outline-none focus:border-emerald-500 shadow-inner" placeholder="https://script.google.com/macros/s/..." />
+                    <input type="url" value={localSettings.googleSheetUrl || ''} onChange={(e) => setLocalSettings({...localSettings, googleSheetUrl: e.target.value})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white text-sm outline-none focus:border-emerald-500 shadow-inner" placeholder="https://script.google.com/macros/s/..." />
                   </div>
 
                   <div className="bg-[#0a0a0a] p-10 rounded-[48px] border border-white/5 shadow-2xl relative overflow-hidden">
@@ -374,11 +378,11 @@ const Admin: React.FC = () => {
                         <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">كلمة مرور غرفة التحكم</p>
                       </div>
                     </div>
-                    <input type="text" value={localSettings.adminPassword} onChange={(e) => setLocalSettings({...localSettings, adminPassword: e.target.value})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-mono text-lg outline-none focus:border-rose-500 shadow-inner" />
+                    <input type="text" value={localSettings.adminPassword || ''} onChange={(e) => setLocalSettings({...localSettings, adminPassword: e.target.value})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-mono text-lg outline-none focus:border-rose-500 shadow-inner" />
                   </div>
 
                   <button type="submit" className="w-full bg-emerald-500 text-black py-7 rounded-[32px] font-black text-2xl shadow-2xl shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-4">
-                    <CheckCircle2 size={32} /> حفظ التغييرات
+                    <CheckCircle2 size={32} /> حفظ وتطبيق التغييرات
                   </button>
                 </form>
               </div>
@@ -416,19 +420,19 @@ const Admin: React.FC = () => {
                 <form onSubmit={(e) => { e.preventDefault(); updateOrderDetails(editingOrder); setEditingOrder(null); alert('تم الحفظ!'); }} className="max-w-4xl mx-auto space-y-10">
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="bg-[#0a0a0a] p-8 rounded-[40px] border border-white/5 space-y-6">
-                            <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest">اسم الزبون</label>
+                            <label className="block text-sm font-black text-gray-500 uppercase tracking-widest">اسم الزبون</label>
                             <input type="text" value={editingOrder.customer.fullName} onChange={(e) => setEditingOrder({...editingOrder, customer: {...editingOrder.customer, fullName: e.target.value}})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-black" />
-                            <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mt-4">رقم الهاتف</label>
+                            <label className="block text-sm font-black text-gray-500 uppercase tracking-widest mt-4">رقم الهاتف</label>
                             <input type="tel" value={editingOrder.customer.phone} onChange={(e) => setEditingOrder({...editingOrder, customer: {...editingOrder.customer, phone: e.target.value}})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-emerald-500 font-mono text-xl" />
                         </div>
                         <div className="bg-[#0a0a0a] p-8 rounded-[40px] border border-white/5 space-y-6">
-                            <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest">الحالة</label>
+                            <label className="block text-sm font-black text-gray-500 uppercase tracking-widest">الحالة</label>
                             <div className="grid grid-cols-2 gap-2">
                                 {(['Pending', 'Confirmed', 'Shipped', 'Cancelled'] as OrderStatus[]).map(s => (
                                     <button key={s} type="button" onClick={() => setEditingOrder({...editingOrder, status: s})} className={`py-4 rounded-xl text-[10px] font-black border ${editingOrder.status === s ? 'bg-emerald-500 text-black border-emerald-500' : 'text-gray-500 border-white/5'}`}>{getStatusLabel(s)}</button>
                                 ))}
                             </div>
-                            <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mt-4">ملاحظات</label>
+                            <label className="block text-sm font-black text-gray-500 uppercase tracking-widest mt-4">ملاحظات</label>
                             <textarea value={editingOrder.notes || ''} onChange={(e) => setEditingOrder({...editingOrder, notes: e.target.value})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white text-sm resize-none" rows={4} />
                         </div>
                    </div>
