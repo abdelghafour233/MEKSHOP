@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
@@ -12,6 +13,7 @@ import { CartProvider } from './context/CartContext';
 import { ProductProvider } from './context/ProductContext';
 import { SettingsProvider } from './context/SettingsContext';
 import TrackingScripts from './components/TrackingScripts';
+import { Truck } from 'lucide-react';
 
 // Scroll to top helper
 const ScrollToTop = () => {
@@ -22,6 +24,14 @@ const ScrollToTop = () => {
   return null;
 };
 
+// Announcement Bar Component
+const AnnouncementBar = () => (
+  <div className="bg-amber-500 text-slate-950 py-2 px-4 text-center text-xs md:text-sm font-black flex items-center justify-center gap-2 shadow-inner">
+    <Truck className="w-4 h-4" />
+    <span>توصيل منزلي مجاني وسريع لجميع المدن المغربية 🚚</span>
+  </div>
+);
+
 function App() {
   return (
     <SettingsProvider>
@@ -31,6 +41,7 @@ function App() {
             <ScrollToTop />
             <TrackingScripts />
             <div className="flex flex-col min-h-screen font-sans bg-slate-950 text-slate-100">
+              <AnnouncementBar />
               <Navbar />
               <main className="flex-grow">
                 <Routes>

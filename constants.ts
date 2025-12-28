@@ -1,3 +1,4 @@
+
 import { Product, Category } from './types';
 
 // Replace with your actual Pixel ID
@@ -14,6 +15,8 @@ export const PRODUCTS: Product[] = [
     description: 'استمتع بتجربة صوتية لا مثيل لها مع سماعات بلوتوث برو. تصميم مريح، بطارية تدوم طويلاً، وعزل ضوضاء فائق.',
     features: ['عزل ضوضاء نشط', 'بطارية 24 ساعة', 'مقاومة للماء IPX4', 'مايكروفون عالي الجودة'],
     imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
+    // Fix: Added missing required property additionalImages
+    additionalImages: [],
   },
   {
     id: 'e2',
@@ -24,6 +27,8 @@ export const PRODUCTS: Product[] = [
     description: 'تابع نشاطك الرياضي وصحتك بدقة عالية. شاشة AMOLED وقياس نبضات القلب.',
     features: ['قياس الأكسجين في الدم', 'تتبع النوم', 'مقاومة للماء 5ATM', 'أكثر من 100 وضع رياضي'],
     imageUrl: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=800&q=80',
+    // Fix: Added missing required property additionalImages
+    additionalImages: [],
   },
   {
     id: 'e3',
@@ -33,6 +38,8 @@ export const PRODUCTS: Product[] = [
     description: 'شاحن متنقل قوي وسريع لشحن جميع أجهزتك أثناء التنقل.',
     features: ['شحن سريع PD', 'منفذين USB', 'حماية من الحرارة الزائدة'],
     imageUrl: 'https://images.unsplash.com/photo-1609592424369-37e44c20b4d4?auto=format&fit=crop&w=800&q=80',
+    // Fix: Added missing required property additionalImages
+    additionalImages: [],
   },
 
   // Home
@@ -45,6 +52,8 @@ export const PRODUCTS: Product[] = [
     description: 'طقم أواني فاخر غير قابل للالتصاق، صحي وسهل التنظيف لمطبخ عصري.',
     features: ['طلاء جرانيت 5 طبقات', 'توزيع حراري ممتاز', 'أغطية زجاجية حرارية'],
     imageUrl: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=800&q=80',
+    // Fix: Added missing required property additionalImages
+    additionalImages: [],
   },
   {
     id: 'h2',
@@ -54,6 +63,8 @@ export const PRODUCTS: Product[] = [
     description: 'احصل على ملابس خالية من التجاعيد في دقائق مع مكواة البخار القوية.',
     features: ['خزان مياه كبير', 'تسخين سريع في 30 ثانية', 'مناسبة لجميع الأقمشة'],
     imageUrl: 'https://images.unsplash.com/photo-1585664811087-47f65be1bac6?auto=format&fit=crop&w=800&q=80',
+    // Fix: Added missing required property additionalImages
+    additionalImages: [],
   },
   {
     id: 'h3',
@@ -64,6 +75,8 @@ export const PRODUCTS: Product[] = [
     description: 'خلاط قوي لتحضير العصائر والشوربات والصلصات بكل سهولة.',
     features: ['شفرات ستانلس ستيل', 'دورق زجاجي قوي', 'سرعات متعددة'],
     imageUrl: 'https://images.unsplash.com/photo-1589635999813-f66d40078021?auto=format&fit=crop&w=800&q=80',
+    // Fix: Added missing required property additionalImages
+    additionalImages: [],
   },
 
   // Cars (Accessories)
@@ -76,6 +89,8 @@ export const PRODUCTS: Product[] = [
     description: 'حافظ على نظافة سيارتك مع هذه المكنسة القوية والمحمولة.',
     features: ['شفط قوي', 'ملحقات متعددة للأماكن الضيقة', 'سلك طويل 5 متر'],
     imageUrl: 'https://images.unsplash.com/photo-1601362840469-51e4d8d58785?auto=format&fit=crop&w=800&q=80',
+    // Fix: Added missing required property additionalImages
+    additionalImages: [],
   },
   {
     id: 'c2',
@@ -86,6 +101,8 @@ export const PRODUCTS: Product[] = [
     description: 'حول سيارتك إلى سيارة ذكية مع شاشة لمس ونظام ملاحة.',
     features: ['بلوتوث وواي فاي', 'GPS مدمج', 'تدعم الكاميرا الخلفية'],
     imageUrl: 'https://images.unsplash.com/photo-1616423662038-a28892224d45?auto=format&fit=crop&w=800&q=80',
+    // Fix: Added missing required property additionalImages
+    additionalImages: [],
   },
    {
     id: 'c3',
@@ -95,5 +112,7 @@ export const PRODUCTS: Product[] = [
     description: 'نظم أغراضك وأغراض أطفالك في السيارة بشكل مرتب وأنيق.',
     features: ['جيوب متعددة', 'حامل تابلت', 'جلد عالي الجودة'],
     imageUrl: 'https://images.unsplash.com/photo-1485291571150-772bcfc10da5?auto=format&fit=crop&w=800&q=80',
+    // Fix: Added missing required property additionalImages
+    additionalImages: [],
   },
 ];

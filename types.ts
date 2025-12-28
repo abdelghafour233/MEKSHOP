@@ -13,6 +13,7 @@ export interface Product {
   description: string;
   features: string[];
   imageUrl: string;
+  additionalImages: string[]; // مصفوفة للصور الإضافية
 }
 
 export interface CartItem extends Product {
