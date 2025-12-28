@@ -9,7 +9,7 @@ import {
   Plus, Edit, Trash2, X, Lock, Settings as SettingsIcon, 
   Package, LogOut, Eye, EyeOff, ShoppingBag, 
   Search, Hash, DollarSign, Clock, ClipboardList, Award, Truck, AlertCircle,
-  Link as LinkIcon, Database, Facebook, Chrome, Target, MapPin
+  Link as LinkIcon, Database, Facebook, Chrome, Target, MapPin, Shield
 } from 'lucide-react';
 
 const Admin: React.FC = () => {
@@ -18,10 +18,14 @@ const Admin: React.FC = () => {
   const { orders, updateOrderDetails, deleteOrder } = useOrders();
   
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<'products' | 'settings' | 'orders'>('orders');
   
+  // States for Password Change
+  const [newPassword, setNewPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+
   // States for Product Management
   const [isEditingProduct, setIsEditingProduct] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Partial<Product>>({});
@@ -32,14 +36,27 @@ const Admin: React.FC = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.trim() === 'admin123') setIsAuthenticated(true);
-    else alert('كلمة المرور غير صحيحة. جرب: admin123');
+    if (passwordInput.trim() === settings.adminPassword) {
+      setIsAuthenticated(true);
+    } else {
+      alert(`كلمة المرور غير صحيحة.`);
+    }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    setPassword('');
+    setPasswordInput('');
     setShowPassword(false);
+  };
+
+  const handleChangePassword = () => {
+    if (newPassword.length < 6) {
+      alert("كلمة السر يجب أن تكون 6 أحرف على الأقل");
+      return;
+    }
+    updateSettings({ ...settings, adminPassword: newPassword });
+    alert("✅ تم تغيير كلمة السر بنجاح. يرجى استخدامها في المرة القادمة.");
+    setNewPassword('');
   };
 
   const handleProductSubmit = (e: React.FormEvent) => {
@@ -113,8 +130,8 @@ const Admin: React.FC = () => {
             <div className="relative group">
               <input 
                 type={showPassword ? "text" : "password"} 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
+                value={passwordInput} 
+                onChange={(e) => setPasswordInput(e.target.value)} 
                 placeholder="أدخل كلمة المرور"
                 className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white text-center outline-none focus:border-green-500 transition-all font-mono placeholder:text-gray-700"
               />
@@ -130,7 +147,9 @@ const Admin: React.FC = () => {
                 دخول للنظام
             </button>
           </form>
-          <p className="mt-8 text-gray-700 text-[10px] font-bold uppercase tracking-widest">admin123 :كلمة السر التجريبية</p>
+          {settings.adminPassword === 'admin123' && (
+            <p className="mt-8 text-gray-700 text-[10px] font-bold uppercase tracking-widest">admin123 :كلمة السر الافتراضية</p>
+          )}
         </div>
       </div>
     );
@@ -260,7 +279,9 @@ const Admin: React.FC = () => {
         )}
 
         {activeTab === 'settings' && (
-          <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+            
+            {/* Tracking Settings */}
             <div className="bg-[#0a0a0a] p-10 md:p-14 rounded-[48px] border border-white/5 shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-2 h-full bg-green-500"></div>
               <h2 className="text-2xl font-black text-white mb-10 flex items-center gap-4">
@@ -329,6 +350,48 @@ const Admin: React.FC = () => {
                 >
                   حفظ الآن
                 </button>
+              </div>
+            </div>
+
+            {/* Security Settings (Change Password) */}
+            <div className="bg-[#0a0a0a] p-10 md:p-14 rounded-[48px] border border-white/5 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-2 h-full bg-red-500"></div>
+              <h2 className="text-2xl font-black text-white mb-10 flex items-center gap-4">
+                <Shield className="text-red-500" size={32} /> إعدادات الأمان
+              </h2>
+              
+              <div className="space-y-6 max-w-md">
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                    <Lock size={14} /> كلمة سر لوحة التحكم الجديدة
+                  </label>
+                  <div className="relative">
+                    <input 
+                      type={showNewPassword ? "text" : "password"} 
+                      value={newPassword} 
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="أدخل كلمة سر قوية"
+                      className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-mono outline-none focus:border-red-500 transition-all"
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition-colors p-2"
+                    >
+                      {showNewPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+                    </button>
+                  </div>
+                </div>
+                
+                <button 
+                  onClick={handleChangePassword}
+                  className="w-full bg-red-500 text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-red-500/20 active:scale-95 transition-all"
+                >
+                  تحديث كلمة السر
+                </button>
+                <p className="text-gray-600 text-[10px] font-bold text-center uppercase tracking-widest">
+                  سيتم طلب كلمة السر الجديدة في المرة القادمة التي تدخل فيها
+                </p>
               </div>
             </div>
           </div>

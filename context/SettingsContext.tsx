@@ -1,12 +1,14 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export interface Settings {
   customDomain: string;
   facebookPixelId: string;
-  fbTestEventCode: string; // الحقل الجديد لكود الاختبار
+  fbTestEventCode: string; 
   googleTagId: string;
   tiktokPixelId: string;
   googleSheetUrl: string;
+  adminPassword: string; // الحقل الجديد لكلمة سر لوحة التحكم
   // Facebook Event Toggles
   fbTrackPageView: boolean;
   fbTrackAddToCart: boolean;
@@ -29,6 +31,7 @@ const defaultSettings: Settings = {
   googleTagId: '',
   tiktokPixelId: '',
   googleSheetUrl: '',
+  adminPassword: 'admin123', // كلمة السر الافتراضية
   fbTrackPageView: true,
   fbTrackAddToCart: true,
   fbTrackInitiateCheckout: true,
