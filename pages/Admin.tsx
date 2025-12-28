@@ -40,11 +40,9 @@ const Admin: React.FC = () => {
 
   // Sync States
   const [showQRModal, setShowQRModal] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
   const [localSettings, setLocalSettings] = useState(settings);
 
   const mainImageInputRef = useRef<HTMLInputElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   const categoryLabels: Record<Category, string> = {
     [Category.ELECTRONICS]: 'إلكترونيات',
@@ -75,18 +73,12 @@ const Admin: React.FC = () => {
     alert("✅ تم حفظ الإعدادات بنجاح!");
   };
 
-  // --- ميزة الـ QR Code المتطورة ---
   const syncDataString = useMemo(() => {
     const data = { products, settings: localSettings };
     return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
   }, [products, localSettings]);
 
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(syncDataString)}`;
-
-  const handleScanClick = () => {
-    setIsScanning(true);
-    alert("هذه الميزة تتطلب مكتبة QR Scanner. حالياً سنستخدم خيار 'لصق الكود' كبديل سريع حتى نثبت المكتبة، أو يمكنك مسح الـ QR بجهازك الخارجي.");
-  };
 
   const importFromText = (code: string) => {
     try {
@@ -312,7 +304,7 @@ const Admin: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="p-6 bg-black rounded-3xl border border-white/5 space-y-4">
                             <p className="text-gray-500 text-[11px] font-black uppercase tracking-widest">المزامنة عبر الكاميرا</p>
-                            <button onClick={handleScanClick} className="w-full py-5 bg-white/5 text-white rounded-2xl font-black flex items-center justify-center gap-3 hover:bg-emerald-500 hover:text-black transition-all">
+                            <button onClick={() => setShowQRModal(true)} className="w-full py-5 bg-white/5 text-white rounded-2xl font-black flex items-center justify-center gap-3 hover:bg-emerald-500 hover:text-black transition-all">
                                 <Scan size={20}/> ابدأ مسح الـ QR
                             </button>
                         </div>
@@ -326,16 +318,51 @@ const Admin: React.FC = () => {
                 </div>
 
                 <form onSubmit={handleSaveSettings} className="space-y-10">
+                  {/* Facebook Tracking Card Updated to display side by side */}
                   <div className="bg-[#0a0a0a] p-10 rounded-[48px] border border-white/5 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-2 h-full bg-blue-600"></div>
                     <div className="flex items-center gap-5 mb-10">
                       <div className="p-4 bg-blue-600/10 text-blue-500 rounded-2xl"><Facebook size={28} /></div>
                       <div>
-                        <h2 className="text-2xl font-black text-white">إعدادات التتبع</h2>
-                        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">Facebook Pixel ID</p>
+                        <h2 className="text-2xl font-black text-white">إعدادات فيسبوك</h2>
+                        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">مدير أحداث فيسبوك وتتبع المبيعات</p>
                       </div>
                     </div>
-                    <input type="text" value={localSettings.facebookPixelId} onChange={(e) => setLocalSettings({...localSettings, facebookPixelId: e.target.value})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-mono text-base outline-none focus:border-blue-500 transition-all shadow-inner" placeholder="0000000000" />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                            <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2">Pixel ID</label>
+                            <input 
+                                type="text" 
+                                value={localSettings.facebookPixelId} 
+                                onChange={(e) => setLocalSettings({...localSettings, facebookPixelId: e.target.value})} 
+                                className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-mono text-base outline-none focus:border-blue-500 transition-all shadow-inner" 
+                                placeholder="مثال: 123456789" 
+                            />
+                        </div>
+                        <div className="space-y-4">
+                            <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2">Test Event Code</label>
+                            <input 
+                                type="text" 
+                                value={localSettings.fbTestEventCode} 
+                                onChange={(e) => setLocalSettings({...localSettings, fbTestEventCode: e.target.value})} 
+                                className="w-full p-5 bg-black border border-white/10 rounded-2xl text-emerald-500 font-mono text-base outline-none focus:border-blue-500 transition-all shadow-inner" 
+                                placeholder="مثال: TEST12345" 
+                            />
+                        </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#0a0a0a] p-10 rounded-[48px] border border-white/5 shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-2 h-full bg-emerald-600"></div>
+                    <div className="flex items-center gap-5 mb-10">
+                      <div className="p-4 bg-emerald-600/10 text-emerald-500 rounded-2xl"><Database size={28} /></div>
+                      <div>
+                        <h2 className="text-2xl font-black text-white">جوجل شيت</h2>
+                        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">تزامن الطلبات تلقائياً</p>
+                      </div>
+                    </div>
+                    <input type="url" value={localSettings.googleSheetUrl} onChange={(e) => setLocalSettings({...localSettings, googleSheetUrl: e.target.value})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white text-sm outline-none focus:border-emerald-500 shadow-inner" placeholder="https://script.google.com/macros/s/..." />
                   </div>
 
                   <div className="bg-[#0a0a0a] p-10 rounded-[48px] border border-white/5 shadow-2xl relative overflow-hidden">
@@ -358,14 +385,14 @@ const Admin: React.FC = () => {
             )}
         </div>
 
-        {/* QR MODAL (Hiding Modal for brevity but including structure) */}
+        {/* QR MODAL */}
         {showQRModal && (
           <div className="fixed inset-0 bg-black/95 backdrop-blur-3xl z-[300] flex items-center justify-center p-6 animate-in fade-in zoom-in">
              <div className="bg-[#0a0a0a] p-10 md:p-16 rounded-[56px] border border-white/10 max-w-lg w-full text-center relative overflow-hidden">
                 <button onClick={() => setShowQRModal(false)} className="absolute top-8 left-8 text-gray-500 hover:text-white"><X size={32}/></button>
                 <div className="w-20 h-20 bg-emerald-500/10 rounded-3xl flex items-center justify-center mx-auto mb-10 text-emerald-500 border border-emerald-500/20"><QrCode size={40}/></div>
                 <h2 className="text-3xl font-black text-white mb-4 tracking-tighter">مزامنة المتجر</h2>
-                <p className="text-gray-500 text-sm font-bold mb-10 leading-relaxed">افتح لوحة التحكم في الهاتف، اختر "لصق كود"، وامسح هذا الرمز باستخدام أي تطبيق قارئ QR، أو انسخ الكود من الأسفل.</p>
+                <p className="text-gray-500 text-sm font-bold mb-10 leading-relaxed">افتح لوحة التحكم في الهاتف، اختر "لصق كود"، وامسح هذا الرمز، أو انسخ الكود من الأسفل.</p>
                 
                 <div className="bg-white p-6 rounded-[40px] shadow-2xl shadow-emerald-500/10 inline-block mb-10">
                     <img src={qrImageUrl} className="w-full max-w-[280px]" alt="Sync QR Code" />
@@ -439,4 +466,43 @@ const Admin: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-6">
                   <div className="bg-[#0a0a0a] p-6 rounded-[32px] border border-white/5"><label className="block text-[10px] font-black text-gray-500 mb-3 uppercase tracking-widest">السعر</label><input type="number" required value={currentProduct.price || ''} onChange={(e) => setCurrentProduct({...currentProduct, price: Number(e.target.value)})} className="w-full p-5 bg-black border border-white/10 rounded-[24px] text-emerald-500 font-black text-2xl outline-none" /></div>
-                  <div className="bg-[#0a0a0a] p-6 rounded-[32px] border border-white/5"><label className="block text-[10px] font-black text-gray-500 mb
+                  <div className="bg-[#0a0a0a] p-6 rounded-[32px] border border-white/5"><label className="block text-[10px] font-black text-gray-500 mb-3 uppercase tracking-widest">التصنيف</label><select value={currentProduct.category || Category.ELECTRONICS} onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value as Category})} className="w-full p-5 bg-black border border-white/10 rounded-[24px] text-white font-black outline-none"><option value={Category.ELECTRONICS}>إلكترونيات</option><option value={Category.WATCHES}>ساعات</option><option value={Category.CAR_ACCESSORIES}>سيارات</option></select></div>
+                </div>
+                <div className="bg-[#0a0a0a] p-8 rounded-[40px] border border-white/5">
+                  <label className="block text-[10px] font-black text-gray-500 mb-4 uppercase tracking-widest">صورة المنتج</label>
+                  <input type="file" accept="image/*" ref={mainImageInputRef} className="hidden" onChange={handleMainImageUpload} />
+                  <div onClick={() => mainImageInputRef.current?.click()} className="relative aspect-video rounded-3xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500/50 overflow-hidden">
+                    {currentProduct.imageUrl ? <img src={currentProduct.imageUrl} className="w-full h-full object-cover" /> : <p className="text-gray-600 font-black uppercase">اضغط للرفع</p>}
+                  </div>
+                </div>
+                <button type="submit" className="w-full bg-emerald-500 text-black py-7 rounded-[32px] font-black text-2xl shadow-2xl">حفظ المنتج</button>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const getStatusColor = (status: OrderStatus) => {
+  switch(status) {
+    case 'Pending': return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
+    case 'Confirmed': return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+    case 'Shipped': return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+    case 'Cancelled': return 'bg-rose-500/10 text-rose-500 border-rose-500/20';
+    default: return 'bg-gray-500/10 text-gray-500';
+  }
+};
+
+const getStatusLabel = (status: OrderStatus) => {
+  switch(status) {
+    case 'Pending': return 'قيد الانتظار';
+    case 'Confirmed': return 'تم التأكيد';
+    case 'Shipped': return 'تم الشحن';
+    case 'Cancelled': return 'ملغى';
+    default: return status;
+  }
+};
+
+export default Admin;
