@@ -42,6 +42,9 @@ const ProductDetail: React.FC = () => {
 
   return (
     <div className="bg-slate-50 dark:bg-black min-h-screen py-8 md:py-20">
+      {/* Version Tag for Debugging Cache */}
+      <div className="hidden">v2.1.0-share-fix</div>
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 dark:text-gray-500 hover:text-green-600 mb-8 font-black transition-colors group">
@@ -102,17 +105,17 @@ const ProductDetail: React.FC = () => {
               <p className="text-slate-600 dark:text-gray-400 leading-relaxed text-lg font-medium whitespace-pre-line">{product.description}</p>
             </div>
 
-            <div className="mt-auto space-y-10">
+            <div className="mt-auto space-y-12">
               <button 
                 onClick={handleOrderNow}
-                className="w-full bg-green-600 dark:bg-green-500 text-white dark:text-black py-6 rounded-[32px] font-black text-2xl hover:bg-green-500 transition-all shadow-2xl shadow-green-500/20 flex flex-col items-center justify-center group active:scale-95"
+                className="w-full bg-green-600 dark:bg-green-500 text-white dark:text-black py-7 rounded-[32px] font-black text-2xl hover:bg-green-500 transition-all shadow-2xl shadow-green-500/30 flex flex-col items-center justify-center group active:scale-95 border-b-4 border-green-800 dark:border-green-700"
               >
                 اطلب الآن - الدفع عند الاستلام
-                <span className="text-[10px] opacity-70 mt-1 font-bold uppercase tracking-widest">توصيل منزلي مجاني وسريع</span>
+                <span className="text-[10px] opacity-70 mt-1 font-bold uppercase tracking-widest">توصيل منزلي مجاني وسريع 🚚</span>
               </button>
 
-              {/* Enhanced Share Section below order button */}
-              <div className="bg-white dark:bg-[#0a0a0a] p-8 rounded-[40px] border border-slate-200 dark:border-white/5 shadow-xl">
+              {/* Ultra-Prominent Share Section */}
+              <div className="bg-slate-100 dark:bg-[#0a0a0a] p-10 rounded-[48px] border-2 border-dashed border-slate-200 dark:border-white/10 shadow-inner">
                 <ShareButtons 
                    url={currentUrl} 
                    title={product.title} 
