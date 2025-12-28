@@ -6,10 +6,10 @@ import { useOrders } from '../context/OrderContext';
 import { Product, Category, Order, OrderStatus } from '../types';
 import { 
   Plus, Edit, Trash2, X, Lock, Settings as SettingsIcon, 
-  Package, LogOut, Search, ShoppingCart, Save, LayoutDashboard, 
+  Package, LogOut, Search, Save, LayoutDashboard, 
   Smartphone, QrCode, KeyRound, Megaphone, ImagePlus, 
   UploadCloud, Copy, Download, Eye, EyeOff, Info, Images, Tag, 
-  DollarSign, AlignRight, CheckCircle2
+  DollarSign, AlignRight, CheckCircle2, FileText
 } from 'lucide-react';
 
 const Admin: React.FC = () => {
@@ -169,7 +169,7 @@ const Admin: React.FC = () => {
             </div>
         </div>
 
-        {/* Navigation Tabs */}
+        {/* Tabs */}
         <div className="bg-[#0a0a0a] p-1.5 rounded-[24px] border border-white/5 mb-8 flex gap-1 overflow-x-auto scrollbar-hide">
             {(['orders', 'products', 'settings'] as const).map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 min-w-[100px] py-3.5 rounded-xl font-black transition-all text-xs flex items-center justify-center gap-2 ${activeTab === tab ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}>
@@ -178,10 +178,9 @@ const Admin: React.FC = () => {
             ))}
         </div>
 
-        {/* Tab Content: Products List */}
         {activeTab === 'products' && (
           <div className="space-y-6">
-            <button onClick={() => { setCurrentProduct({ title: '', price: 0, category: Category.ELECTRONICS, description: '', additionalImages: [], imageUrl: '' }); setIsEditingProduct(true); }} className="w-full bg-emerald-500 text-black py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-2 shadow-xl hover:bg-emerald-400 transition-all active:scale-95">
+            <button onClick={() => { setCurrentProduct({ title: '', price: 0, oldPrice: 0, category: Category.ELECTRONICS, description: '', additionalImages: [], imageUrl: '' }); setIsEditingProduct(true); }} className="w-full bg-emerald-500 text-black py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-2 shadow-xl hover:bg-emerald-400 transition-all active:scale-95">
               <Plus size={20} /> إضافة منتج جديد
             </button>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -189,7 +188,6 @@ const Admin: React.FC = () => {
                 <div key={product.id} className="bg-[#0a0a0a] rounded-[28px] border border-white/5 overflow-hidden shadow-xl group flex flex-col">
                   <div className="aspect-square bg-black relative">
                     <img src={product.imageUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all" />
-                    <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-md text-emerald-500 px-2 py-0.5 rounded-full text-[8px] font-black border border-white/5">{product.category}</div>
                   </div>
                   <div className="p-4 flex-1 flex flex-col">
                     <h3 className="text-white font-black text-sm mb-4 line-clamp-1">{product.title}</h3>
@@ -207,191 +205,169 @@ const Admin: React.FC = () => {
           </div>
         )}
 
-        {/* FULL REDESIGN OF PRODUCT EDITOR MODAL */}
+        {/* MODAL: PROFESSIONAL PRODUCT EDITOR */}
         {isEditingProduct && (
-          <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[1000] flex items-center justify-center p-2 md:p-6 overflow-hidden">
-            <div className="bg-[#080808] border border-white/10 w-full max-w-6xl rounded-[40px] shadow-4xl animate-in zoom-in duration-300 flex flex-col max-h-[95vh] relative">
+          <div className="fixed inset-0 bg-black/98 backdrop-blur-3xl z-[1000] flex items-center justify-center p-2 md:p-6 overflow-hidden">
+            <div className="bg-[#0c0c0c] border border-white/10 w-full max-w-6xl rounded-[48px] shadow-4xl animate-in zoom-in duration-300 flex flex-col max-h-[92vh] overflow-hidden">
               
               {/* Header */}
-              <div className="flex items-center justify-between px-8 py-6 border-b border-white/5 bg-black/50">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-2xl"><Package size={24}/></div>
-                  <h2 className="text-2xl font-black text-white">{currentProduct.id ? 'تعديل المنتج الحالي' : 'إضافة منتج جديد للمتجر'}</h2>
+              <div className="flex items-center justify-between px-10 py-6 border-b border-white/5 bg-black/50">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-2xl"><Package size={28}/></div>
+                  <h2 className="text-2xl font-black text-white">{currentProduct.id ? 'تحرير بيانات المنتج' : 'إضافة منتج جديد'}</h2>
                 </div>
-                <button onClick={() => setIsEditingProduct(false)} className="p-2 bg-white/5 rounded-full text-gray-500 hover:text-white transition-all"><X size={32} /></button>
+                <button onClick={() => setIsEditingProduct(false)} className="p-3 bg-white/5 rounded-full text-gray-500 hover:text-white transition-all"><X size={28} /></button>
               </div>
 
-              {/* Scrollable Form Body */}
-              <div className="flex-1 overflow-y-auto p-6 md:p-10 scrollbar-hide">
+              {/* Body */}
+              <div className="flex-1 overflow-y-auto p-6 md:p-12 scrollbar-hide">
                 <form id="productForm" onSubmit={(e) => { 
                   e.preventDefault(); 
                   if(!currentProduct.imageUrl) { alert("المرجو رفع صورة رئيسية"); return; }
                   if(currentProduct.id) updateProduct(currentProduct as Product); 
                   else addProduct({...currentProduct, id: Date.now().toString()} as Product); 
                   setIsEditingProduct(false); 
-                }} className="space-y-10">
+                }} className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
                   
-                  {/* CARD 1: MEDIA CENTER (Main Image & Gallery) */}
-                  <div className="bg-white/[0.02] border border-white/5 rounded-[40px] p-6 md:p-8">
-                      <div className="flex items-center gap-3 mb-8">
-                        <Images className="text-emerald-500" size={24} />
-                        <h3 className="text-xl font-black text-white">صور المنتج والمعرض</h3>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                          {/* Main Image Selection */}
-                          <div className="lg:col-span-5 space-y-4">
-                              <label className="text-xs font-black text-gray-500 uppercase tracking-widest block ml-2">الصورة الأساسية (تظهر في الواجهة)</label>
-                              <div 
-                                onClick={() => mainImageInputRef.current?.click()}
-                                className={`aspect-square rounded-[32px] border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group
-                                  ${currentProduct.imageUrl ? 'border-emerald-500/30 bg-black' : 'border-white/10 hover:border-emerald-500/40 bg-black/50'}`}
-                              >
-                                {currentProduct.imageUrl ? (
-                                  <>
-                                    <img src={currentProduct.imageUrl} className="w-full h-full object-cover" />
-                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
-                                      <span className="bg-emerald-500 text-black px-6 py-3 rounded-2xl font-black text-sm">تغيير الصورة الرئيسية</span>
-                                    </div>
-                                  </>
-                                ) : (
-                                  <div className="text-center p-8">
-                                    <UploadCloud size={64} className="text-emerald-500 mx-auto mb-4 opacity-40" />
-                                    <p className="text-sm text-gray-400 font-black">اضغط لرفع الصورة الرئيسية</p>
-                                  </div>
-                                )}
-                                <input type="file" ref={mainImageInputRef} onChange={(e) => handleImageUpload(e, true)} className="hidden" accept="image/*" />
-                              </div>
-                          </div>
-
-                          {/* Gallery Images Selection */}
-                          <div className="lg:col-span-7 space-y-4">
-                              <div className="flex justify-between items-center px-2">
-                                <label className="text-xs font-black text-gray-500 uppercase tracking-widest">معرض الصور (تظهر داخل صفحة المنتج)</label>
-                                <span className="text-xs text-emerald-500 font-black">{(currentProduct.additionalImages || []).length} / 6</span>
-                              </div>
-                              <div className="grid grid-cols-3 gap-4 bg-black/40 p-5 rounded-[32px] border border-white/5 min-h-[300px]">
-                                {(currentProduct.additionalImages || []).map((img, idx) => (
-                                  <div key={idx} className="aspect-square rounded-2xl overflow-hidden relative group border border-white/10 shadow-2xl">
-                                    <img src={img} className="w-full h-full object-cover" />
-                                    <button type="button" onClick={() => removeGalleryImage(idx)} className="absolute inset-0 bg-rose-600/90 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
-                                      <Trash2 size={24}/>
-                                    </button>
-                                  </div>
-                                ))}
-                                {(currentProduct.additionalImages || []).length < 6 && (
-                                  <button 
-                                    type="button" 
-                                    onClick={() => galleryImageInputRef.current?.click()} 
-                                    className="aspect-square rounded-2xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center text-gray-600 hover:text-emerald-500 hover:border-emerald-500/40 transition-all bg-black group"
-                                  >
-                                    <ImagePlus size={32} className="group-hover:scale-110 transition-transform" />
-                                    <span className="text-[10px] font-black mt-2">إضافة صورة</span>
-                                  </button>
-                                )}
-                              </div>
-                              <input type="file" ref={galleryImageInputRef} onChange={(e) => handleImageUpload(e, false)} className="hidden" accept="image/*" />
-                          </div>
-                      </div>
-                  </div>
-
-                  {/* CARD 2: BASIC INFO (Title, Category, Price) */}
-                  <div className="bg-white/[0.02] border border-white/5 rounded-[40px] p-6 md:p-8">
-                      <div className="flex items-center gap-3 mb-8">
-                        <Tag className="text-emerald-500" size={24} />
-                        <h3 className="text-xl font-black text-white">معلومات المنتج الأساسية</h3>
-                      </div>
-
-                      <div className="space-y-8">
-                          {/* Product Name */}
-                          <div className="space-y-2">
-                              <label className="text-xs font-black text-gray-500 uppercase tracking-widest block ml-2">اسم المنتج بالكامل</label>
-                              <div className="relative group">
-                                <AlignRight className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-emerald-500 transition-colors" size={20} />
-                                <input 
-                                  required 
-                                  value={currentProduct.title || ''} 
-                                  onChange={(e) => setCurrentProduct({...currentProduct, title: e.target.value})} 
-                                  className="w-full p-5 pr-14 bg-black border border-white/10 rounded-2xl text-white font-black text-lg outline-none focus:border-emerald-500 transition-all shadow-xl placeholder:text-gray-800" 
-                                  placeholder="أدخل اسم المنتج هنا..." 
-                                />
-                              </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                              {/* Category */}
-                              <div className="space-y-2">
-                                  <label className="text-xs font-black text-gray-500 uppercase tracking-widest block ml-2">تصنيف المنتج</label>
-                                  <select 
-                                    value={currentProduct.category} 
-                                    onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value as Category})} 
-                                    className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-black outline-none focus:border-emerald-500 appearance-none shadow-xl cursor-pointer"
-                                  >
-                                    {Object.values(Category).map(cat => (
-                                      <option key={cat} value={cat}>{cat}</option>
-                                    ))}
-                                  </select>
-                              </div>
-
-                              {/* Prices */}
-                              <div className="grid grid-cols-2 gap-4">
-                                  <div className="space-y-2">
-                                      <label className="text-[10px] font-black text-emerald-500/60 uppercase tracking-widest block ml-2">السعر الحالي (د.م)</label>
-                                      <div className="relative">
-                                        <DollarSign className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500" size={16} />
-                                        <input type="number" required value={currentProduct.price || ''} onChange={(e) => setCurrentProduct({...currentProduct, price: Number(e.target.value)})} className="w-full p-5 pr-12 bg-black border border-emerald-500/20 rounded-2xl text-emerald-500 font-black text-xl outline-none focus:border-emerald-500 shadow-xl" />
-                                      </div>
-                                  </div>
-                                  <div className="space-y-2">
-                                      <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block ml-2">السعر القديم</label>
-                                      <div className="relative">
-                                        <DollarSign className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600" size={16} />
-                                        <input type="number" value={currentProduct.oldPrice || ''} onChange={(e) => setCurrentProduct({...currentProduct, oldPrice: Number(e.target.value)})} className="w-full p-5 pr-12 bg-black border border-white/10 rounded-2xl text-gray-500 font-black text-xl outline-none focus:border-emerald-500 shadow-xl" />
-                                      </div>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-
-                  {/* CARD 3: DESCRIPTION AREA */}
-                  <div className="bg-white/[0.02] border border-white/5 rounded-[40px] p-6 md:p-8">
-                      <div className="flex items-center gap-3 mb-8">
-                        <Info className="text-emerald-500" size={24} />
-                        <h3 className="text-xl font-black text-white">وصف وتفاصيل المنتج</h3>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label className="text-xs font-black text-gray-500 uppercase tracking-widest block ml-2">اكتب تفاصيل مقنعة للزبون</label>
-                        <div className="border border-white/10 rounded-[32px] bg-black overflow-hidden focus-within:border-emerald-500 transition-all">
-                          <textarea 
-                            required
-                            rows={10}
-                            value={currentProduct.description || ''} 
-                            onChange={(e) => setCurrentProduct({...currentProduct, description: e.target.value})} 
-                            className="w-full p-8 bg-transparent text-gray-300 text-lg leading-relaxed outline-none resize-none overflow-y-auto scrollbar-hide" 
-                            placeholder="أدخل وصفاً تفصيلياً، المميزات، طريقة الاستخدام، الخ..."
-                          ></textarea>
+                  {/* RIGHT COLUMN: MEDIA SETTINGS */}
+                  <div className="space-y-8">
+                    {/* SECTION: MAIN IMAGE */}
+                    <div className="bg-white/[0.03] border border-white/5 p-8 rounded-[40px] space-y-6">
+                        <div className="flex items-center gap-3 mb-2">
+                            <Images className="text-emerald-500" size={24} />
+                            <h3 className="text-xl font-black text-white">الصورة الرئيسية</h3>
                         </div>
-                      </div>
+                        <div 
+                          onClick={() => mainImageInputRef.current?.click()}
+                          className={`aspect-square rounded-[32px] border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group
+                            ${currentProduct.imageUrl ? 'border-emerald-500/30' : 'border-white/10 hover:border-emerald-500/40 bg-black'}`}
+                        >
+                          {currentProduct.imageUrl ? (
+                            <>
+                              <img src={currentProduct.imageUrl} className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                                <span className="bg-emerald-500 text-black px-6 py-3 rounded-2xl font-black text-sm">تغيير الصورة الرئيسية</span>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="text-center p-8">
+                              <UploadCloud size={64} className="text-emerald-500 mx-auto mb-4 opacity-40" />
+                              <p className="text-sm text-gray-400 font-black">ارفع الصورة التي ستظهر في واجهة المتجر</p>
+                            </div>
+                          )}
+                          <input type="file" ref={mainImageInputRef} onChange={(e) => handleImageUpload(e, true)} className="hidden" accept="image/*" />
+                        </div>
+                    </div>
+
+                    {/* SECTION: GALLERY IMAGES */}
+                    <div className="bg-white/[0.03] border border-white/5 p-8 rounded-[40px] space-y-6">
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <ImagePlus className="text-emerald-500" size={24} />
+                                <h3 className="text-xl font-black text-white">معرض الصور الإضافية</h3>
+                            </div>
+                            <span className="text-xs text-emerald-500 font-black">{(currentProduct.additionalImages || []).length} / 6</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-4 bg-black/60 p-5 rounded-[32px] min-h-[150px]">
+                          {(currentProduct.additionalImages || []).map((img, idx) => (
+                            <div key={idx} className="aspect-square rounded-2xl overflow-hidden relative group border border-white/10">
+                              <img src={img} className="w-full h-full object-cover" />
+                              <button type="button" onClick={() => removeGalleryImage(idx)} className="absolute inset-0 bg-rose-600/90 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all"><Trash2 size={24}/></button>
+                            </div>
+                          ))}
+                          {(currentProduct.additionalImages || []).length < 6 && (
+                            <button 
+                              type="button" 
+                              onClick={() => galleryImageInputRef.current?.click()} 
+                              className="aspect-square rounded-2xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center text-gray-600 hover:text-emerald-500 hover:border-emerald-500/40 transition-all bg-black group"
+                            >
+                              <Plus size={32} />
+                            </button>
+                          )}
+                        </div>
+                        <input type="file" ref={galleryImageInputRef} onChange={(e) => handleImageUpload(e, false)} className="hidden" accept="image/*" />
+                    </div>
                   </div>
 
+                  {/* LEFT COLUMN: TEXT FIELDS */}
+                  <div className="space-y-8">
+                    {/* SECTION: NAME & CATEGORY */}
+                    <div className="bg-white/[0.03] border border-white/5 p-8 rounded-[40px] space-y-8">
+                        <div className="flex items-center gap-3">
+                            <Tag className="text-emerald-500" size={24} />
+                            <h3 className="text-xl font-black text-white">بيانات المنتج</h3>
+                        </div>
+                        
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2">اسم المنتج بالكامل</label>
+                            <div className="relative group">
+                                <AlignRight className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-emerald-500 transition-colors" size={20} />
+                                <input required value={currentProduct.title || ''} onChange={(e) => setCurrentProduct({...currentProduct, title: e.target.value})} className="w-full p-5 pr-14 bg-black border border-white/10 rounded-[24px] text-white font-black text-lg outline-none focus:border-emerald-500 transition-all shadow-xl" placeholder="مثال: ساعة ذكية الترا الجيل الثاني" />
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2">تصنيف المنتج</label>
+                            <select value={currentProduct.category} onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value as Category})} className="w-full p-5 bg-black border border-white/10 rounded-[24px] text-white font-black outline-none focus:border-emerald-500 appearance-none shadow-xl cursor-pointer">
+                                {Object.values(Category).map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* SECTION: PRICING */}
+                    <div className="bg-white/[0.03] border border-white/5 p-8 rounded-[40px] space-y-8">
+                        <div className="flex items-center gap-3">
+                            <DollarSign className="text-emerald-500" size={24} />
+                            <h3 className="text-xl font-black text-white">إعدادات السعر</h3>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mr-2">السعر الحالي (د.م)</label>
+                                <input type="number" required value={currentProduct.price || ''} onChange={(e) => setCurrentProduct({...currentProduct, price: Number(e.target.value)})} className="w-full p-5 bg-black border border-emerald-500/20 rounded-[24px] text-emerald-500 font-black text-2xl outline-none focus:border-emerald-500 shadow-xl" />
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest mr-2">السعر القديم</label>
+                                <input type="number" value={currentProduct.oldPrice || ''} onChange={(e) => setCurrentProduct({...currentProduct, oldPrice: Number(e.target.value)})} className="w-full p-5 bg-black border border-white/10 rounded-[24px] text-gray-500 font-black text-2xl outline-none focus:border-emerald-500 shadow-xl" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* SECTION: DESCRIPTION */}
+                    <div className="bg-white/[0.03] border border-white/5 p-8 rounded-[40px] space-y-6">
+                        <div className="flex items-center gap-3">
+                            <FileText className="text-emerald-500" size={24} />
+                            <h3 className="text-xl font-black text-white">وصف المنتج</h3>
+                        </div>
+                        <div className="border border-white/10 rounded-[32px] bg-black overflow-hidden focus-within:border-emerald-500 transition-all">
+                            <textarea 
+                                required
+                                rows={8}
+                                value={currentProduct.description || ''} 
+                                onChange={(e) => setCurrentProduct({...currentProduct, description: e.target.value})} 
+                                className="w-full p-8 bg-transparent text-gray-300 text-lg leading-relaxed outline-none resize-none overflow-y-auto scrollbar-hide" 
+                                placeholder="اكتب هنا تفاصيل ومميزات المنتج التي تقنع الزبون بالشراء..."
+                            ></textarea>
+                        </div>
+                    </div>
+                  </div>
                 </form>
               </div>
 
-              {/* Bottom Footer (Fixed Action Bar) */}
-              <div className="p-8 md:p-10 border-t border-white/5 bg-black/90 backdrop-blur-md flex gap-4">
+              {/* Action Bar (Fixed at bottom) */}
+              <div className="px-10 py-8 border-t border-white/5 bg-black/90 backdrop-blur-md flex gap-4">
                   <button type="submit" form="productForm" className="flex-1 bg-emerald-500 text-black py-6 rounded-[32px] font-black text-2xl shadow-2xl shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-4">
-                    <CheckCircle2 size={32} /> {currentProduct.id ? 'حفظ تعديلات المنتج' : 'نشر هذا المنتج فوراً'}
+                    <CheckCircle2 size={32} /> {currentProduct.id ? 'حفظ تعديلات المنتج' : 'نشر هذا المنتج في المتجر'}
                   </button>
                   <button type="button" onClick={() => setIsEditingProduct(false)} className="px-12 bg-white/5 text-gray-400 rounded-[32px] font-black hover:bg-white/10 transition-all border border-white/5">إلغاء</button>
               </div>
-
             </div>
           </div>
         )}
 
-        {/* Tab Content: Orders List */}
+        {/* Orders Tab Content */}
         {activeTab === 'orders' && (
           <div className="space-y-6">
             <div className="relative group">
@@ -434,7 +410,7 @@ const Admin: React.FC = () => {
           </div>
         )}
 
-        {/* Tab Content: Settings */}
+        {/* Settings Tab Content */}
         {activeTab === 'settings' && (
           <div className="max-w-4xl mx-auto space-y-8 pb-20">
             <div className="bg-[#0a0a0a] p-8 md:p-10 rounded-[40px] border border-emerald-500/20 shadow-4xl text-center">
@@ -485,7 +461,7 @@ const Admin: React.FC = () => {
           </div>
         )}
 
-        {/* Sync QR Modal */}
+        {/* Sync Modal */}
         {showQRModal && activeTab !== 'settings' && (
           <div className="fixed inset-0 bg-black/98 backdrop-blur-xl z-[2000] flex items-center justify-center p-4">
              <div className="bg-[#111] p-10 rounded-[48px] border border-white/10 max-w-lg w-full text-center relative shadow-4xl animate-in fade-in zoom-in duration-300">
