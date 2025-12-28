@@ -80,7 +80,6 @@ const Admin: React.FC = () => {
     alert("✅ تم حفظ جميع الإعدادات وتحديث المتجر بنجاح!");
   };
 
-  // تحويل الصورة إلى Base64
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, isMain: boolean) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -245,52 +244,60 @@ const Admin: React.FC = () => {
                 if(currentProduct.id) updateProduct(currentProduct as Product); 
                 else addProduct({...currentProduct, id: Date.now().toString()} as Product); 
                 setIsEditingProduct(false); 
-              }} className="max-w-6xl mx-auto">
+              }} className="max-w-7xl mx-auto">
                 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
                    
-                   {/* Left Column: Data */}
-                   <div className="space-y-8">
-                        <div className="space-y-4">
+                   {/* Right Column: Data (8 Units on Large Screen) */}
+                   <div className="lg:col-span-7 space-y-6">
+                        <div className="space-y-3">
                             <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-2">اسم المنتج</label>
-                            <input required value={currentProduct.title || ''} onChange={(e) => setCurrentProduct({...currentProduct, title: e.target.value})} className="w-full p-6 bg-[#111] border border-white/5 rounded-3xl text-white font-black text-xl outline-none focus:border-emerald-500 transition-all" placeholder="مثال: ساعة ذكية برو" />
+                            <input required value={currentProduct.title || ''} onChange={(e) => setCurrentProduct({...currentProduct, title: e.target.value})} className="w-full p-6 bg-[#0c0c0c] border border-white/5 rounded-[28px] text-white font-black text-lg outline-none focus:border-emerald-500 transition-all shadow-inner" placeholder="اسم المنتج..." />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6">
-                            <div className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div className="space-y-3">
                                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-2">السعر الحالي (د.م)</label>
-                                <input type="number" required value={currentProduct.price || ''} onChange={(e) => setCurrentProduct({...currentProduct, price: Number(e.target.value)})} className="w-full p-6 bg-[#111] border border-white/5 rounded-3xl text-emerald-500 font-black text-xl outline-none focus:border-emerald-500" />
+                                <input type="number" required value={currentProduct.price || ''} onChange={(e) => setCurrentProduct({...currentProduct, price: Number(e.target.value)})} className="w-full p-6 bg-[#0c0c0c] border border-white/5 rounded-[28px] text-emerald-500 font-black text-xl outline-none focus:border-emerald-500 shadow-inner" />
                             </div>
-                            <div className="space-y-4">
+                            <div className="space-y-3">
                                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-2">السعر القديم (اختياري)</label>
-                                <input type="number" value={currentProduct.oldPrice || ''} onChange={(e) => setCurrentProduct({...currentProduct, oldPrice: Number(e.target.value)})} className="w-full p-6 bg-[#111] border border-white/5 rounded-3xl text-gray-500 font-black text-xl outline-none focus:border-emerald-500" />
+                                <input type="number" value={currentProduct.oldPrice || ''} onChange={(e) => setCurrentProduct({...currentProduct, oldPrice: Number(e.target.value)})} className="w-full p-6 bg-[#0c0c0c] border border-white/5 rounded-[28px] text-gray-600 font-black text-xl outline-none focus:border-emerald-500 shadow-inner" />
                             </div>
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-2">الفئة</label>
-                            <select value={currentProduct.category} onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value as Category})} className="w-full p-6 bg-[#111] border border-white/5 rounded-3xl text-white font-black outline-none focus:border-emerald-500 appearance-none">
+                            <select value={currentProduct.category} onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value as Category})} className="w-full p-6 bg-[#0c0c0c] border border-white/5 rounded-[28px] text-white font-black outline-none focus:border-emerald-500 appearance-none shadow-inner">
                                 {Object.values(Category).map(cat => (
                                     <option key={cat} value={cat}>{cat}</option>
                                 ))}
                             </select>
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-2">وصف المنتج</label>
-                            <textarea rows={6} value={currentProduct.description || ''} onChange={(e) => setCurrentProduct({...currentProduct, description: e.target.value})} className="w-full p-6 bg-[#111] border border-white/5 rounded-3xl text-gray-400 font-bold outline-none focus:border-emerald-500 resize-none leading-relaxed" placeholder="أدخل مواصفات المنتج ومميزاته بالتفصيل..."></textarea>
+                            <div className="bg-[#0c0c0c] border border-white/5 rounded-[28px] p-2 shadow-inner focus-within:border-emerald-500 transition-all overflow-hidden">
+                                <textarea 
+                                    rows={8} 
+                                    value={currentProduct.description || ''} 
+                                    onChange={(e) => setCurrentProduct({...currentProduct, description: e.target.value})} 
+                                    className="w-full p-4 bg-transparent text-gray-400 font-bold outline-none resize-none leading-relaxed block overflow-y-auto" 
+                                    placeholder="أدخل مواصفات المنتج ومميزاته بالتفصيل..."
+                                ></textarea>
+                            </div>
                         </div>
                    </div>
 
-                   {/* Right Column: Images */}
-                   <div className="space-y-10">
+                   {/* Left Column: Media (5 Units on Large Screen) */}
+                   <div className="lg:col-span-5 space-y-8">
                         {/* Main Image Section */}
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-2">الصورة الرئيسية</label>
                             <div 
                                 onClick={() => mainImageInputRef.current?.click()}
-                                className={`aspect-video rounded-[40px] border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group
-                                    ${currentProduct.imageUrl ? 'border-emerald-500/30' : 'border-white/10 hover:border-emerald-500/50 bg-[#111]'}`}
+                                className={`aspect-[4/3] rounded-[36px] border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group
+                                    ${currentProduct.imageUrl ? 'border-emerald-500/30' : 'border-white/10 hover:border-emerald-500/50 bg-[#0c0c0c]'}`}
                             >
                                 {currentProduct.imageUrl ? (
                                     <>
@@ -301,32 +308,31 @@ const Admin: React.FC = () => {
                                     </>
                                 ) : (
                                     <>
-                                        <div className="p-6 bg-emerald-500/10 text-emerald-500 rounded-3xl mb-4 group-hover:scale-110 transition-all"><UploadCloud size={40}/></div>
-                                        <p className="text-white font-black">اضغط لرفع الصورة الأساسية</p>
-                                        <p className="text-gray-500 text-xs mt-2">يفضل أن تكون بصيغة JPG أو PNG</p>
+                                        <div className="p-5 bg-emerald-500/10 text-emerald-500 rounded-3xl mb-3 group-hover:scale-110 transition-all"><UploadCloud size={36}/></div>
+                                        <p className="text-white font-black">رفع الصورة الأساسية</p>
                                     </>
                                 )}
                                 <input type="file" ref={mainImageInputRef} onChange={(e) => handleImageUpload(e, true)} className="hidden" accept="image/*" />
                             </div>
                         </div>
 
-                        {/* Gallery Section */}
-                        <div className="space-y-6">
-                            <div className="flex justify-between items-center">
-                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-2">معرض الصور (إضافية)</label>
+                        {/* Gallery Section - Closer to Main Image */}
+                        <div className="bg-[#0c0c0c] p-6 rounded-[36px] border border-white/5 space-y-4 shadow-xl">
+                            <div className="flex justify-between items-center px-1">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">معرض الصور</label>
                                 <span className="text-[10px] text-emerald-500 font-black">{(currentProduct.additionalImages || []).length}/5</span>
                             </div>
                             
-                            <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
+                            <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
                                 {(currentProduct.additionalImages || []).map((img, idx) => (
-                                    <div key={idx} className="aspect-square rounded-2xl overflow-hidden relative group border border-white/5">
+                                    <div key={idx} className="aspect-square rounded-xl overflow-hidden relative group border border-white/5">
                                         <img src={img} className="w-full h-full object-cover" />
                                         <button 
                                             type="button" 
-                                            onClick={() => removeGalleryImage(idx)}
-                                            className="absolute top-1 left-1 bg-rose-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                                            onClick={(e) => { e.stopPropagation(); removeGalleryImage(idx); }}
+                                            className="absolute inset-0 bg-rose-500/80 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all"
                                         >
-                                            <X size={14}/>
+                                            <Trash2 size={16}/>
                                         </button>
                                     </div>
                                 ))}
@@ -335,9 +341,9 @@ const Admin: React.FC = () => {
                                     <button 
                                         type="button"
                                         onClick={() => galleryImageInputRef.current?.click()}
-                                        className="aspect-square rounded-2xl border-2 border-dashed border-white/10 flex items-center justify-center text-gray-500 hover:text-emerald-500 hover:border-emerald-500/50 transition-all bg-[#111]"
+                                        className="aspect-square rounded-xl border-2 border-dashed border-white/10 flex items-center justify-center text-gray-500 hover:text-emerald-500 hover:border-emerald-500/50 transition-all bg-black"
                                     >
-                                        <ImagePlus size={24} />
+                                        <ImagePlus size={20} />
                                     </button>
                                 )}
                             </div>
@@ -345,9 +351,9 @@ const Admin: React.FC = () => {
                         </div>
 
                         {/* Order Confirmation Area */}
-                        <div className="pt-10">
-                            <button type="submit" className="w-full bg-emerald-500 text-black py-8 rounded-[32px] font-black text-2xl shadow-3xl shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-4">
-                                <Save size={32} /> {currentProduct.id ? 'حفظ التغييرات' : 'نشر المنتج الآن'}
+                        <div className="pt-2">
+                            <button type="submit" className="w-full bg-emerald-500 text-black py-7 rounded-[32px] font-black text-2xl shadow-3xl shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-4">
+                                <Save size={28} /> {currentProduct.id ? 'حفظ التغييرات' : 'نشر المنتج الآن'}
                             </button>
                         </div>
                    </div>
@@ -357,8 +363,6 @@ const Admin: React.FC = () => {
           </div>
         )}
 
-        {/* باقي الواجهة تظل كما هي... (الطلبات، الإعدادات، المودلز الأخرى) */}
-        
         {/* Settings Tab Content */}
         {activeTab === 'settings' && (
           <div className="max-w-4xl mx-auto space-y-10 pb-20">
