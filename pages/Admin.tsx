@@ -80,28 +80,29 @@ const Admin: React.FC = () => {
       reader.onloadend = () => {
         const base64String = reader.result as string;
         if (isMain) {
-          setCurrentProduct({ ...currentProduct, imageUrl: base64String });
+          setCurrentProduct(prev => ({ ...prev, imageUrl: base64String }));
         } else {
           const currentGallery = currentProduct.additionalImages || [];
           if (currentGallery.length >= 5) {
             alert("أقصى عدد للصور هو 5");
             return;
           }
-          setCurrentProduct({ ...currentProduct, additionalImages: [...currentGallery, base64String] });
+          setCurrentProduct(prev => ({ 
+            ...prev, 
+            additionalImages: [...(prev.additionalImages || []), base64String] 
+          }));
         }
       };
       reader.readAsDataURL(file);
     }
-    // Reset value to allow re-upload of same file
-    e.target.value = '';
+    e.target.value = ''; // Reset input to allow same file re-upload
   };
 
   const removeGalleryImage = (index: number) => {
-    const currentGallery = currentProduct.additionalImages || [];
-    setCurrentProduct({
-      ...currentProduct,
-      additionalImages: currentGallery.filter((_, i) => i !== index)
-    });
+    setCurrentProduct(prev => ({
+      ...prev,
+      additionalImages: (prev.additionalImages || []).filter((_, i) => i !== index)
+    }));
   };
 
   const syncDataString = useMemo(() => {
@@ -174,7 +175,7 @@ const Admin: React.FC = () => {
             ))}
         </div>
 
-        {/* Tab Content: Products */}
+        {/* Tab Content: Products List */}
         {activeTab === 'products' && (
           <div className="space-y-6">
             <button onClick={() => { setCurrentProduct({ features: [], additionalImages: [] }); setIsEditingProduct(true); }} className="w-full bg-emerald-500 text-black py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-2 shadow-xl hover:bg-emerald-400 transition-all active:scale-95">
@@ -203,9 +204,9 @@ const Admin: React.FC = () => {
           </div>
         )}
 
-        {/* COMPACT PRODUCT MODAL - RE-DESIGNED */}
+        {/* PRODUCT EDITOR MODAL - TOP MEDIA LAYOUT */}
         {isEditingProduct && (
-          <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[1000] flex items-center justify-center p-2 md:p-6 overflow-hidden">
+          <div className="fixed inset-0 bg-black/95 backdrop-blur-2xl z-[1000] flex items-center justify-center p-2 md:p-6 overflow-hidden">
             <div className="bg-[#0c0c0c] border border-white/10 w-full max-w-5xl rounded-[40px] shadow-4xl animate-in zoom-in duration-300 flex flex-col max-h-[95vh]">
               
               {/* Fixed Header */}
@@ -218,70 +219,24 @@ const Admin: React.FC = () => {
               </div>
 
               {/* Scrollable Form Body */}
-              <div className="p-6 md:p-8 overflow-y-auto scrollbar-hide flex-1">
+              <div className="p-6 md:p-10 overflow-y-auto scrollbar-hide flex-1">
                 <form id="productForm" onSubmit={(e) => { 
                   e.preventDefault(); 
                   if(!currentProduct.imageUrl) { alert("المرجو رفع صورة رئيسية"); return; }
                   if(currentProduct.id) updateProduct(currentProduct as Product); 
                   else addProduct({...currentProduct, id: Date.now().toString()} as Product); 
                   setIsEditingProduct(false); 
-                }} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                }} className="space-y-10">
                   
-                  {/* Text Data Column */}
-                  <div className="lg:col-span-7 space-y-6">
-                    <div className="bg-black/40 p-6 rounded-[32px] border border-white/5 space-y-5">
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-1">اسم المنتج</label>
-                        <input required value={currentProduct.title || ''} onChange={(e) => setCurrentProduct({...currentProduct, title: e.target.value})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-white font-bold outline-none focus:border-emerald-500 transition-all shadow-inner" placeholder="مثال: ساعة ذكية الترا 2" />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-1">السعر (د.م)</label>
-                          <input type="number" required value={currentProduct.price || ''} onChange={(e) => setCurrentProduct({...currentProduct, price: Number(e.target.value)})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-emerald-500 font-black outline-none focus:border-emerald-500 shadow-inner" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-1">السعر القديم</label>
-                          <input type="number" value={currentProduct.oldPrice || ''} onChange={(e) => setCurrentProduct({...currentProduct, oldPrice: Number(e.target.value)})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-gray-600 font-black outline-none focus:border-emerald-500 shadow-inner" />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-1">الفئة</label>
-                        <select value={currentProduct.category} onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value as Category})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-white font-bold outline-none focus:border-emerald-500 appearance-none shadow-inner">
-                          {Object.values(Category).map(cat => (
-                            <option key={cat} value={cat}>{cat}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Description - Fixed Height with Internal Scroll */}
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-1">وصف المنتج (يظهر كاملاً داخل الإطار)</label>
-                        <div className="border border-white/10 rounded-2xl bg-black overflow-hidden focus-within:border-emerald-500 transition-all h-[240px]">
-                          <textarea 
-                            required
-                            value={currentProduct.description || ''} 
-                            onChange={(e) => setCurrentProduct({...currentProduct, description: e.target.value})} 
-                            className="w-full h-full p-5 bg-transparent text-gray-300 text-sm leading-relaxed outline-none resize-none overflow-y-auto scrollbar-hide" 
-                            placeholder="تفاصيل المنتج ومميزاته التي ستظهر للزبائن..."
-                          ></textarea>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Media Column (Images + Gallery) */}
-                  <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-0">
-                    <div className="bg-black/40 p-6 rounded-[32px] border border-white/5 space-y-6">
-                      
-                      {/* Main Image */}
-                      <div className="space-y-3">
-                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">الصورة الأساسية</label>
+                  {/* TOP SECTION: MEDIA (Always Visible at Start) */}
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-black/40 p-6 rounded-[32px] border border-white/5">
+                      {/* Main Image Selection */}
+                      <div className="md:col-span-5 space-y-3">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-1">الصورة الأساسية</label>
                         <div 
                           onClick={() => mainImageInputRef.current?.click()}
                           className={`aspect-square rounded-3xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group
-                            ${currentProduct.imageUrl ? 'border-emerald-500/20' : 'border-white/5 hover:border-emerald-500/40 bg-black'}`}
+                            ${currentProduct.imageUrl ? 'border-emerald-500/20' : 'border-white/10 hover:border-emerald-500/40 bg-black'}`}
                         >
                           {currentProduct.imageUrl ? (
                             <>
@@ -293,47 +248,90 @@ const Admin: React.FC = () => {
                           ) : (
                             <div className="text-center p-6">
                               <UploadCloud size={40} className="text-emerald-500 mx-auto mb-2 opacity-50" />
-                              <p className="text-[10px] text-gray-500 font-black">اضغط لرفع الصورة الرئيسية</p>
+                              <p className="text-[10px] text-gray-500 font-black">رفع الصورة الرئيسية</p>
                             </div>
                           )}
                           <input type="file" ref={mainImageInputRef} onChange={(e) => handleImageUpload(e, true)} className="hidden" accept="image/*" />
                         </div>
                       </div>
 
-                      {/* Image Gallery - MOVED HERE for visibility */}
-                      <div className="space-y-3 pt-4 border-t border-white/5">
+                      {/* Image Gallery Sync */}
+                      <div className="md:col-span-7 space-y-3">
                         <div className="flex justify-between items-center px-1">
-                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">معرض الصور الإضافي</label>
+                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">معرض الصور الإضافي (بجانب الرئيسية)</label>
                           <span className="text-[10px] text-emerald-500 font-black">{(currentProduct.additionalImages || []).length} / 5</span>
                         </div>
-                        <div className="grid grid-cols-4 gap-2 bg-black/40 p-2 rounded-2xl border border-white/5">
+                        <div className="grid grid-cols-3 gap-3">
                           {(currentProduct.additionalImages || []).map((img, idx) => (
-                            <div key={idx} className="aspect-square rounded-xl overflow-hidden relative group border border-white/5 bg-black shadow-lg">
+                            <div key={idx} className="aspect-square rounded-2xl overflow-hidden relative group border border-white/5 bg-black shadow-lg">
                               <img src={img} className="w-full h-full object-cover" />
-                              <button type="button" onClick={() => removeGalleryImage(idx)} className="absolute inset-0 bg-rose-500/90 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all"><Trash2 size={12}/></button>
+                              <button type="button" onClick={(e) => { e.stopPropagation(); removeGalleryImage(idx); }} className="absolute inset-0 bg-rose-500/90 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all"><Trash2 size={18}/></button>
                             </div>
                           ))}
                           {(currentProduct.additionalImages || []).length < 5 && (
                             <button 
                               type="button" 
                               onClick={() => galleryImageInputRef.current?.click()} 
-                              className="aspect-square rounded-xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center text-gray-600 hover:text-emerald-500 hover:border-emerald-500/40 transition-all bg-black group"
+                              className="aspect-square rounded-2xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center text-gray-600 hover:text-emerald-500 hover:border-emerald-500/40 transition-all bg-black group"
                             >
-                              <ImagePlus size={20} className="group-hover:scale-110 transition-transform" />
+                              <ImagePlus size={28} className="group-hover:scale-110 transition-transform" />
+                              <span className="text-[8px] font-black mt-2">إضافة صورة</span>
                             </button>
                           )}
                         </div>
                         <input type="file" ref={galleryImageInputRef} onChange={(e) => handleImageUpload(e, false)} className="hidden" accept="image/*" />
                       </div>
+                  </div>
 
-                    </div>
+                  {/* BOTTOM SECTION: TEXT DATA */}
+                  <div className="bg-black/20 p-8 rounded-[32px] border border-white/5 space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-1">اسم المنتج</label>
+                          <input required value={currentProduct.title || ''} onChange={(e) => setCurrentProduct({...currentProduct, title: e.target.value})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-white font-bold outline-none focus:border-emerald-500 transition-all" placeholder="مثال: ساعة ذكية الترا 2" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-1">التصنيف</label>
+                          <select value={currentProduct.category} onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value as Category})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-white font-bold outline-none focus:border-emerald-500 appearance-none">
+                            {Object.values(Category).map(cat => (
+                              <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
 
-                    {/* Bottom Save Action */}
-                    <div className="pt-2">
-                        <button type="submit" form="productForm" className="w-full bg-emerald-500 text-black py-6 rounded-[28px] font-black text-xl shadow-2xl shadow-emerald-500/10 active:scale-95 transition-all flex items-center justify-center gap-2">
-                          <Save size={24} /> {currentProduct.id ? 'حفظ التغييرات' : 'نشر المنتج'}
-                        </button>
-                    </div>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-1">السعر (د.م)</label>
+                          <input type="number" required value={currentProduct.price || ''} onChange={(e) => setCurrentProduct({...currentProduct, price: Number(e.target.value)})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-emerald-500 font-black outline-none focus:border-emerald-500" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-1">السعر القديم</label>
+                          <input type="number" value={currentProduct.oldPrice || ''} onChange={(e) => setCurrentProduct({...currentProduct, oldPrice: Number(e.target.value)})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-gray-600 font-black outline-none focus:border-emerald-500" />
+                        </div>
+                      </div>
+
+                      {/* Description - At the bottom of the form */}
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-1">وصف المنتج الكامل</label>
+                        <div className="border border-white/10 rounded-2xl bg-black overflow-hidden focus-within:border-emerald-500 transition-all h-[200px]">
+                          <textarea 
+                            required
+                            value={currentProduct.description || ''} 
+                            onChange={(e) => setCurrentProduct({...currentProduct, description: e.target.value})} 
+                            className="w-full h-full p-5 bg-transparent text-gray-300 text-sm leading-relaxed outline-none resize-none overflow-y-auto scrollbar-hide" 
+                            placeholder="تفاصيل المنتج ومميزاته التي ستظهر للزبائن..."
+                          ></textarea>
+                        </div>
+                      </div>
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="pt-4 flex gap-4">
+                      <button type="submit" className="flex-1 bg-emerald-500 text-black py-6 rounded-[32px] font-black text-xl shadow-2xl shadow-emerald-500/10 active:scale-95 transition-all flex items-center justify-center gap-2">
+                        <Save size={24} /> {currentProduct.id ? 'حفظ التعديلات' : 'نشر المنتج الآن'}
+                      </button>
+                      <button type="button" onClick={() => setIsEditingProduct(false)} className="px-10 bg-white/5 text-gray-400 rounded-[32px] font-black hover:bg-white/10 transition-all border border-white/5">إلغاء</button>
                   </div>
                 </form>
               </div>
@@ -341,7 +339,7 @@ const Admin: React.FC = () => {
           </div>
         )}
 
-        {/* Tab Content: Orders */}
+        {/* Tab Content: Orders List */}
         {activeTab === 'orders' && (
           <div className="space-y-6">
             <div className="relative group">
