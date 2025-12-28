@@ -62,10 +62,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </button>
         </div>
 
-        {/* Footer Share Buttons - Visible on card */}
-        <div className="pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
-           <span className="text-[9px] font-black text-slate-400 dark:text-gray-600 uppercase tracking-widest">شارك العرض:</span>
-           <ShareButtons url={productUrl} title={product.title} image={product.imageUrl} variant="minimal" />
+        {/* Footer Share Buttons - Visible clearly under product */}
+        <div className="pt-5 border-t border-slate-100 dark:border-white/5 flex flex-col gap-3">
+           <div className="flex items-center justify-between overflow-hidden">
+              <span className="text-[8px] font-black text-slate-400 dark:text-gray-600 uppercase tracking-widest whitespace-nowrap ml-2">شارك المنتج:</span>
+              <ShareButtons url={productUrl} title={product.title} image={product.imageUrl} variant="minimal" />
+           </div>
         </div>
       </div>
     </div>
