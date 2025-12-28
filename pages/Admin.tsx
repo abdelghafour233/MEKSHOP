@@ -7,14 +7,14 @@ import { Product, Category, Order, OrderStatus } from '../types';
 import { 
   Plus, Edit, Trash2, X, Lock, Settings as SettingsIcon, 
   Package, LogOut, Search, ShoppingCart, Save, LayoutDashboard, 
-  Smartphone, QrCode, Maximize2, KeyRound, Megaphone, ImagePlus, 
-  UploadCloud, Copy, Download, Eye, EyeOff, ShoppingBag
+  Smartphone, QrCode, KeyRound, Megaphone, ImagePlus, 
+  UploadCloud, Copy, Download, Eye, EyeOff, Info, Images, Tag, DollarSign
 } from 'lucide-react';
 
 const Admin: React.FC = () => {
   const { products, addProduct, updateProduct, deleteProduct } = useProducts();
   const { settings, updateSettings } = useSettings();
-  const { orders, updateOrderDetails, deleteOrder } = useOrders();
+  const { orders, deleteOrder } = useOrders();
   
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
@@ -23,18 +23,20 @@ const Admin: React.FC = () => {
   
   const [isEditingProduct, setIsEditingProduct] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Partial<Product>>({
+    title: '',
+    price: 0,
+    oldPrice: 0,
+    category: Category.ELECTRONICS,
+    description: '',
     features: [],
-    additionalImages: []
+    additionalImages: [],
+    imageUrl: ''
   });
   
   const [orderSearch, setOrderSearch] = useState('');
-  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
-
   const [showQRModal, setShowQRModal] = useState(false);
   const [localSettings, setLocalSettings] = useState(settings);
-
   const [passwords, setPasswords] = useState({ new: '', confirm: '' });
-  const [showNewPass, setShowNewPass] = useState(false);
 
   useEffect(() => {
     setLocalSettings(settings);
@@ -95,7 +97,7 @@ const Admin: React.FC = () => {
       };
       reader.readAsDataURL(file);
     }
-    e.target.value = ''; // Reset input to allow same file re-upload
+    e.target.value = '';
   };
 
   const removeGalleryImage = (index: number) => {
@@ -145,7 +147,7 @@ const Admin: React.FC = () => {
     <div className="min-h-screen bg-[#050505] py-6 md:py-10 pb-24">
       <div className="max-w-[1200px] mx-auto px-4">
         
-        {/* Header Section */}
+        {/* Admin Header */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-6 bg-[#0a0a0a] p-6 rounded-[32px] border border-white/5 shadow-2xl">
             <div className="flex items-center gap-4">
                 <div className="p-4 bg-emerald-500 rounded-2xl shadow-lg">
@@ -158,7 +160,7 @@ const Admin: React.FC = () => {
             </div>
             <div className="flex items-center gap-2 w-full md:w-auto">
                 <button onClick={() => setShowQRModal(true)} className="flex-1 md:flex-none bg-emerald-500/10 text-emerald-500 px-5 py-3 rounded-xl border border-emerald-500/20 font-black flex items-center justify-center gap-2 hover:bg-emerald-500 hover:text-black transition-all">
-                    <QrCode size={18} /> مزامنة
+                    <QrCode size={18} /> مزامنة الهاتف
                 </button>
                 <button onClick={handleLogout} className="flex-1 md:flex-none bg-rose-500/10 text-rose-500 px-5 py-3 rounded-xl border border-rose-500/20 font-black hover:bg-rose-500 hover:text-white transition-all">
                     <LogOut size={18} /> خروج
@@ -166,7 +168,7 @@ const Admin: React.FC = () => {
             </div>
         </div>
 
-        {/* Tab Switching */}
+        {/* Navigation Tabs */}
         <div className="bg-[#0a0a0a] p-1.5 rounded-[24px] border border-white/5 mb-8 flex gap-1 overflow-x-auto scrollbar-hide">
             {(['orders', 'products', 'settings'] as const).map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 min-w-[100px] py-3.5 rounded-xl font-black transition-all text-xs flex items-center justify-center gap-2 ${activeTab === tab ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}>
@@ -175,10 +177,10 @@ const Admin: React.FC = () => {
             ))}
         </div>
 
-        {/* Tab Content: Products List */}
+        {/* Tab Content: Products */}
         {activeTab === 'products' && (
           <div className="space-y-6">
-            <button onClick={() => { setCurrentProduct({ features: [], additionalImages: [] }); setIsEditingProduct(true); }} className="w-full bg-emerald-500 text-black py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-2 shadow-xl hover:bg-emerald-400 transition-all active:scale-95">
+            <button onClick={() => { setCurrentProduct({ features: [], additionalImages: [], title: '', price: 0, description: '' }); setIsEditingProduct(true); }} className="w-full bg-emerald-500 text-black py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-2 shadow-xl hover:bg-emerald-400 transition-all active:scale-95">
               <Plus size={20} /> إضافة منتج جديد
             </button>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -186,7 +188,7 @@ const Admin: React.FC = () => {
                 <div key={product.id} className="bg-[#0a0a0a] rounded-[28px] border border-white/5 overflow-hidden shadow-xl group flex flex-col">
                   <div className="aspect-square bg-black relative">
                     <img src={product.imageUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all" />
-                    <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-md text-emerald-500 px-2 py-0.5 rounded-full text-[8px] font-black uppercase border border-white/5">{product.category}</div>
+                    <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-md text-emerald-500 px-2 py-0.5 rounded-full text-[8px] font-black border border-white/5">{product.category}</div>
                   </div>
                   <div className="p-4 flex-1 flex flex-col">
                     <h3 className="text-white font-black text-sm mb-4 line-clamp-1">{product.title}</h3>
@@ -204,21 +206,21 @@ const Admin: React.FC = () => {
           </div>
         )}
 
-        {/* PRODUCT EDITOR MODAL - TOP MEDIA LAYOUT */}
+        {/* MODAL: REDESIGNED PRODUCT EDITOR (ALL FIELDS VISIBLE) */}
         {isEditingProduct && (
-          <div className="fixed inset-0 bg-black/95 backdrop-blur-2xl z-[1000] flex items-center justify-center p-2 md:p-6 overflow-hidden">
+          <div className="fixed inset-0 bg-black/98 backdrop-blur-2xl z-[1000] flex items-center justify-center p-2 md:p-4 overflow-hidden">
             <div className="bg-[#0c0c0c] border border-white/10 w-full max-w-5xl rounded-[40px] shadow-4xl animate-in zoom-in duration-300 flex flex-col max-h-[95vh]">
               
-              {/* Fixed Header */}
+              {/* Modal Header (Fixed) */}
               <div className="flex items-center justify-between px-8 py-5 border-b border-white/5 bg-black/50">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-xl"><Package size={24}/></div>
-                  <h2 className="text-xl font-black text-white">{currentProduct.id ? 'تحرير بيانات المنتج' : 'إضافة منتج جديد'}</h2>
+                  <h2 className="text-xl font-black text-white">{currentProduct.id ? 'تحرير المنتج' : 'إضافة منتج جديد'}</h2>
                 </div>
                 <button onClick={() => setIsEditingProduct(false)} className="p-2 bg-white/5 rounded-full text-gray-500 hover:text-white transition-all"><X size={24} /></button>
               </div>
 
-              {/* Scrollable Form Body */}
+              {/* Modal Content (Scrollable) */}
               <div className="p-6 md:p-10 overflow-y-auto scrollbar-hide flex-1">
                 <form id="productForm" onSubmit={(e) => { 
                   e.preventDefault(); 
@@ -226,120 +228,145 @@ const Admin: React.FC = () => {
                   if(currentProduct.id) updateProduct(currentProduct as Product); 
                   else addProduct({...currentProduct, id: Date.now().toString()} as Product); 
                   setIsEditingProduct(false); 
-                }} className="space-y-10">
+                }} className="space-y-8">
                   
-                  {/* TOP SECTION: MEDIA (Always Visible at Start) */}
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-black/40 p-6 rounded-[32px] border border-white/5">
-                      {/* Main Image Selection */}
-                      <div className="md:col-span-5 space-y-3">
-                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-1">الصورة الأساسية</label>
-                        <div 
-                          onClick={() => mainImageInputRef.current?.click()}
-                          className={`aspect-square rounded-3xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group
-                            ${currentProduct.imageUrl ? 'border-emerald-500/20' : 'border-white/10 hover:border-emerald-500/40 bg-black'}`}
-                        >
-                          {currentProduct.imageUrl ? (
-                            <>
-                              <img src={currentProduct.imageUrl} className="w-full h-full object-cover" />
-                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
-                                <span className="bg-emerald-500 text-black px-4 py-2 rounded-xl font-black text-xs">تغيير الصورة</span>
-                              </div>
-                            </>
-                          ) : (
-                            <div className="text-center p-6">
-                              <UploadCloud size={40} className="text-emerald-500 mx-auto mb-2 opacity-50" />
-                              <p className="text-[10px] text-gray-500 font-black">رفع الصورة الرئيسية</p>
+                  {/* TOP SECTION: MEDIA & BASIC INFO (Side by Side) */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    
+                    {/* Media Column (Images) */}
+                    <div className="lg:col-span-5 space-y-6">
+                        <div className="bg-black/40 p-5 rounded-[32px] border border-white/5 space-y-5">
+                            <div className="flex items-center gap-2 text-emerald-500 mb-2">
+                                <Images size={18} />
+                                <span className="text-[10px] font-black uppercase tracking-widest">معرض الصور</span>
                             </div>
-                          )}
-                          <input type="file" ref={mainImageInputRef} onChange={(e) => handleImageUpload(e, true)} className="hidden" accept="image/*" />
-                        </div>
-                      </div>
-
-                      {/* Image Gallery Sync */}
-                      <div className="md:col-span-7 space-y-3">
-                        <div className="flex justify-between items-center px-1">
-                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">معرض الصور الإضافي (بجانب الرئيسية)</label>
-                          <span className="text-[10px] text-emerald-500 font-black">{(currentProduct.additionalImages || []).length} / 5</span>
-                        </div>
-                        <div className="grid grid-cols-3 gap-3">
-                          {(currentProduct.additionalImages || []).map((img, idx) => (
-                            <div key={idx} className="aspect-square rounded-2xl overflow-hidden relative group border border-white/5 bg-black shadow-lg">
-                              <img src={img} className="w-full h-full object-cover" />
-                              <button type="button" onClick={(e) => { e.stopPropagation(); removeGalleryImage(idx); }} className="absolute inset-0 bg-rose-500/90 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all"><Trash2 size={18}/></button>
-                            </div>
-                          ))}
-                          {(currentProduct.additionalImages || []).length < 5 && (
-                            <button 
-                              type="button" 
-                              onClick={() => galleryImageInputRef.current?.click()} 
-                              className="aspect-square rounded-2xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center text-gray-600 hover:text-emerald-500 hover:border-emerald-500/40 transition-all bg-black group"
+                            
+                            {/* Main Upload Box */}
+                            <div 
+                              onClick={() => mainImageInputRef.current?.click()}
+                              className={`aspect-square rounded-3xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group
+                                ${currentProduct.imageUrl ? 'border-emerald-500/20' : 'border-white/10 hover:border-emerald-500/40 bg-black'}`}
                             >
-                              <ImagePlus size={28} className="group-hover:scale-110 transition-transform" />
-                              <span className="text-[8px] font-black mt-2">إضافة صورة</span>
-                            </button>
-                          )}
+                              {currentProduct.imageUrl ? (
+                                <>
+                                  <img src={currentProduct.imageUrl} className="w-full h-full object-cover" />
+                                  <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                                    <span className="bg-emerald-500 text-black px-4 py-2 rounded-xl font-black text-xs">تغيير الصورة</span>
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="text-center p-6">
+                                  <UploadCloud size={40} className="text-emerald-500 mx-auto mb-2 opacity-50" />
+                                  <p className="text-[10px] text-gray-400 font-black">اضغط لرفع الصورة الرئيسية</p>
+                                </div>
+                              )}
+                              <input type="file" ref={mainImageInputRef} onChange={(e) => handleImageUpload(e, true)} className="hidden" accept="image/*" />
+                            </div>
+
+                            {/* Gallery Thumbnails */}
+                            <div className="grid grid-cols-4 gap-2 pt-2 border-t border-white/5">
+                                {(currentProduct.additionalImages || []).map((img, idx) => (
+                                    <div key={idx} className="aspect-square rounded-xl overflow-hidden relative group border border-white/10 bg-black">
+                                        <img src={img} className="w-full h-full object-cover" />
+                                        <button type="button" onClick={() => removeGalleryImage(idx)} className="absolute inset-0 bg-rose-600/90 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all"><Trash2 size={12}/></button>
+                                    </div>
+                                ))}
+                                {(currentProduct.additionalImages || []).length < 5 && (
+                                    <button 
+                                        type="button" 
+                                        onClick={() => galleryImageInputRef.current?.click()} 
+                                        className="aspect-square rounded-xl border-2 border-dashed border-white/10 flex items-center justify-center text-gray-600 hover:text-emerald-500 hover:border-emerald-500/40 transition-all bg-black"
+                                    >
+                                        <ImagePlus size={20} />
+                                    </button>
+                                )}
+                            </div>
+                            <input type="file" ref={galleryImageInputRef} onChange={(e) => handleImageUpload(e, false)} className="hidden" accept="image/*" />
                         </div>
-                        <input type="file" ref={galleryImageInputRef} onChange={(e) => handleImageUpload(e, false)} className="hidden" accept="image/*" />
-                      </div>
+                    </div>
+
+                    {/* Basic Info Column (Fields) */}
+                    <div className="lg:col-span-7 space-y-5">
+                        <div className="bg-black/40 p-6 rounded-[32px] border border-white/5 space-y-6">
+                            
+                            {/* Product Title */}
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-gray-500">
+                                    <Tag size={14} />
+                                    <label className="text-[10px] font-black uppercase tracking-widest">اسم المنتج</label>
+                                </div>
+                                <input required value={currentProduct.title || ''} onChange={(e) => setCurrentProduct({...currentProduct, title: e.target.value})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-white font-bold outline-none focus:border-emerald-500 shadow-xl" placeholder="مثال: ساعة ذكية ألترا 2" />
+                            </div>
+
+                            {/* Pricing Grid */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 text-gray-500">
+                                        <DollarSign size={14} />
+                                        <label className="text-[10px] font-black uppercase tracking-widest">السعر الحالي (د.م)</label>
+                                    </div>
+                                    <input type="number" required value={currentProduct.price || ''} onChange={(e) => setCurrentProduct({...currentProduct, price: Number(e.target.value)})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-emerald-500 font-black outline-none focus:border-emerald-500" placeholder="299" />
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 text-gray-500">
+                                        <DollarSign size={14} className="opacity-50" />
+                                        <label className="text-[10px] font-black uppercase tracking-widest">السعر القديم</label>
+                                    </div>
+                                    <input type="number" value={currentProduct.oldPrice || ''} onChange={(e) => setCurrentProduct({...currentProduct, oldPrice: Number(e.target.value)})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-gray-600 font-black outline-none focus:border-emerald-500" placeholder="450" />
+                                </div>
+                            </div>
+
+                            {/* Category Select */}
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-gray-500">
+                                    <LayoutDashboard size={14} />
+                                    <label className="text-[10px] font-black uppercase tracking-widest">التصنيف</label>
+                                </div>
+                                <select value={currentProduct.category} onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value as Category})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-white font-bold outline-none focus:border-emerald-500 appearance-none cursor-pointer">
+                                    {Object.values(Category).map(cat => (
+                                        <option key={cat} value={cat}>{cat}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                        </div>
+                    </div>
                   </div>
 
-                  {/* BOTTOM SECTION: TEXT DATA */}
-                  <div className="bg-black/20 p-8 rounded-[32px] border border-white/5 space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-1">اسم المنتج</label>
-                          <input required value={currentProduct.title || ''} onChange={(e) => setCurrentProduct({...currentProduct, title: e.target.value})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-white font-bold outline-none focus:border-emerald-500 transition-all" placeholder="مثال: ساعة ذكية الترا 2" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-1">التصنيف</label>
-                          <select value={currentProduct.category} onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value as Category})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-white font-bold outline-none focus:border-emerald-500 appearance-none">
-                            {Object.values(Category).map(cat => (
-                              <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                          </select>
-                        </div>
+                  {/* BOTTOM SECTION: DESCRIPTION (Full Width) */}
+                  <div className="bg-black/40 p-6 rounded-[32px] border border-white/5 space-y-4">
+                      <div className="flex items-center gap-2 text-emerald-500">
+                          <Info size={18} />
+                          <label className="text-[10px] font-black uppercase tracking-widest">وصف وتفاصيل المنتج</label>
                       </div>
-
-                      <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-1">السعر (د.م)</label>
-                          <input type="number" required value={currentProduct.price || ''} onChange={(e) => setCurrentProduct({...currentProduct, price: Number(e.target.value)})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-emerald-500 font-black outline-none focus:border-emerald-500" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-1">السعر القديم</label>
-                          <input type="number" value={currentProduct.oldPrice || ''} onChange={(e) => setCurrentProduct({...currentProduct, oldPrice: Number(e.target.value)})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-gray-600 font-black outline-none focus:border-emerald-500" />
-                        </div>
-                      </div>
-
-                      {/* Description - At the bottom of the form */}
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-1">وصف المنتج الكامل</label>
-                        <div className="border border-white/10 rounded-2xl bg-black overflow-hidden focus-within:border-emerald-500 transition-all h-[200px]">
+                      <div className="border border-white/10 rounded-[28px] bg-black overflow-hidden focus-within:border-emerald-500 transition-all">
                           <textarea 
-                            required
-                            value={currentProduct.description || ''} 
-                            onChange={(e) => setCurrentProduct({...currentProduct, description: e.target.value})} 
-                            className="w-full h-full p-5 bg-transparent text-gray-300 text-sm leading-relaxed outline-none resize-none overflow-y-auto scrollbar-hide" 
-                            placeholder="تفاصيل المنتج ومميزاته التي ستظهر للزبائن..."
+                              required
+                              rows={10}
+                              value={currentProduct.description || ''} 
+                              onChange={(e) => setCurrentProduct({...currentProduct, description: e.target.value})} 
+                              className="w-full p-6 bg-transparent text-gray-300 text-sm leading-relaxed outline-none resize-none overflow-y-auto scrollbar-hide" 
+                              placeholder="اكتب هنا كل ما يحتاج الزبون معرفته عن المنتج، المميزات، طريقة الاستخدام، الخ..."
                           ></textarea>
-                        </div>
                       </div>
                   </div>
-                  
-                  {/* Action Buttons */}
-                  <div className="pt-4 flex gap-4">
-                      <button type="submit" className="flex-1 bg-emerald-500 text-black py-6 rounded-[32px] font-black text-xl shadow-2xl shadow-emerald-500/10 active:scale-95 transition-all flex items-center justify-center gap-2">
-                        <Save size={24} /> {currentProduct.id ? 'حفظ التعديلات' : 'نشر المنتج الآن'}
-                      </button>
-                      <button type="button" onClick={() => setIsEditingProduct(false)} className="px-10 bg-white/5 text-gray-400 rounded-[32px] font-black hover:bg-white/10 transition-all border border-white/5">إلغاء</button>
-                  </div>
+
                 </form>
               </div>
+
+              {/* Fixed Bottom Footer (Buttons) */}
+              <div className="px-10 py-6 border-t border-white/5 bg-black/80 backdrop-blur-md flex gap-4">
+                  <button type="submit" form="productForm" className="flex-1 bg-emerald-500 text-black py-5 rounded-[24px] font-black text-xl shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-2">
+                    <Save size={24} /> {currentProduct.id ? 'حفظ التعديلات' : 'نشر المنتج الآن'}
+                  </button>
+                  <button type="button" onClick={() => setIsEditingProduct(false)} className="px-10 bg-white/5 text-gray-400 rounded-[24px] font-black hover:bg-white/10 transition-all border border-white/5">إلغاء</button>
+              </div>
+
             </div>
           </div>
         )}
 
-        {/* Tab Content: Orders List */}
+        {/* Tab Content: Orders */}
         {activeTab === 'orders' && (
           <div className="space-y-6">
             <div className="relative group">
@@ -371,10 +398,8 @@ const Admin: React.FC = () => {
                           {getStatusLabel(order.status)}
                         </span>
                       </td>
-                      <td className="p-6">
-                        <div className="flex justify-center gap-2">
-                          <button onClick={() => { if(confirm('حذف الطلب؟')) deleteOrder(order.id) }} className="p-3 bg-white/5 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all border border-white/5"><Trash2 size={16} /></button>
-                        </div>
+                      <td className="p-6 text-center">
+                        <button onClick={() => { if(confirm('حذف الطلب؟')) deleteOrder(order.id) }} className="p-3 bg-white/5 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all border border-white/5"><Trash2 size={16} /></button>
                       </td>
                     </tr>
                   ))}
@@ -388,7 +413,7 @@ const Admin: React.FC = () => {
         {activeTab === 'settings' && (
           <div className="max-w-4xl mx-auto space-y-8 pb-20">
             <div className="bg-[#0a0a0a] p-8 md:p-10 rounded-[40px] border border-emerald-500/20 shadow-4xl text-center">
-              <h2 className="text-2xl font-black text-white mb-6 flex items-center justify-center gap-4"><Smartphone className="text-emerald-500"/> مزامنة البيانات</h2>
+              <h2 className="text-2xl font-black text-white mb-6 flex items-center justify-center gap-4"><Smartphone className="text-emerald-500"/> مزامنة الهاتف</h2>
               <div className="bg-white p-6 rounded-[32px] inline-block mb-8 shadow-2xl">
                   <img src={qrImageUrl} className="w-[280px] h-[280px]" alt="Sync QR" />
               </div>
@@ -435,7 +460,7 @@ const Admin: React.FC = () => {
           </div>
         )}
 
-        {/* Large QR Modal */}
+        {/* Sync QR Modal */}
         {showQRModal && activeTab !== 'settings' && (
           <div className="fixed inset-0 bg-black/98 backdrop-blur-xl z-[2000] flex items-center justify-center p-4">
              <div className="bg-[#111] p-10 rounded-[48px] border border-white/10 max-w-lg w-full text-center relative shadow-4xl animate-in fade-in zoom-in duration-300">
