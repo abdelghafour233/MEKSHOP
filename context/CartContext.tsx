@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { CartItem, Product } from '../types';
+import { useSettings } from './SettingsContext';
+import { trackAddToCartEvent } from '../components/TrackingScripts';
 
 interface CartContextType {
   cart: CartItem[];
@@ -13,6 +15,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const { settings } = useSettings();
 
   // Load cart from local storage on mount
   useEffect(() => {
@@ -32,6 +35,9 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [cart]);
 
   const addToCart = (product: Product) => {
+    // Trigger FB Tracking
+    trackAddToCartEvent(settings, product);
+
     setCart((prev) => {
       const existingItem = prev.find((item) => item.id === product.id);
       if (existingItem) {

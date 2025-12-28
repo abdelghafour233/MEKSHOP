@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trash2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Trash2, CheckCircle, AlertCircle, ShoppingCart, User, Phone, MapPin } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useSettings } from '../context/SettingsContext';
 import { trackPurchaseEvent } from '../components/TrackingScripts';
@@ -40,11 +40,8 @@ const Checkout: React.FC = () => {
         status: 'Pending'
     };
 
-    // 1. Send to Google Sheets (if configured)
     if (settings.googleSheetUrl) {
         try {
-            // Note: 'no-cors' is needed for Google Apps Script Web Apps usually, 
-            // but it means we won't get a readable JSON response. We assume success.
             await fetch(settings.googleSheetUrl, {
                 method: 'POST',
                 mode: 'no-cors', 
@@ -53,38 +50,34 @@ const Checkout: React.FC = () => {
                 },
                 body: JSON.stringify(orderData)
             });
-            console.log("Sent to Google Sheet");
         } catch (error) {
             console.error("Error sending to Google Sheet", error);
         }
     }
 
-    // 2. Fire Tracking Pixels
     trackPurchaseEvent(settings, totalAmount, 'MAD');
 
-    // 3. Complete Process
     setTimeout(() => {
-      console.log('Order Submitted Locally:', orderData);
       setIsSubmitting(false);
       setSuccess(true);
       clearCart();
-    }, 1000);
+    }, 1500);
   };
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="h-10 w-10 text-green-600" />
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
+        <div className="bg-slate-900 p-10 md:p-16 rounded-[40px] shadow-2xl max-w-2xl w-full text-center border border-slate-800">
+          <div className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-10">
+            <CheckCircle className="h-12 w-12 text-emerald-500" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">تم استلام طلبك بنجاح!</h2>
-          <p className="text-gray-600 mb-6">شكراً لثقتك بنا. سنتصل بك قريباً لتأكيد الطلب وتحديد موعد التوصيل.</p>
+          <h2 className="text-4xl font-black text-slate-100 mb-6">شكراً لطلبك من berrima store!</h2>
+          <p className="text-slate-400 text-lg mb-10 leading-relaxed font-light">تم استلام طلبك بنجاح. سيقوم أحد موظفينا بالتواصل معك عبر الهاتف خلال الساعات القادمة لتأكيد العنوان وموعد التوصيل.</p>
           <button 
             onClick={() => navigate('/')}
-            className="w-full bg-blue-900 text-white py-3 rounded-lg font-semibold hover:bg-blue-800 transition-colors"
+            className="w-full bg-amber-500 text-slate-950 py-5 rounded-2xl font-black text-xl hover:bg-amber-400 transition-all shadow-xl shadow-amber-500/10"
           >
-            العودة للرئيسية
+            العودة للرئيسية وتصفح المزيد
           </button>
         </div>
       </div>
@@ -92,42 +85,47 @@ const Checkout: React.FC = () => {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen py-12">
+    <div className="bg-slate-950 min-h-screen py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">إتمام الطلب</h1>
+        <div className="mb-12">
+            <h1 className="text-4xl font-black text-slate-100 mb-4">إتمام عملية الشراء</h1>
+            <div className="h-1.5 w-20 bg-amber-500 rounded-full"></div>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           
-          {/* Order Summary */}
+          {/* Order Summary - Dark Side */}
           <div className="order-2 lg:order-1">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-6 bg-gray-50 border-b border-gray-100">
-                <h2 className="text-lg font-bold text-gray-900">ملخص الطلب</h2>
+            <div className="bg-slate-900 rounded-[32px] shadow-xl border border-slate-800 overflow-hidden sticky top-24">
+              <div className="p-8 border-b border-slate-800 flex items-center gap-4">
+                <ShoppingCart className="w-6 h-6 text-amber-500" />
+                <h2 className="text-xl font-black text-slate-100">ملخص سلة المشتريات</h2>
               </div>
-              <div className="p-6">
+              <div className="p-8">
                 {cart.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 mb-4">السلة فارغة</p>
-                    <button onClick={() => navigate('/products')} className="text-blue-600 font-semibold hover:underline">تسوق الآن</button>
+                  <div className="text-center py-12">
+                    <p className="text-slate-500 mb-6 font-bold">سلة المشتريات فارغة تماماً</p>
+                    <button onClick={() => navigate('/products')} className="text-amber-500 font-black hover:text-amber-400">تصفح المنتجات الآن</button>
                   </div>
                 ) : (
-                  <ul className="divide-y divide-gray-100">
+                  <ul className="space-y-6">
                     {cart.map((item) => (
-                      <li key={item.id} className="py-4 flex gap-4">
-                        <img src={item.imageUrl} alt={item.title} className="w-16 h-16 object-cover rounded-lg" />
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 text-sm">{item.title}</h3>
-                          <div className="flex justify-between items-center mt-2">
-                            <span className="text-gray-500 text-sm">الكمية: {item.quantity}</span>
-                            <span className="font-bold text-blue-900">{item.price * item.quantity} د.م</span>
+                      <li key={item.id} className="flex gap-5 group">
+                        <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 bg-slate-950 p-1 border border-slate-800">
+                            <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover rounded-xl" />
+                        </div>
+                        <div className="flex-1 flex flex-col justify-center">
+                          <h3 className="font-bold text-slate-100 text-sm leading-snug line-clamp-1">{item.title}</h3>
+                          <div className="flex justify-between items-center mt-3">
+                            <span className="text-slate-500 text-xs font-black bg-slate-950 px-2 py-1 rounded-lg">الكمية: {item.quantity}</span>
+                            <span className="font-black text-amber-500">{item.price * item.quantity} د.م</span>
                           </div>
                         </div>
                         <button 
                           onClick={() => removeFromCart(item.id)}
-                          className="text-red-500 hover:text-red-700 p-1"
-                          aria-label="حذف"
+                          className="text-slate-600 hover:text-red-500 self-center p-2 rounded-xl hover:bg-red-500/10 transition-all"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-5 w-5" />
                         </button>
                       </li>
                     ))}
@@ -135,18 +133,18 @@ const Checkout: React.FC = () => {
                 )}
                 
                 {cart.length > 0 && (
-                  <div className="mt-6 pt-6 border-t border-gray-100 space-y-3">
-                    <div className="flex justify-between text-gray-600">
-                      <span>المجموع الفرعي</span>
+                  <div className="mt-10 pt-10 border-t border-slate-800 space-y-5">
+                    <div className="flex justify-between text-slate-400 font-bold">
+                      <span>المجموع الجزئي</span>
                       <span>{totalAmount} د.م</span>
                     </div>
-                    <div className="flex justify-between text-gray-600">
-                      <span>التوصيل</span>
-                      <span className="text-green-600 font-semibold">مجاني</span>
+                    <div className="flex justify-between text-slate-400 font-bold">
+                      <span>مصاريف التوصيل</span>
+                      <span className="text-emerald-500">مجاني (0.00 د.م)</span>
                     </div>
-                    <div className="flex justify-between text-xl font-bold text-gray-900 pt-3">
-                      <span>الإجمالي</span>
-                      <span>{totalAmount} د.م</span>
+                    <div className="flex justify-between text-2xl font-black text-slate-100 pt-5 border-t border-slate-800">
+                      <span>الإجمالي النهائي</span>
+                      <span className="text-amber-500">{totalAmount} د.م</span>
                     </div>
                   </div>
                 )}
@@ -154,83 +152,95 @@ const Checkout: React.FC = () => {
             </div>
           </div>
 
-          {/* Checkout Form */}
+          {/* Customer Form - Dark Form */}
           <div className="order-1 lg:order-2">
-            <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6 sm:p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">معلومات التوصيل</h2>
+            <div className="bg-slate-900 rounded-[32px] shadow-2xl border border-slate-800 p-8 md:p-10">
+              <h2 className="text-2xl font-black text-slate-100 mb-8 flex items-center gap-3">
+                  معلومات التوصيل
+              </h2>
               
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-8">
                 
-                <div>
-                  <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">الاسم الكامل</label>
-                  <input
-                    type="text"
-                    id="fullName"
-                    name="fullName"
-                    required
-                    value={formData.fullName}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                    placeholder="مثال: محمد العلوي"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="relative group">
+                        <label className="block text-xs font-black text-slate-500 mb-2 mr-1 flex items-center gap-2 group-focus-within:text-amber-500 transition-colors">
+                            <User className="w-4 h-4" /> الاسم الكامل
+                        </label>
+                        <input
+                            type="text"
+                            name="fullName"
+                            required
+                            value={formData.fullName}
+                            onChange={handleInputChange}
+                            className="w-full px-5 py-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all placeholder-slate-700"
+                            placeholder="محمد العلوي"
+                        />
+                    </div>
+
+                    <div className="relative group">
+                        <label className="block text-xs font-black text-slate-500 mb-2 mr-1 flex items-center gap-2 group-focus-within:text-amber-500 transition-colors">
+                            <Phone className="w-4 h-4" /> رقم الهاتف
+                        </label>
+                        <input
+                            type="tel"
+                            name="phone"
+                            required
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                            className="w-full px-5 py-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all placeholder-slate-700 font-mono"
+                            placeholder="0600000000"
+                        />
+                    </div>
                 </div>
 
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">رقم الهاتف</label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    required
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                    placeholder="0600000000"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">المدينة</label>
-                  <input
-                    type="text"
-                    id="city"
-                    name="city"
-                    required
-                    value={formData.city}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                    placeholder="الدار البيضاء"
-                  />
+                <div className="relative group">
+                    <label className="block text-xs font-black text-slate-500 mb-2 mr-1 flex items-center gap-2 group-focus-within:text-amber-500 transition-colors">
+                        <MapPin className="w-4 h-4" /> المدينة
+                    </label>
+                    <input
+                        type="text"
+                        name="city"
+                        required
+                        value={formData.city}
+                        onChange={handleInputChange}
+                        className="w-full px-5 py-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all placeholder-slate-700"
+                        placeholder="الدار البيضاء، الرباط، طنجة..."
+                    />
                 </div>
                 
-                <div>
-                  <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">العنوان (اختياري)</label>
+                <div className="relative group">
+                  <label className="block text-xs font-black text-slate-500 mb-2 mr-1 flex items-center gap-2 group-focus-within:text-amber-500 transition-colors">
+                      العنوان بالتفصيل
+                  </label>
                   <textarea
-                    id="address"
                     name="address"
-                    rows={2}
+                    rows={3}
                     value={formData.address}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                    placeholder="اسم الشارع، رقم المنزل..."
+                    className="w-full px-5 py-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all placeholder-slate-700 resize-none"
+                    placeholder="اسم الشارع، رقم المنزل، الطابق..."
                   />
                 </div>
 
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex gap-3 items-start">
-                  <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-amber-800">
-                    الدفع نقداً عند الاستلام. لن يتم طلب أي معلومات بنكية. يرجى التأكد من أن هاتفك مفتوح لتأكيد الطلب.
+                <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-6 flex gap-4 items-start">
+                  <div className="p-2 bg-amber-500/10 rounded-lg"><AlertCircle className="h-6 w-6 text-amber-500 flex-shrink-0" /></div>
+                  <p className="text-sm text-slate-400 leading-relaxed font-bold">
+                    <span className="text-amber-500 block mb-1">دفع نقداً عند الاستلام (COD)</span>
+                    خدمة الدفع متوفرة بعد استلام الطلب. يرجى إبقاء هاتفك متاحاً لتلقي اتصال تأكيد الطلب من فريقنا.
                   </p>
                 </div>
 
                 <button
                   type="submit"
                   disabled={isSubmitting || cart.length === 0}
-                  className={`w-full py-4 rounded-lg font-bold text-lg text-white shadow-lg transition-all
-                    ${isSubmitting || cart.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-amber-500 hover:bg-amber-400 hover:shadow-xl hover:-translate-y-1 text-blue-900'}
+                  className={`w-full py-6 rounded-2xl font-black text-2xl shadow-2xl transition-all transform active:scale-95
+                    ${isSubmitting || cart.length === 0 
+                      ? 'bg-slate-800 text-slate-600 cursor-not-allowed border border-slate-700' 
+                      : 'bg-amber-500 text-slate-950 hover:bg-amber-400 hover:shadow-amber-500/20 hover:-translate-y-1'
+                    }
                   `}
                 >
-                  {isSubmitting ? 'جاري الطلب...' : 'تأكيد الطلب الآن'}
+                  {isSubmitting ? 'جاري الإرسال...' : 'تأكيد الشراء الآن'}
                 </button>
 
               </form>

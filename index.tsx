@@ -1,6 +1,5 @@
 
-
-import React, { ReactNode } from 'react';
+import React, { Component, ReactNode } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
@@ -20,12 +19,17 @@ interface ErrorBoundaryState {
 }
 
 // Error Boundary Component to catch runtime errors
-// Fix: Extending React.Component with explicit generics ensures this.state and this.props are properly typed
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+// Fix: Extending Component with explicit generics and re-declaring state/props to satisfy strict compiler checks where inheritance might be obscured
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  // Explicitly declare state and props to resolve 'Property does not exist' errors in specific environments
+  public state: ErrorBoundaryState;
+  public props: ErrorBoundaryProps;
+
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    // Fix: Initialize state in constructor with correct typing from React.Component
+    // Fix: Initialize state in constructor; super(props) handles this.props initialization
     this.state = { hasError: false, error: null };
+    this.props = props;
   }
 
   static getDerivedStateFromError(error: any): ErrorBoundaryState {
@@ -37,7 +41,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 
   render() {
-    // Fix: Accessing this.state which is now correctly recognized via inheritance from React.Component
+    // Fix: Accessing this.state which is now explicitly declared and recognized
     if (this.state.hasError) {
       return (
         <div style={{ 
@@ -65,7 +69,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
             color: '#374151'
           }}>
             <strong>Error Details:</strong>
-            {/* Fix: state.error access is now valid via React.Component */}
+            {/* Fix: state.error access is now valid through explicit member declaration */}
             <pre style={{ margin: 0 }}>{this.state.error?.toString()}</pre>
           </div>
           <button 
@@ -87,7 +91,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       );
     }
 
-    // Fix: Accessing this.props which is now correctly recognized via inheritance from React.Component
+    // Fix: Accessing this.props which is now explicitly declared and recognized
     return this.props.children;
   }
 }

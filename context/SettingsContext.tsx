@@ -6,6 +6,14 @@ interface Settings {
   googleTagId: string;
   tiktokPixelId: string;
   googleSheetUrl: string;
+  // Facebook Event Toggles
+  fbTrackPageView: boolean;
+  fbTrackAddToCart: boolean;
+  fbTrackInitiateCheckout: boolean;
+  fbTrackPurchase: boolean;
+  // Custom Script Injection
+  headerScripts: string;
+  footerScripts: string;
 }
 
 interface SettingsContextType {
@@ -19,6 +27,12 @@ const defaultSettings: Settings = {
   googleTagId: '',
   tiktokPixelId: '',
   googleSheetUrl: '',
+  fbTrackPageView: true,
+  fbTrackAddToCart: true,
+  fbTrackInitiateCheckout: true,
+  fbTrackPurchase: true,
+  headerScripts: '',
+  footerScripts: '',
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -26,12 +40,12 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
 
-  // Load settings from local storage
   useEffect(() => {
     const savedSettings = localStorage.getItem('souqMaghrebSettings');
     if (savedSettings) {
       try {
-        setSettings(JSON.parse(savedSettings));
+        const parsed = JSON.parse(savedSettings);
+        setSettings({ ...defaultSettings, ...parsed });
       } catch (e) {
         console.error("Failed to parse settings", e);
       }
@@ -56,4 +70,4 @@ export const useSettings = () => {
     throw new Error('useSettings must be used within a SettingsProvider');
   }
   return context;
-};
+}

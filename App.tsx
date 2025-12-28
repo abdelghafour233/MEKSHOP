@@ -30,7 +30,7 @@ function App() {
           <Router>
             <ScrollToTop />
             <TrackingScripts />
-            <div className="flex flex-col min-h-screen font-sans">
+            <div className="flex flex-col min-h-screen font-sans bg-slate-950 text-slate-100">
               <Navbar />
               <main className="flex-grow">
                 <Routes>
