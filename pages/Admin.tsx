@@ -7,7 +7,7 @@ import { useOrders } from '../context/OrderContext';
 import { Product, Category, Order, OrderStatus } from '../types';
 import { 
   Plus, Edit, Trash2, X, Lock, Settings as SettingsIcon, 
-  Package, LogOut, Eye, ShoppingBag, 
+  Package, LogOut, Eye, EyeOff, ShoppingBag, 
   Search, Hash, DollarSign, Clock, ClipboardList, Award, Truck, AlertCircle
 } from 'lucide-react';
 
@@ -34,6 +34,7 @@ const Admin: React.FC = () => {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setPassword('');
+    setShowPassword(false);
   };
 
   const stats = useMemo(() => {
@@ -89,17 +90,28 @@ const Admin: React.FC = () => {
           <h2 className="text-3xl font-black text-white mb-2">إدارة المتجر</h2>
           <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.2em] mb-10">منطقة محظورة</p>
           <form onSubmit={handleLogin} className="space-y-6">
-            <input 
-              type="password" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              placeholder="أدخل كلمة المرور"
-              className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white text-center outline-none focus:border-green-500 transition-all font-mono"
-            />
+            <div className="relative group">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                placeholder="أدخل كلمة المرور"
+                className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white text-center outline-none focus:border-green-500 transition-all font-mono placeholder:text-gray-700"
+              />
+              <button 
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-green-500 transition-colors p-2"
+                title={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+              >
+                {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+              </button>
+            </div>
             <button type="submit" className="w-full bg-green-500 text-black py-5 rounded-2xl font-black text-lg shadow-xl shadow-green-500/20 active:scale-95 transition-all">
                 دخول للنظام
             </button>
           </form>
+          <p className="mt-8 text-gray-700 text-[10px] font-bold uppercase tracking-widest">admin123 :كلمة السر التجريبية</p>
         </div>
       </div>
     );
