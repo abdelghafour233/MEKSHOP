@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Truck, ArrowRight, ShieldCheck, CheckCircle } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
 import { useCart } from '../context/CartContext';
+import ShareButtons from '../components/ShareButtons';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -38,6 +39,7 @@ const ProductDetail: React.FC = () => {
   };
 
   const gallery = [product.imageUrl, ...(product.additionalImages || [])];
+  const currentUrl = window.location.href;
 
   return (
     <div className="bg-slate-50 dark:bg-black min-h-screen py-8 md:py-20 transition-colors duration-500">
@@ -124,6 +126,16 @@ const ProductDetail: React.FC = () => {
                   وصف المنتج
               </h3>
               <p className="text-slate-600 dark:text-gray-400 leading-relaxed text-lg md:text-xl font-medium whitespace-pre-line">{product.description}</p>
+            </div>
+
+            {/* Share Section Added Here */}
+            <div className="mb-10 p-6 md:p-8 bg-white dark:bg-white/5 rounded-[32px] border border-slate-200 dark:border-white/5 shadow-inner">
+               <ShareButtons 
+                 url={currentUrl} 
+                 title={product.title} 
+                 image={product.imageUrl} 
+                 variant="large" 
+               />
             </div>
 
             <div className="mt-auto pt-6 border-t border-slate-200 dark:border-white/5">
