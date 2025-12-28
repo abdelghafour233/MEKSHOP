@@ -92,6 +92,8 @@ const Admin: React.FC = () => {
       };
       reader.readAsDataURL(file);
     }
+    // Reset value to allow re-upload of same file
+    e.target.value = '';
   };
 
   const removeGalleryImage = (index: number) => {
@@ -176,7 +178,7 @@ const Admin: React.FC = () => {
         {activeTab === 'products' && (
           <div className="space-y-6">
             <button onClick={() => { setCurrentProduct({ features: [], additionalImages: [] }); setIsEditingProduct(true); }} className="w-full bg-emerald-500 text-black py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-2 shadow-xl hover:bg-emerald-400 transition-all active:scale-95">
-              <Plus size={20} /> إضافة منتج جديد للمتجر
+              <Plus size={20} /> إضافة منتج جديد
             </button>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {products.map(product => (
@@ -201,12 +203,12 @@ const Admin: React.FC = () => {
           </div>
         )}
 
-        {/* FIXED & IMPROVED PRODUCT MODAL */}
+        {/* COMPACT PRODUCT MODAL - RE-DESIGNED */}
         {isEditingProduct && (
-          <div className="fixed inset-0 bg-black/95 backdrop-blur-lg z-[1000] flex items-center justify-center p-4 md:p-6">
-            <div className="bg-[#0c0c0c] border border-white/10 w-full max-w-5xl rounded-[40px] shadow-4xl animate-in zoom-in duration-300 flex flex-col max-h-[90vh] overflow-hidden">
+          <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[1000] flex items-center justify-center p-2 md:p-6 overflow-hidden">
+            <div className="bg-[#0c0c0c] border border-white/10 w-full max-w-5xl rounded-[40px] shadow-4xl animate-in zoom-in duration-300 flex flex-col max-h-[95vh]">
               
-              {/* Header - Fixed */}
+              {/* Fixed Header */}
               <div className="flex items-center justify-between px-8 py-5 border-b border-white/5 bg-black/50">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-xl"><Package size={24}/></div>
@@ -215,37 +217,37 @@ const Admin: React.FC = () => {
                 <button onClick={() => setIsEditingProduct(false)} className="p-2 bg-white/5 rounded-full text-gray-500 hover:text-white transition-all"><X size={24} /></button>
               </div>
 
-              {/* Body - Scrollable */}
+              {/* Scrollable Form Body */}
               <div className="p-6 md:p-8 overflow-y-auto scrollbar-hide flex-1">
                 <form id="productForm" onSubmit={(e) => { 
                   e.preventDefault(); 
-                  if(!currentProduct.imageUrl) { alert("المرجو رفع صورة رئيسية للمنتج"); return; }
+                  if(!currentProduct.imageUrl) { alert("المرجو رفع صورة رئيسية"); return; }
                   if(currentProduct.id) updateProduct(currentProduct as Product); 
                   else addProduct({...currentProduct, id: Date.now().toString()} as Product); 
                   setIsEditingProduct(false); 
                 }} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                   
-                  {/* Right Column: Text Metadata */}
+                  {/* Text Data Column */}
                   <div className="lg:col-span-7 space-y-6">
                     <div className="bg-black/40 p-6 rounded-[32px] border border-white/5 space-y-5">
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-1">اسم المنتج</label>
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-1">اسم المنتج</label>
                         <input required value={currentProduct.title || ''} onChange={(e) => setCurrentProduct({...currentProduct, title: e.target.value})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-white font-bold outline-none focus:border-emerald-500 transition-all shadow-inner" placeholder="مثال: ساعة ذكية الترا 2" />
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-1">السعر (د.م)</label>
+                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-1">السعر (د.م)</label>
                           <input type="number" required value={currentProduct.price || ''} onChange={(e) => setCurrentProduct({...currentProduct, price: Number(e.target.value)})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-emerald-500 font-black outline-none focus:border-emerald-500 shadow-inner" />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-1">السعر قبل التخفيض</label>
+                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-1">السعر القديم</label>
                           <input type="number" value={currentProduct.oldPrice || ''} onChange={(e) => setCurrentProduct({...currentProduct, oldPrice: Number(e.target.value)})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-gray-600 font-black outline-none focus:border-emerald-500 shadow-inner" />
                         </div>
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-1">تصنيف المنتج</label>
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-1">الفئة</label>
                         <select value={currentProduct.category} onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value as Category})} className="w-full p-4 bg-black border border-white/10 rounded-2xl text-white font-bold outline-none focus:border-emerald-500 appearance-none shadow-inner">
                           {Object.values(Category).map(cat => (
                             <option key={cat} value={cat}>{cat}</option>
@@ -253,33 +255,33 @@ const Admin: React.FC = () => {
                         </select>
                       </div>
 
-                      {/* FIXED Description Field */}
+                      {/* Description - Fixed Height with Internal Scroll */}
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mr-1">وصف المنتج (مميزاته وتفاصيله)</label>
-                        <div className="border border-white/10 rounded-2xl bg-black overflow-hidden focus-within:border-emerald-500 transition-all">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-1">وصف المنتج (يظهر كاملاً داخل الإطار)</label>
+                        <div className="border border-white/10 rounded-2xl bg-black overflow-hidden focus-within:border-emerald-500 transition-all h-[240px]">
                           <textarea 
                             required
-                            rows={8}
                             value={currentProduct.description || ''} 
                             onChange={(e) => setCurrentProduct({...currentProduct, description: e.target.value})} 
-                            className="w-full p-5 bg-transparent text-gray-300 text-sm leading-relaxed outline-none resize-none overflow-y-auto scrollbar-hide" 
-                            placeholder="اكتب هنا تفاصيل المنتج التي ستظهر للزبون..."
+                            className="w-full h-full p-5 bg-transparent text-gray-300 text-sm leading-relaxed outline-none resize-none overflow-y-auto scrollbar-hide" 
+                            placeholder="تفاصيل المنتج ومميزاته التي ستظهر للزبائن..."
                           ></textarea>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Left Column: MEDIA (Main + Gallery) */}
-                  <div className="lg:col-span-5 space-y-6">
+                  {/* Media Column (Images + Gallery) */}
+                  <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-0">
                     <div className="bg-black/40 p-6 rounded-[32px] border border-white/5 space-y-6">
-                      {/* Main Image Selection */}
+                      
+                      {/* Main Image */}
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">الصورة الأساسية (الواجهة)</label>
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">الصورة الأساسية</label>
                         <div 
                           onClick={() => mainImageInputRef.current?.click()}
                           className={`aspect-square rounded-3xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group
-                            ${currentProduct.imageUrl ? 'border-emerald-500/30 shadow-2xl shadow-emerald-500/5' : 'border-white/5 hover:border-emerald-500/50 bg-black'}`}
+                            ${currentProduct.imageUrl ? 'border-emerald-500/20' : 'border-white/5 hover:border-emerald-500/40 bg-black'}`}
                         >
                           {currentProduct.imageUrl ? (
                             <>
@@ -290,71 +292,69 @@ const Admin: React.FC = () => {
                             </>
                           ) : (
                             <div className="text-center p-6">
-                              <UploadCloud size={40} className="text-emerald-500 mx-auto mb-3 opacity-50" />
-                              <p className="text-xs text-white font-black">اضغط لرفع الصورة</p>
-                              <p className="text-[10px] text-gray-600 mt-2 font-bold">صورة مربعة (1:1)</p>
+                              <UploadCloud size={40} className="text-emerald-500 mx-auto mb-2 opacity-50" />
+                              <p className="text-[10px] text-gray-500 font-black">اضغط لرفع الصورة الرئيسية</p>
                             </div>
                           )}
                           <input type="file" ref={mainImageInputRef} onChange={(e) => handleImageUpload(e, true)} className="hidden" accept="image/*" />
                         </div>
                       </div>
 
-                      {/* Image Gallery Sync */}
+                      {/* Image Gallery - MOVED HERE for visibility */}
                       <div className="space-y-3 pt-4 border-t border-white/5">
                         <div className="flex justify-between items-center px-1">
-                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">معرض الصور الإضافية</label>
+                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">معرض الصور الإضافي</label>
                           <span className="text-[10px] text-emerald-500 font-black">{(currentProduct.additionalImages || []).length} / 5</span>
                         </div>
-                        <div className="grid grid-cols-3 gap-3">
+                        <div className="grid grid-cols-4 gap-2 bg-black/40 p-2 rounded-2xl border border-white/5">
                           {(currentProduct.additionalImages || []).map((img, idx) => (
-                            <div key={idx} className="aspect-square rounded-2xl overflow-hidden relative group border border-white/5 bg-black shadow-lg">
+                            <div key={idx} className="aspect-square rounded-xl overflow-hidden relative group border border-white/5 bg-black shadow-lg">
                               <img src={img} className="w-full h-full object-cover" />
-                              <button type="button" onClick={() => removeGalleryImage(idx)} className="absolute inset-0 bg-rose-500/90 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all"><Trash2 size={16}/></button>
+                              <button type="button" onClick={() => removeGalleryImage(idx)} className="absolute inset-0 bg-rose-500/90 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all"><Trash2 size={12}/></button>
                             </div>
                           ))}
                           {(currentProduct.additionalImages || []).length < 5 && (
                             <button 
                               type="button" 
                               onClick={() => galleryImageInputRef.current?.click()} 
-                              className="aspect-square rounded-2xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center text-gray-500 hover:text-emerald-500 hover:border-emerald-500/50 transition-all bg-black group"
+                              className="aspect-square rounded-xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center text-gray-600 hover:text-emerald-500 hover:border-emerald-500/40 transition-all bg-black group"
                             >
-                              <ImagePlus size={24} className="group-hover:scale-110 transition-transform" />
-                              <span className="text-[8px] font-black mt-1">إضافة</span>
+                              <ImagePlus size={20} className="group-hover:scale-110 transition-transform" />
                             </button>
                           )}
                         </div>
                         <input type="file" ref={galleryImageInputRef} onChange={(e) => handleImageUpload(e, false)} className="hidden" accept="image/*" />
                       </div>
+
                     </div>
 
-                    {/* Submit Section - Inside Column 2 for balance */}
-                    <div className="pt-4">
-                      <button type="submit" form="productForm" className="w-full bg-emerald-500 text-black py-6 rounded-3xl font-black text-xl shadow-2xl shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-3">
-                        <Save size={24} /> {currentProduct.id ? 'حفظ جميع التعديلات' : 'نشر المنتج الآن'}
-                      </button>
+                    {/* Bottom Save Action */}
+                    <div className="pt-2">
+                        <button type="submit" form="productForm" className="w-full bg-emerald-500 text-black py-6 rounded-[28px] font-black text-xl shadow-2xl shadow-emerald-500/10 active:scale-95 transition-all flex items-center justify-center gap-2">
+                          <Save size={24} /> {currentProduct.id ? 'حفظ التغييرات' : 'نشر المنتج'}
+                        </button>
                     </div>
                   </div>
                 </form>
               </div>
-
             </div>
           </div>
         )}
 
-        {/* Other Tabs (Orders & Settings) stayed as they were but kept clean */}
+        {/* Tab Content: Orders */}
         {activeTab === 'orders' && (
           <div className="space-y-6">
             <div className="relative group">
               <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-emerald-500 transition-colors" size={20} />
-              <input type="text" placeholder="ابحث عن زبون برقم الهاتف أو الاسم..." value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} className="w-full pr-14 pl-6 py-5 bg-[#0a0a0a] border border-white/5 rounded-3xl text-white outline-none focus:border-emerald-500 font-bold transition-all shadow-xl" />
+              <input type="text" placeholder="ابحث عن زبون..." value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} className="w-full pr-14 pl-6 py-5 bg-[#0a0a0a] border border-white/5 rounded-3xl text-white outline-none focus:border-emerald-500 font-bold transition-all shadow-xl" />
             </div>
             <div className="bg-[#0a0a0a] rounded-[32px] border border-white/5 overflow-x-auto shadow-2xl">
               <table className="w-full text-right min-w-[800px]">
                 <thead className="bg-black/40 text-gray-500 text-[10px] font-black uppercase tracking-widest border-b border-white/5">
                   <tr>
-                    <th className="p-6">معلومات الزبون</th>
+                    <th className="p-6">الزبون</th>
                     <th className="p-6">المدينة</th>
-                    <th className="p-6">قيمة الطلب</th>
+                    <th className="p-6">القيمة</th>
                     <th className="p-6">الحالة</th>
                     <th className="p-6 text-center">الإجراءات</th>
                   </tr>
@@ -375,7 +375,7 @@ const Admin: React.FC = () => {
                       </td>
                       <td className="p-6">
                         <div className="flex justify-center gap-2">
-                          <button onClick={() => { if(confirm('حذف الطلب نهائياً؟')) deleteOrder(order.id) }} className="p-3 bg-white/5 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all border border-white/5"><Trash2 size={16} /></button>
+                          <button onClick={() => { if(confirm('حذف الطلب؟')) deleteOrder(order.id) }} className="p-3 bg-white/5 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all border border-white/5"><Trash2 size={16} /></button>
                         </div>
                       </td>
                     </tr>
@@ -386,16 +386,16 @@ const Admin: React.FC = () => {
           </div>
         )}
 
-        {/* Settings Tab Content */}
+        {/* Tab Content: Settings */}
         {activeTab === 'settings' && (
           <div className="max-w-4xl mx-auto space-y-8 pb-20">
             <div className="bg-[#0a0a0a] p-8 md:p-10 rounded-[40px] border border-emerald-500/20 shadow-4xl text-center">
-              <h2 className="text-2xl font-black text-white mb-6 flex items-center justify-center gap-4"><Smartphone className="text-emerald-500"/> مزامنة الهاتف</h2>
+              <h2 className="text-2xl font-black text-white mb-6 flex items-center justify-center gap-4"><Smartphone className="text-emerald-500"/> مزامنة البيانات</h2>
               <div className="bg-white p-6 rounded-[32px] inline-block mb-8 shadow-2xl">
-                  <img src={qrImageUrl} className="w-[300px] h-[300px]" alt="Admin Sync QR" />
+                  <img src={qrImageUrl} className="w-[280px] h-[280px]" alt="Sync QR" />
               </div>
-              <button onClick={() => { navigator.clipboard.writeText(syncDataString); alert('✅ تم نسخ كود المزامنة!'); }} className="w-full max-w-sm mx-auto py-5 bg-emerald-500 text-black rounded-2xl font-black flex items-center justify-center gap-3">
-                  <Copy size={20}/> نسخ كود المزامنة يدوياً
+              <button onClick={() => { navigator.clipboard.writeText(syncDataString); alert('✅ تم نسخ الكود!'); }} className="w-full max-w-sm mx-auto py-5 bg-emerald-500 text-black rounded-2xl font-black flex items-center justify-center gap-3 active:scale-95 transition-all">
+                  <Copy size={20}/> نسخ كود المزامنة
               </button>
             </div>
 
@@ -431,32 +431,32 @@ const Admin: React.FC = () => {
               </div>
 
               <button type="submit" className="w-full bg-emerald-500 text-black py-6 rounded-[32px] font-black text-xl shadow-2xl shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-3">
-                <Save size={24} /> حفظ الإعدادات وتحديث المتجر
+                <Save size={24} /> حفظ الإعدادات
               </button>
             </form>
           </div>
         )}
 
-        {/* QR Sync Large Modal */}
-        {showQRModal && ( activeTab !== 'settings' && (
-          <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[2000] flex items-center justify-center p-4">
-             <div className="bg-[#111] p-10 rounded-[48px] border border-white/10 max-w-lg w-full text-center relative shadow-4xl">
+        {/* Large QR Modal */}
+        {showQRModal && activeTab !== 'settings' && (
+          <div className="fixed inset-0 bg-black/98 backdrop-blur-xl z-[2000] flex items-center justify-center p-4">
+             <div className="bg-[#111] p-10 rounded-[48px] border border-white/10 max-w-lg w-full text-center relative shadow-4xl animate-in fade-in zoom-in duration-300">
                 <button onClick={() => setShowQRModal(false)} className="absolute top-8 left-8 text-gray-500 hover:text-white transition-colors p-2 bg-white/5 rounded-full"><X size={32}/></button>
                 <h2 className="text-3xl font-black text-white mb-10 tracking-tighter">مزامنة البيانات</h2>
                 <div className="bg-white p-6 rounded-[40px] mb-10 inline-block shadow-[0_0_80px_rgba(16,185,129,0.2)]">
-                    <img src={qrImageUrl} className="w-[320px] h-[320px]" alt="Sync QR Large" />
+                    <img src={qrImageUrl} className="w-[300px] h-[300px]" alt="Sync QR Large" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <button onClick={() => { navigator.clipboard.writeText(syncDataString); alert('✅ تم نسخ الكود!'); }} className="py-5 bg-emerald-500 text-black rounded-2xl font-black flex items-center justify-center gap-2">
-                      <Copy size={20}/> نسخ النص
+                  <button onClick={() => { navigator.clipboard.writeText(syncDataString); alert('✅ تم نسخ الكود!'); }} className="py-5 bg-emerald-500 text-black rounded-2xl font-black flex items-center justify-center gap-2 active:scale-95 transition-all">
+                      <Copy size={20}/> نسخ الكود
                   </button>
-                  <button onClick={() => window.print()} className="py-5 bg-white/5 text-white rounded-2xl font-black flex items-center justify-center gap-2 border border-white/10">
+                  <button onClick={() => window.print()} className="py-5 bg-white/5 text-white rounded-2xl font-black flex items-center justify-center gap-2 border border-white/10 active:scale-95 transition-all">
                       <Download size={20}/> طباعة
                   </button>
                 </div>
              </div>
           </div>
-        ))}
+        )}
 
       </div>
     </div>
