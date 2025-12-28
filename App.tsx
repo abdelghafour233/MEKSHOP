@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -32,34 +32,49 @@ const AnnouncementBar = () => (
 );
 
 function App() {
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('berrima_theme', newTheme);
+  };
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('berrima_theme') as 'dark' | 'light';
+    if (savedTheme) setTheme(savedTheme);
+  }, []);
+
   return (
-    <SettingsProvider>
-      <ProductProvider>
-        <OrderProvider>
-          <CartProvider>
-            <Router>
-              <ScrollToTop />
-              <TrackingScripts />
-              <div className="flex flex-col min-h-screen font-sans bg-black text-slate-100">
-                <AnnouncementBar />
-                <Navbar />
-                <main className="flex-grow">
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/products" element={<ProductList />} />
-                    <Route path="/products/:id" element={<ProductDetail />} />
-                    <Route path="/checkout" element={<Checkout />} />
-                    <Route path="/privacy" element={<Privacy />} />
-                    <Route path="/admin" element={<Admin />} />
-                  </Routes>
-                </main>
-                <Footer />
-              </div>
-            </Router>
-          </CartProvider>
-        </OrderProvider>
-      </ProductProvider>
-    </SettingsProvider>
+    <div className={theme}>
+      <SettingsProvider>
+        <ProductProvider>
+          <OrderProvider>
+            <CartProvider>
+              <Router>
+                <ScrollToTop />
+                <TrackingScripts />
+                <div className="flex flex-col min-h-screen font-sans transition-colors duration-500 bg-slate-50 text-slate-900 dark:bg-black dark:text-slate-100">
+                  <AnnouncementBar />
+                  <Navbar theme={theme} toggleTheme={toggleTheme} />
+                  <main className="flex-grow">
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/products" element={<ProductList />} />
+                      <Route path="/products/:id" element={<ProductDetail />} />
+                      <Route path="/checkout" element={<Checkout />} />
+                      <Route path="/privacy" element={<Privacy />} />
+                      <Route path="/admin" element={<Admin />} />
+                    </Routes>
+                  </main>
+                  <Footer />
+                </div>
+              </Router>
+            </CartProvider>
+          </OrderProvider>
+        </ProductProvider>
+      </SettingsProvider>
+    </div>
   );
 }
 
