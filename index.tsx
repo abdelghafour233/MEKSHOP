@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { Component, ReactNode } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
@@ -8,7 +9,8 @@ if (!rootElement) {
 }
 
 interface ErrorBoundaryProps {
-  children: React.ReactNode;
+  // Making children optional to fix inference errors when used in JSX
+  children?: ReactNode;
 }
 
 interface ErrorBoundaryState {
@@ -17,9 +19,11 @@ interface ErrorBoundaryState {
 }
 
 // Error Boundary Component to catch runtime errors
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+// Extending Component with explicit generics ensures this.state and this.props are properly typed
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
+    // Fix for "Property 'state' does not exist": Initialize state in constructor
     this.state = { hasError: false, error: null };
   }
 
@@ -32,6 +36,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 
   render() {
+    // Accessing this.state which is now correctly recognized via inheritance from Component
     if (this.state.hasError) {
       return (
         <div style={{ 
@@ -80,6 +85,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       );
     }
 
+    // Accessing this.props which is now correctly recognized via inheritance from Component
     return this.props.children;
   }
 }
@@ -87,6 +93,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
+    {/* Wrapping app in ErrorBoundary; optional children prop definition fixes TS reporting missing children here */}
     <ErrorBoundary>
       <App />
     </ErrorBoundary>

@@ -10,7 +10,7 @@ const Footer: React.FC = () => {
           
           {/* About */}
           <div>
-            <h3 className="text-white text-lg font-bold mb-4 font-sans">MekShop</h3>
+            <h3 className="text-white text-lg font-bold mb-4 font-sans">berrima store</h3>
             <p className="text-sm leading-relaxed mb-4">
               وجهتك الأولى للتسوق الإلكتروني في المغرب. نقدم أفضل المنتجات الإلكترونية والمنزلية وإكسسوارات السيارات بجودة عالية وأسعار تنافسية.
             </p>
@@ -42,7 +42,7 @@ const Footer: React.FC = () => {
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-amber-500" />
-                <span className="text-sm">support@mekshop.store</span>
+                <span className="text-sm">support@berrima.store</span>
               </li>
               <li className="flex items-center gap-3">
                 <MapPin className="h-5 w-5 text-amber-500" />
@@ -53,7 +53,7 @@ const Footer: React.FC = () => {
 
         </div>
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-xs">
-          <p>&copy; {new Date().getFullYear()} MekShop. جميع الحقوق محفوظة.</p>
+          <p>&copy; {new Date().getFullYear()} berrima store. جميع الحقوق محفوظة.</p>
         </div>
       </div>
     </footer>

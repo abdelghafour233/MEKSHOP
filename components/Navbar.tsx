@@ -22,7 +22,7 @@ const Navbar: React.FC = () => {
           <div className="flex-shrink-0 flex items-center">
             <Link to="/" className="flex items-center gap-2">
                 <ShoppingBag className="h-8 w-8 text-amber-500" />
-                <span className="font-bold text-xl tracking-wide font-sans">MekShop</span>
+                <span className="font-bold text-xl tracking-wide font-sans">berrima store</span>
             </Link>
           </div>
 
