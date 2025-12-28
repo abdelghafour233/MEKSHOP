@@ -37,6 +37,14 @@ const Admin: React.FC = () => {
   const mainImageInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
+  const categoryLabels: Record<Category, string> = {
+    [Category.ELECTRONICS]: 'إلكترونيات',
+    [Category.CAR_ACCESSORIES]: 'إكسسوارات سيارات',
+    [Category.WATCHES]: 'ساعات',
+    [Category.GLASSES]: 'نظارات',
+    [Category.OTHER]: 'أخرى',
+  };
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (passwordInput.trim() === settings.adminPassword) {
@@ -299,7 +307,9 @@ const Admin: React.FC = () => {
                     <h3 className="text-white font-black text-lg line-clamp-1">{product.title}</h3>
                     <div className="flex items-center justify-between mt-4">
                       <span className="text-green-500 font-black text-xl">{product.price} د.م</span>
-                      <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{product.category}</span>
+                      <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                        {categoryLabels[product.category as Category] || product.category}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -430,7 +440,7 @@ const Admin: React.FC = () => {
         {/* Product Modal */}
         {isEditingProduct && (
           <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[110] p-4 overflow-y-auto">
-            <div className="bg-[#0a0a0a] p-8 md:p-12 rounded-[56px] border border-white/10 w-full max-w-5xl my-8 relative animate-in zoom-in duration-300">
+            <div className="bg-[#0a0a0a] p-8 md:p-12 rounded-[56px] border border-white/10 w-full max-w-4xl my-8 relative animate-in zoom-in duration-300">
               <button onClick={() => setIsEditingProduct(false)} className="absolute left-8 top-8 p-3 bg-black border border-white/5 rounded-2xl text-gray-500 hover:text-white transition-all"><X size={24} /></button>
               <h2 className="text-3xl font-black text-white mb-10 flex items-center gap-4">
                 <div className="p-3 bg-green-500/10 rounded-2xl text-green-500"><Package size={28} /></div>
@@ -456,7 +466,7 @@ const Admin: React.FC = () => {
                   <div>
                     <label className="block text-[10px] font-black text-gray-500 mb-2 uppercase tracking-widest">القسم</label>
                     <select value={currentProduct.category || Category.ELECTRONICS} onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value as Category})} className="w-full p-4 bg-black border border-white/5 rounded-2xl text-white font-bold outline-none appearance-none">
-                      {Object.values(Category).map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                      {Object.values(Category).map(cat => <option key={cat} value={cat}>{categoryLabels[cat as Category]}</option>)}
                     </select>
                   </div>
                    <div>

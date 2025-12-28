@@ -9,6 +9,12 @@ const Home: React.FC = () => {
   const { products } = useProducts();
   const featuredProducts = products.slice(0, 4);
 
+  const homeCategories = [
+    { cat: 'electronics', title: 'إلكترونيات', img: 'https://images.unsplash.com/photo-1498049384371-061895450719?auto=format&fit=crop&w=800&q=80' },
+    { cat: 'car_accessories', title: 'إكسسوارات سيارات', img: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=800&q=80' },
+    { cat: 'watches', title: 'ساعات', img: 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=800&q=80' }
+  ];
+
   return (
     <div className="space-y-12 md:space-y-24 pb-20 transition-colors duration-500 bg-slate-50 dark:bg-black">
       
@@ -26,7 +32,7 @@ const Home: React.FC = () => {
             متجر <span className="text-green-500">بريمة</span><br/>قوة الجودة
           </h1>
           <p className="text-base md:text-2xl text-slate-300 dark:text-gray-400 mb-8 md:mb-14 max-w-3xl mx-auto font-medium leading-relaxed px-4">
-            الوجهة الأولى في المغرب للإلكترونيات الذكية، ديكور المنزل، وإكسسوارات السيارات الفاخرة. جودة تليق بك ودفع عند الاستلام.
+            الوجهة الأولى في المغرب للإلكترونيات الذكية، الساعات الفاخرة، وإكسسوارات السيارات الفاخرة. جودة تليق بك ودفع عند الاستلام.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 px-4">
             <Link 
@@ -93,11 +99,7 @@ const Home: React.FC = () => {
                 <p className="text-slate-500 dark:text-gray-500 mt-4 md:mt-6 text-lg md:text-xl">كل ما تحتاجه في مكان واحد</p>
              </div>
              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10">
-                {[
-                  { cat: 'electronics', title: 'إلكترونيات', img: 'https://images.unsplash.com/photo-1498049384371-061895450719?auto=format&fit=crop&w=800&q=80' },
-                  { cat: 'home', title: 'المنزل', img: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=80' },
-                  { cat: 'cars', title: 'السيارات', img: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=800&q=80' }
-                ].map((item, idx) => (
+                {homeCategories.map((item, idx) => (
                   <Link key={idx} to={`/products?category=${item.cat}`} className="relative h-[300px] md:h-[450px] rounded-[32px] md:rounded-[48px] overflow-hidden group border border-slate-200 dark:border-white/5 shadow-2xl">
                       <img src={item.img} alt={item.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-60 dark:opacity-40" />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900 dark:from-black via-slate-900/20 dark:via-black/20 to-transparent flex flex-col justify-end p-8 md:p-12">

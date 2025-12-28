@@ -1,7 +1,10 @@
+
 export enum Category {
   ELECTRONICS = 'electronics',
-  HOME = 'home',
-  CARS = 'cars',
+  CAR_ACCESSORIES = 'car_accessories',
+  WATCHES = 'watches',
+  GLASSES = 'glasses',
+  OTHER = 'other',
 }
 
 export type OrderStatus = 'Pending' | 'Confirmed' | 'Shipped' | 'Cancelled';

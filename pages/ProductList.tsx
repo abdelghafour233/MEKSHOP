@@ -19,8 +19,10 @@ const ProductList: React.FC = () => {
   const categories = [
     { id: 'all', name: 'الكل' },
     { id: Category.ELECTRONICS, name: 'إلكترونيات' },
-    { id: Category.HOME, name: 'المنزل' },
-    { id: Category.CARS, name: 'السيارات' },
+    { id: Category.CAR_ACCESSORIES, name: 'إكسسوارات سيارات' },
+    { id: Category.WATCHES, name: 'ساعات' },
+    { id: Category.GLASSES, name: 'نظارات' },
+    { id: Category.OTHER, name: 'أخرى' },
   ];
 
   return (
@@ -41,7 +43,7 @@ const ProductList: React.FC = () => {
             <Link 
               key={cat.id}
               to={cat.id === 'all' ? '/products' : `/products?category=${cat.id}`}
-              className={`flex-shrink-0 px-8 md:px-10 py-3.5 md:py-4 rounded-2xl md:rounded-[24px] font-black transition-all border text-base md:text-lg ${
+              className={`flex-shrink-0 px-6 md:px-8 py-3.5 md:py-4 rounded-2xl md:rounded-[24px] font-black transition-all border text-base md:text-lg whitespace-nowrap ${
                 (cat.id === 'all' && !categoryFilter) || categoryFilter === cat.id
                 ? 'bg-green-600 dark:bg-green-500 text-white dark:text-black border-green-600 dark:border-green-500 shadow-xl shadow-green-500/20' 
                 : 'bg-white dark:bg-[#0a0a0a] text-slate-500 dark:text-gray-500 border-slate-200 dark:border-white/5'
@@ -61,7 +63,7 @@ const ProductList: React.FC = () => {
           </div>
         ) : (
           <div className="text-center py-24 md:py-40 bg-white dark:bg-[#0a0a0a] rounded-[32px] md:rounded-[48px] border border-slate-200 dark:border-white/5 shadow-2xl mx-4">
-            <p className="text-slate-400 dark:text-gray-500 text-xl md:text-2xl font-black">عذراً، لا توجد منتجات حالياً.</p>
+            <p className="text-slate-400 dark:text-gray-500 text-xl md:text-2xl font-black">عذراً، لا توجد منتجات حالياً في هذا القسم.</p>
             <Link to="/products" className="text-green-600 dark:text-green-500 hover:underline mt-6 inline-block font-black text-lg">تصفح الكل</Link>
           </div>
         )}
