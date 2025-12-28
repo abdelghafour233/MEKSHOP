@@ -4,6 +4,8 @@ export enum Category {
   CARS = 'cars',
 }
 
+export type OrderStatus = 'Pending' | 'Confirmed' | 'Shipped' | 'Cancelled';
+
 export interface Product {
   id: string;
   title: string;
@@ -13,7 +15,7 @@ export interface Product {
   description: string;
   features: string[];
   imageUrl: string;
-  additionalImages: string[]; // مصفوفة للصور الإضافية
+  additionalImages: string[];
 }
 
 export interface CartItem extends Product {
@@ -25,4 +27,13 @@ export interface OrderForm {
   city: string;
   phone: string;
   address?: string;
+}
+
+export interface Order {
+  id: string;
+  date: string;
+  customer: OrderForm;
+  items: CartItem[];
+  total: number;
+  status: OrderStatus;
 }

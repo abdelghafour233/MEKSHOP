@@ -4,12 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { Trash2, CheckCircle, AlertCircle, ShoppingCart, User, Phone, MapPin } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useSettings } from '../context/SettingsContext';
+import { useOrders } from '../context/OrderContext';
 import { trackPurchaseEvent } from '../components/TrackingScripts';
-import { OrderForm } from '../types';
+import { OrderForm, Order } from '../types';
 
 const Checkout: React.FC = () => {
   const { cart, removeFromCart, totalAmount, clearCart } = useCart();
   const { settings } = useSettings();
+  const { addOrder } = useOrders();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -31,30 +33,36 @@ const Checkout: React.FC = () => {
 
     setIsSubmitting(true);
 
-    const orderData = {
-        orderId: `ORD-${Date.now()}`,
+    const newOrder: Order = {
+        id: `ORD-${Date.now()}`,
         date: new Date().toISOString(),
         customer: formData,
-        items: cart.map(item => `${item.title} (x${item.quantity})`).join(', '),
+        items: [...cart],
         total: totalAmount,
         status: 'Pending'
     };
 
+    // 1. Save to local context (Database)
+    addOrder(newOrder);
+
+    // 2. Send to Google Sheets if configured
     if (settings.googleSheetUrl) {
         try {
             await fetch(settings.googleSheetUrl, {
                 method: 'POST',
                 mode: 'no-cors', 
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(orderData)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...newOrder,
+                    items: cart.map(item => `${item.title} (x${item.quantity})`).join(', ')
+                })
             });
         } catch (error) {
             console.error("Error sending to Google Sheet", error);
         }
     }
 
+    // 3. Track FB Purchase
     trackPurchaseEvent(settings, totalAmount, 'MAD');
 
     setTimeout(() => {
@@ -87,15 +95,13 @@ const Checkout: React.FC = () => {
   return (
     <div className="bg-slate-950 min-h-screen py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-12">
+        <div className="mb-12 text-center md:text-right">
             <h1 className="text-4xl font-black text-slate-100 mb-4">أكد طلبك الآن</h1>
             <p className="text-slate-500 font-bold">يرجى إدخال معلوماتك الشخصية لنتواصل معك</p>
-            <div className="h-1.5 w-20 bg-amber-500 rounded-full mt-4"></div>
+            <div className="h-1.5 w-20 bg-amber-500 rounded-full mt-4 mx-auto md:mr-0"></div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-          
-          {/* Order Summary */}
           <div className="order-2 lg:order-1">
             <div className="bg-slate-900 rounded-[32px] shadow-xl border border-slate-800 overflow-hidden sticky top-24">
               <div className="p-8 border-b border-slate-800 flex items-center gap-4">
@@ -148,7 +154,6 @@ const Checkout: React.FC = () => {
             </div>
           </div>
 
-          {/* Customer Form - Minimized to 3 Fields */}
           <div className="order-1 lg:order-2">
             <div className="bg-slate-900 rounded-[32px] shadow-2xl border border-slate-800 p-8 md:p-10">
               <h2 className="text-2xl font-black text-slate-100 mb-8 flex items-center gap-3">
@@ -156,7 +161,6 @@ const Checkout: React.FC = () => {
               </h2>
               
               <form onSubmit={handleSubmit} className="space-y-6">
-                
                 <div className="relative group">
                     <label className="block text-sm font-bold text-slate-400 mb-3 mr-1 flex items-center gap-2 group-focus-within:text-amber-500 transition-colors">
                         <User className="w-4 h-4" /> الاسم الكامل
@@ -167,7 +171,7 @@ const Checkout: React.FC = () => {
                         required
                         value={formData.fullName}
                         onChange={handleInputChange}
-                        className="w-full px-5 py-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all placeholder-slate-700"
+                        className="w-full px-5 py-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all"
                         placeholder="أدخل اسمك الكامل"
                     />
                 </div>
@@ -182,7 +186,7 @@ const Checkout: React.FC = () => {
                         required
                         value={formData.city}
                         onChange={handleInputChange}
-                        className="w-full px-5 py-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all placeholder-slate-700"
+                        className="w-full px-5 py-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all"
                         placeholder="أدخل اسم مدينتك"
                     />
                 </div>
@@ -197,7 +201,7 @@ const Checkout: React.FC = () => {
                         required
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className="w-full px-5 py-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all placeholder-slate-700 font-mono text-left"
+                        className="w-full px-5 py-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all font-mono text-left"
                         dir="ltr"
                         placeholder="06 XX XX XX XX"
                     />
@@ -223,11 +227,9 @@ const Checkout: React.FC = () => {
                 >
                   {isSubmitting ? 'جاري التسجيل...' : 'اشتري الآن'}
                 </button>
-
               </form>
             </div>
           </div>
-
         </div>
       </div>
     </div>

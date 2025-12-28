@@ -12,10 +12,10 @@ import Admin from './pages/Admin';
 import { CartProvider } from './context/CartContext';
 import { ProductProvider } from './context/ProductContext';
 import { SettingsProvider } from './context/SettingsContext';
+import { OrderProvider } from './context/OrderContext';
 import TrackingScripts from './components/TrackingScripts';
 import { Truck } from 'lucide-react';
 
-// Scroll to top helper
 const ScrollToTop = () => {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -24,7 +24,6 @@ const ScrollToTop = () => {
   return null;
 };
 
-// Announcement Bar Component
 const AnnouncementBar = () => (
   <div className="bg-amber-500 text-slate-950 py-2 px-4 text-center text-xs md:text-sm font-black flex items-center justify-center gap-2 shadow-inner">
     <Truck className="w-4 h-4" />
@@ -36,27 +35,29 @@ function App() {
   return (
     <SettingsProvider>
       <ProductProvider>
-        <CartProvider>
-          <Router>
-            <ScrollToTop />
-            <TrackingScripts />
-            <div className="flex flex-col min-h-screen font-sans bg-slate-950 text-slate-100">
-              <AnnouncementBar />
-              <Navbar />
-              <main className="flex-grow">
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/products" element={<ProductList />} />
-                  <Route path="/products/:id" element={<ProductDetail />} />
-                  <Route path="/checkout" element={<Checkout />} />
-                  <Route path="/privacy" element={<Privacy />} />
-                  <Route path="/admin" element={<Admin />} />
-                </Routes>
-              </main>
-              <Footer />
-            </div>
-          </Router>
-        </CartProvider>
+        <OrderProvider>
+          <CartProvider>
+            <Router>
+              <ScrollToTop />
+              <TrackingScripts />
+              <div className="flex flex-col min-h-screen font-sans bg-slate-950 text-slate-100">
+                <AnnouncementBar />
+                <Navbar />
+                <main className="flex-grow">
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/products" element={<ProductList />} />
+                    <Route path="/products/:id" element={<ProductDetail />} />
+                    <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/admin" element={<Admin />} />
+                  </Routes>
+                </main>
+                <Footer />
+              </div>
+            </Router>
+          </CartProvider>
+        </OrderProvider>
       </ProductProvider>
     </SettingsProvider>
   );
