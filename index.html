@@ -4,8 +4,52 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-    <title>berrima store | متجر بريمة</title>
-    <meta name="description" content="berrima store - وجهتك الأولى للتسوق الإلكتروني في المغرب">
+    
+    <!-- SEO الأساسي -->
+    <title>berrima store | أفضل متجر إلكتروني في المغرب - إلكترونيات، ساعات، وإكسسوارات</title>
+    <meta name="description" content="متجر بريمة (berrima store) هو وجهتك الأولى للتسوق الإلكتروني في المغرب. نوفر أفضل الإلكترونيات، الساعات الفاخرة، وإكسسوارات السيارات مع خدمة الدفع عند الاستلام وتوصيل مجاني وسريع.">
+    <meta name="keywords" content="متجر بريمة, berrima store, تسوق إلكتروني المغرب, إلكترونيات المغرب, ساعات رجالية, إكسسوارات سيارات, الدفع عند الاستلام المغرب, شراء عبر الإنترنت المغرب">
+    <meta name="author" content="berrima store">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://berrima.store/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://berrima.store/">
+    <meta property="og:title" content="berrima store | متجر بريمة - جودة تليق بك">
+    <meta property="og:description" content="تسوق الآن أفضل المنتجات في المغرب. إلكترونيات، ساعات، ونظارات بجودة عالية. الدفع عند الاستلام وتوصيل مجاني.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://berrima.store/">
+    <meta property="twitter:title" content="berrima store | متجر بريمة">
+    <meta property="twitter:description" content="أفضل العروض والمنتجات في المغرب مع توصيل سريع لجميع المدن.">
+    <meta property="twitter:image" content="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80">
+
+    <!-- Structured Data (JSON-LD) for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "OnlineStore",
+      "name": "berrima store",
+      "url": "https://berrima.store/",
+      "logo": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=200&q=80",
+      "description": "متجر إلكتروني مغربي متخصص في الإلكترونيات والساعات وإكسسوارات السيارات.",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+212-688775968",
+        "contactType": "customer service",
+        "areaServed": "MA",
+        "availableLanguage": ["Arabic", "French"]
+      },
+      "sameAs": [
+        "https://www.facebook.com/berrima.store",
+        "https://www.instagram.com/berrima.store"
+      ]
+    }
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -18,41 +62,18 @@
         font-family: 'Tajawal', sans-serif;
         overflow-x: hidden;
       }
-      
-      /* Smooth transitions for theme switching */
       * {
         transition-property: background-color, border-color, color, fill, stroke;
         transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
         transition-duration: 300ms;
       }
-
-      /* Custom Scrollbar */
-      ::-webkit-scrollbar {
-        width: 6px;
-      }
-      ::-webkit-scrollbar-track {
-        background: transparent; 
-      }
-      .dark ::-webkit-scrollbar-track {
-        background: #000000;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #22c55e; 
-        border-radius: 10px;
-      }
-      
-      .font-sans {
-        font-family: 'Tajawal', sans-serif !important;
-      }
-
-      /* Hide horizontal scrollbar for mobile categories */
-      .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-      }
-      .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      .dark ::-webkit-scrollbar-track { background: #000000; }
+      ::-webkit-scrollbar-thumb { background: #22c55e; border-radius: 10px; }
+      .font-sans { font-family: 'Tajawal', sans-serif !important; }
+      .scrollbar-hide::-webkit-scrollbar { display: none; }
+      .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
   <script type="importmap">
 {

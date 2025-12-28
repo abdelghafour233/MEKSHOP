@@ -20,6 +20,18 @@ const ScrollToTop = () => {
   const { pathname } = useLocation();
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // SEO: Dynamic Page Titles
+    const siteName = "berrima store | متجر بريمة";
+    let pageTitle = siteName;
+
+    if (pathname === '/') pageTitle = `${siteName} - الرئيسية`;
+    else if (pathname === '/products') pageTitle = `جميع المنتجات - ${siteName}`;
+    else if (pathname === '/checkout') pageTitle = `تأكيد الطلب - ${siteName}`;
+    else if (pathname === '/admin') pageTitle = `لوحة التحكم - ${siteName}`;
+    else if (pathname === '/privacy') pageTitle = `سياسة الخصوصية - ${siteName}`;
+    
+    document.title = pageTitle;
   }, [pathname]);
   return null;
 };
@@ -43,7 +55,6 @@ function App() {
     localStorage.setItem('berrima_theme', newTheme);
   };
 
-  // Apply theme class to document element for Tailwind dark: variants to work globally
   useEffect(() => {
     const root = window.document.documentElement;
     if (theme === 'dark') {

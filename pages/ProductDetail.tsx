@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Truck, ArrowRight, ShieldCheck, CheckCircle } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
@@ -13,6 +13,13 @@ const ProductDetail: React.FC = () => {
   
   const product = products.find((p) => p.id === id);
   const [activeImage, setActiveImage] = useState<string>(product?.imageUrl || '');
+
+  // Update document title for SEO when viewing a product
+  useEffect(() => {
+    if (product) {
+      document.title = `${product.title} | berrima store`;
+    }
+  }, [product]);
 
   if (!product) {
     return (
@@ -34,6 +41,30 @@ const ProductDetail: React.FC = () => {
 
   return (
     <div className="bg-slate-50 dark:bg-black min-h-screen py-8 md:py-20 transition-colors duration-500">
+      {/* Structured Data for Product SEO */}
+      <script type="application/ld+json">
+      {JSON.stringify({
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": product.title,
+        "image": [product.imageUrl, ...product.additionalImages],
+        "description": product.description,
+        "sku": product.id,
+        "brand": {
+          "@type": "Brand",
+          "name": "berrima store"
+        },
+        "offers": {
+          "@type": "Offer",
+          "url": window.location.href,
+          "priceCurrency": "MAD",
+          "price": product.price,
+          "itemCondition": "https://schema.org/NewCondition",
+          "availability": "https://schema.org/InStock"
+        }
+      })}
+      </script>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 dark:text-gray-500 hover:text-green-600 dark:hover:text-green-500 mb-8 md:mb-12 font-black transition-colors group">
@@ -56,7 +87,7 @@ const ProductDetail: React.FC = () => {
                             onClick={() => setActiveImage(img)}
                             className={`flex-shrink-0 w-20 h-20 md:w-auto md:h-auto md:aspect-square rounded-xl md:rounded-2xl border-2 overflow-hidden transition-all ${activeImage === img ? 'border-green-600 dark:border-green-500 scale-105' : 'border-slate-200 dark:border-white/5 opacity-50'}`}
                         >
-                            <img src={img} className="w-full h-full object-cover" />
+                            <img src={img} alt={`${product.title} gallery ${idx}`} className="w-full h-full object-cover" />
                         </button>
                     ))}
                 </div>
@@ -87,7 +118,7 @@ const ProductDetail: React.FC = () => {
               {product.oldPrice && <span className="text-xl md:text-2xl text-slate-400 dark:text-gray-600 line-through font-bold">{product.oldPrice} د.م</span>}
             </div>
 
-            <div className="bg-white dark:bg-[#0a0a0a] p-8 md:p-10 rounded-3xl md:rounded-[40px] border border-slate-200 dark:border-white/5 shadow-sm mb-10 md:mb-14">
+            <div className="bg-white dark:bg-[#0a0a0a] p-8 md:p-10 rounded-3xl md:rounded-40px border border-slate-200 dark:border-white/5 shadow-sm mb-10 md:mb-14">
               <h3 className="font-black text-slate-900 dark:text-white mb-6 md:mb-8 text-xl md:text-2xl flex items-center gap-3">
                   <div className="w-1.5 md:w-2 h-6 md:h-8 bg-green-600 dark:bg-green-500 rounded-full"></div>
                   وصف المنتج
