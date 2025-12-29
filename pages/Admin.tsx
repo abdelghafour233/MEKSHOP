@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Smartphone, QrCode, Copy, Eye, EyeOff, 
   UploadCloud, CheckCircle2, CreditCard, Settings, User, MapPin, Phone,
   Clock, CheckCircle, Truck, BarChart3, Globe, Code2,
-  TrendingUp, ShoppingBag, Wallet, AlertCircle
+  TrendingUp, ShoppingBag, Wallet, AlertCircle, KeyRound, ShieldAlert
 } from 'lucide-react';
 
 const Admin: React.FC = () => {
@@ -22,6 +22,11 @@ const Admin: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'settings'>('orders');
   
+  // Password Change States
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+
   // States for Product Modal
   const [isEditingProduct, setIsEditingProduct] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Partial<Product>>({
@@ -64,6 +69,25 @@ const Admin: React.FC = () => {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setPasswordInput('');
+  };
+
+  const handleUpdatePassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 4) {
+      alert("كلمة المرور قصيرة جداً، المرجو اختيار 4 رموز على الأقل");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      alert("كلمة المرور الجديدة غير متطابقة مع التأكيد!");
+      return;
+    }
+    
+    const updated = { ...localSettings, adminPassword: newPassword };
+    setLocalSettings(updated);
+    updateSettings(updated);
+    setNewPassword('');
+    setConfirmPassword('');
+    alert("✅ تم تحديث كلمة مرور الإدارة بنجاح!");
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, isMain: boolean) => {
@@ -320,7 +344,8 @@ const Admin: React.FC = () => {
 
         {/* TAB: SETTINGS */}
         {activeTab === 'settings' && (
-          <div className="max-w-6xl mx-auto space-y-10 pb-24">
+          <div className="max-w-6xl mx-auto space-y-10 pb-24 animate-in fade-in duration-500">
+            {/* Sync QR Section */}
             <div className="bg-[#0a0a0a] p-10 rounded-[40px] border border-emerald-500/20 shadow-4xl text-center">
               <h2 className="text-2xl font-black text-white mb-6 flex items-center justify-center gap-4"><Smartphone className="text-emerald-500" size={28}/> الربط السريع بالهاتف</h2>
               <div className="bg-white p-6 rounded-[32px] inline-block mb-10 shadow-3xl">
@@ -333,9 +358,55 @@ const Admin: React.FC = () => {
               </div>
             </div>
 
+            {/* Change Password Section (NEW) */}
+            <div className="bg-[#0a0a0a] p-10 rounded-[40px] border border-white/5 space-y-8 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2"></div>
+                <h2 className="text-xl font-black text-white flex items-center gap-3 border-r-4 border-amber-500 pr-5">
+                    <KeyRound className="text-amber-500" size={20}/> أمان لوحة التحكم (تغيير كلمة المرور)
+                </h2>
+                <form onSubmit={handleUpdatePassword} className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
+                    <div className="space-y-3">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2 flex items-center gap-2">
+                           <Lock size={12}/> كلمة المرور الجديدة
+                        </label>
+                        <div className="relative group">
+                           <input 
+                                type={showNewPassword ? "text" : "password"} 
+                                value={newPassword} 
+                                onChange={(e) => setNewPassword(e.target.value)} 
+                                className="w-full p-4 bg-black border border-white/10 rounded-xl text-white font-mono outline-none focus:border-amber-500 transition-all"
+                                placeholder="أدخل كلمة المرور الجديدة"
+                           />
+                           <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700">
+                             {showNewPassword ? <EyeOff size={16}/> : <Eye size={16}/>}
+                           </button>
+                        </div>
+                    </div>
+                    <div className="space-y-3">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2 flex items-center gap-2">
+                           <ShieldAlert size={12}/> تأكيد كلمة المرور
+                        </label>
+                        <input 
+                            type="password" 
+                            value={confirmPassword} 
+                            onChange={(e) => setConfirmPassword(e.target.value)} 
+                            className="w-full p-4 bg-black border border-white/10 rounded-xl text-white font-mono outline-none focus:border-amber-500 transition-all"
+                            placeholder="أعد كتابة كلمة المرور"
+                        />
+                    </div>
+                    <div className="md:col-span-2">
+                        <button type="submit" className="w-full bg-amber-500/10 text-amber-500 border border-amber-500/20 py-4 rounded-xl font-black hover:bg-amber-500 hover:text-black transition-all active:scale-95 shadow-lg">
+                           تحديث كلمة المرور
+                        </button>
+                    </div>
+                </form>
+            </div>
+
             <form onSubmit={(e) => { e.preventDefault(); updateSettings(localSettings); alert("✅ تم حفظ الإعدادات!"); }} className="space-y-8">
-              <div className="bg-[#0a0a0a] p-10 rounded-[40px] border border-white/5 space-y-8 shadow-2xl">
-                <h2 className="text-xl font-black text-white border-r-4 border-blue-500 pr-5 flex items-center gap-3">
+              {/* Pixel Section */}
+              <div className="bg-[#0a0a0a] p-10 rounded-[40px] border border-white/5 space-y-8 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full"></div>
+                <h2 className="text-xl font-black text-white flex items-center gap-3 border-r-4 border-blue-500 pr-5">
                     <BarChart3 className="text-blue-500" size={20}/> إعدادات التتبع والبيكسل
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -358,16 +429,17 @@ const Admin: React.FC = () => {
                 </div>
               </div>
 
+              {/* Webhook Section */}
               <div className="bg-[#0a0a0a] p-10 rounded-[40px] border border-white/5 space-y-8 shadow-2xl">
-                <h2 className="text-xl font-black text-white border-r-4 border-emerald-500 pr-5">البيانات والأمان</h2>
+                <h2 className="text-xl font-black text-white border-r-4 border-emerald-500 pr-5">تخزين البيانات الخارجية</h2>
                 <div className="space-y-3">
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2">Google Sheets Webhook URL</label>
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2">Google Sheets Webhook URL (رابط تخزين الطلبات)</label>
                     <input type="text" value={localSettings.googleSheetUrl || ''} onChange={(e) => setLocalSettings({...localSettings, googleSheetUrl: e.target.value})} className="w-full p-4 bg-black border border-white/10 rounded-xl text-white font-mono outline-none focus:border-emerald-500 shadow-inner" placeholder="https://script.google.com/..." />
                 </div>
               </div>
 
               <button type="submit" className="w-full bg-emerald-500 text-black py-6 rounded-[28px] font-black text-xl shadow-3xl shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-3">
-                <Save size={24} /> حفظ كافة التغييرات
+                <Save size={24} /> حفظ كافة الإعدادات الأخرى
               </button>
             </form>
           </div>
