@@ -3,7 +3,7 @@
 <html lang="ar" dir="rtl" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
     
     <!-- SEO الأساسي -->
     <title>berrima store | أفضل متجر إلكتروني في المغرب - إلكترونيات، ساعات، وإكسسوارات</title>
@@ -61,7 +61,6 @@
         overflow-x: hidden;
         -webkit-font-smoothing: antialiased;
       }
-      /* إبقاء الانتقالات فقط للعناصر التي تحتاجها فعلاً لتحسين الأداء */
       .soft-transition {
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
@@ -72,9 +71,10 @@
       .scrollbar-hide::-webkit-scrollbar { display: none; }
       .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       
-      /* تحسين استجابة الصور */
+      /* إزالة content-visibility لضمان الثبات على الهواتف */
       img {
-        content-visibility: auto;
+        max-width: 100%;
+        height: auto;
       }
     </style>
   <script type="importmap">
