@@ -20,14 +20,7 @@
     <meta property="og:description" content="تسوق الآن أفضل المنتجات في المغرب. إلكترونيات، ساعات، ونظارات بجودة عالية. الدفع عند الاستلام وتوصيل مجاني.">
     <meta property="og:image" content="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80">
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://berrima.store/">
-    <meta property="twitter:title" content="berrima store | متجر بريمة">
-    <meta property="twitter:description" content="أفضل العروض والمنتجات في المغرب مع توصيل سريع لجميع المدن.">
-    <meta property="twitter:image" content="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80">
-
-    <!-- Structured Data (JSON-LD) for SEO -->
+    <!-- Structured Data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -42,11 +35,7 @@
         "contactType": "customer service",
         "areaServed": "MA",
         "availableLanguage": ["Arabic", "French"]
-      },
-      "sameAs": [
-        "https://www.facebook.com/berrima.store",
-        "https://www.instagram.com/berrima.store"
-      ]
+      }
     }
     </script>
 
@@ -54,26 +43,39 @@
     <script>
       tailwind.config = {
         darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Tajawal', 'system-ui', 'sans-serif'],
+            },
+          },
+        },
       }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
       body {
         font-family: 'Tajawal', sans-serif;
         overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
       }
-      * {
-        transition-property: background-color, border-color, color, fill, stroke;
-        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-        transition-duration: 300ms;
+      /* إبقاء الانتقالات فقط للعناصر التي تحتاجها فعلاً لتحسين الأداء */
+      .soft-transition {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
       ::-webkit-scrollbar { width: 6px; }
       ::-webkit-scrollbar-track { background: transparent; }
       .dark ::-webkit-scrollbar-track { background: #000000; }
       ::-webkit-scrollbar-thumb { background: #22c55e; border-radius: 10px; }
-      .font-sans { font-family: 'Tajawal', sans-serif !important; }
       .scrollbar-hide::-webkit-scrollbar { display: none; }
       .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      
+      /* تحسين استجابة الصور */
+      img {
+        content-visibility: auto;
+      }
     </style>
   <script type="importmap">
 {
@@ -87,7 +89,7 @@
 }
 </script>
 </head>
-  <body class="bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 antialiased font-sans transition-colors duration-500">
+  <body class="bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 antialiased font-sans">
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
   </body>

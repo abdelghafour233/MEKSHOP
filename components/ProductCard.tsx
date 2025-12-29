@@ -22,12 +22,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const productUrl = `${window.location.origin}/#/products/${product.id}`;
 
   return (
-    <div className="bg-white dark:bg-[#0a0a0a] rounded-[32px] shadow-lg dark:shadow-2xl overflow-hidden hover:shadow-green-500/20 dark:hover:shadow-green-500/10 transition-all duration-500 flex flex-col h-full border border-slate-100 dark:border-white/5 hover:border-green-500/40 group relative">
+    <div className="bg-white dark:bg-[#0a0a0a] rounded-[32px] shadow-lg dark:shadow-2xl overflow-hidden hover:shadow-green-500/20 dark:hover:shadow-green-500/10 transition-all duration-300 flex flex-col h-full border border-slate-100 dark:border-white/5 hover:border-green-500/40 group relative">
       <Link to={`/products/${product.id}`} className="block relative aspect-[4/3] overflow-hidden bg-slate-100 dark:bg-[#111]">
         <img 
           src={product.imageUrl} 
           alt={product.title} 
-          className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 opacity-95 group-hover:opacity-100"
+          loading="lazy"
+          className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500 opacity-95 group-hover:opacity-100"
         />
         {product.oldPrice && (
             <div className="absolute top-4 right-4 bg-green-600 text-white dark:text-black text-[10px] font-black px-3 py-1.5 rounded-full shadow-xl">
@@ -61,7 +62,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </button>
         </div>
 
-        {/* New Social Share Strip - ALWAYS VISIBLE */}
         <div className="mt-auto pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-white/5 -mx-5 px-5 py-3">
           <span className="text-[8px] font-black text-slate-500 dark:text-gray-500 uppercase tracking-widest">مشاركة:</span>
           <ShareButtons url={productUrl} title={product.title} image={product.imageUrl} variant="minimal" />
