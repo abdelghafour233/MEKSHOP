@@ -10,7 +10,7 @@ import {
   ImagePlus, UploadCloud, Copy, Download, Eye, EyeOff, Info, 
   Images, Tag, DollarSign, AlignRight, CheckCircle2, FileText, 
   Layers, ChevronLeft, CreditCard, Settings, User, MapPin, Phone,
-  Clock, CheckCircle, Truck, XCircle
+  Clock, CheckCircle, Truck, XCircle, BarChart3, Globe, Code2
 } from 'lucide-react';
 
 const Admin: React.FC = () => {
@@ -37,7 +37,6 @@ const Admin: React.FC = () => {
   const [orderSearch, setOrderSearch] = useState('');
   const [showQRModal, setShowQRModal] = useState(false);
   const [localSettings, setLocalSettings] = useState(settings);
-  const [passwords, setPasswords] = useState({ new: '', confirm: '' });
 
   useEffect(() => {
     setLocalSettings(settings);
@@ -438,7 +437,8 @@ const Admin: React.FC = () => {
 
         {/* Settings Content */}
         {activeTab === 'settings' && (
-          <div className="max-w-5xl mx-auto space-y-12 pb-24 animate-in fade-in duration-500">
+          <div className="max-w-6xl mx-auto space-y-12 pb-24 animate-in fade-in duration-500">
+            {/* Sync QR Section */}
             <div className="bg-[#0a0a0a] p-10 md:p-16 rounded-[56px] border border-emerald-500/20 shadow-4xl text-center">
               <h2 className="text-3xl font-black text-white mb-8 flex items-center justify-center gap-5"><Smartphone className="text-emerald-500" size={32}/> مزامنة الهاتف</h2>
               <div className="bg-white p-8 rounded-[48px] inline-block mb-10 shadow-3xl border-8 border-emerald-500/10">
@@ -451,22 +451,68 @@ const Admin: React.FC = () => {
               </div>
             </div>
 
-            <form onSubmit={(e) => { e.preventDefault(); updateSettings(localSettings); alert("✅ تم الحفظ!"); }} className="space-y-10">
-              <div className="bg-[#0a0a0a] p-10 rounded-[48px] border border-white/5 space-y-10">
-                <h2 className="text-2xl font-black text-white border-r-4 border-blue-500 pr-6">التتبع والإعلانات</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <form onSubmit={(e) => { e.preventDefault(); updateSettings(localSettings); alert("✅ تم حفظ الإعدادات بنجاح!"); }} className="space-y-10">
+              {/* Marketing & Tracking Section */}
+              <div className="bg-[#0a0a0a] p-10 rounded-[48px] border border-white/5 space-y-10 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                <h2 className="text-2xl font-black text-white flex items-center gap-4 border-r-4 border-blue-500 pr-6">
+                    <BarChart3 className="text-blue-500" size={24}/> التتبع والتسويق الرقمي
+                </h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  {/* Facebook Pixel */}
                   <div className="space-y-3">
-                    <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Facebook Pixel ID</label>
-                    <input type="text" value={localSettings.facebookPixelId || ''} onChange={(e) => setLocalSettings({...localSettings, facebookPixelId: e.target.value})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-mono outline-none focus:border-blue-500" />
+                    <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest mr-2 flex items-center gap-2">
+                        <Globe size={14}/> Facebook Pixel ID
+                    </label>
+                    <input type="text" value={localSettings.facebookPixelId || ''} onChange={(e) => setLocalSettings({...localSettings, facebookPixelId: e.target.value})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-mono outline-none focus:border-blue-500 shadow-inner" placeholder="مثال: 1234567890" />
                   </div>
+
+                  {/* Facebook Test Event Code (THE MISSING FIELD) */}
                   <div className="space-y-3">
-                    <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Google AdSense ID</label>
-                    <input type="text" value={localSettings.googleAdsenseId || ''} onChange={(e) => setLocalSettings({...localSettings, googleAdsenseId: e.target.value})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-mono outline-none focus:border-amber-500" />
+                    <label className="text-[11px] font-black text-emerald-500 uppercase tracking-widest mr-2 flex items-center gap-2">
+                        <Code2 size={14}/> FB Test Event Code
+                    </label>
+                    <input type="text" value={localSettings.fbTestEventCode || ''} onChange={(e) => setLocalSettings({...localSettings, fbTestEventCode: e.target.value})} className="w-full p-5 bg-black border border-emerald-500/20 rounded-2xl text-emerald-500 font-mono outline-none focus:border-emerald-500 shadow-inner" placeholder="مثال: TEST12345" />
+                  </div>
+
+                  {/* Google Tag ID */}
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest mr-2 flex items-center gap-2">
+                        <Globe size={14}/> Google Tag ID (G-XXXX)
+                    </label>
+                    <input type="text" value={localSettings.googleTagId || ''} onChange={(e) => setLocalSettings({...localSettings, googleTagId: e.target.value})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-mono outline-none focus:border-amber-500 shadow-inner" placeholder="G-XXXXXXXXXX" />
+                  </div>
+
+                  {/* TikTok Pixel */}
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest mr-2 flex items-center gap-2">
+                        <Globe size={14}/> TikTok Pixel ID
+                    </label>
+                    <input type="text" value={localSettings.tiktokPixelId || ''} onChange={(e) => setLocalSettings({...localSettings, tiktokPixelId: e.target.value})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-mono outline-none focus:border-rose-500 shadow-inner" placeholder="مثال: C6XXXXXXXXXX" />
+                  </div>
+
+                  {/* Google AdSense */}
+                  <div className="space-y-3 md:col-span-2">
+                    <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest mr-2 flex items-center gap-2">
+                        <Globe size={14}/> Google AdSense Client ID
+                    </label>
+                    <input type="text" value={localSettings.googleAdsenseId || ''} onChange={(e) => setLocalSettings({...localSettings, googleAdsenseId: e.target.value})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-mono outline-none focus:border-amber-500 shadow-inner" placeholder="ca-pub-XXXXXXXXXXXXXXXX" />
                   </div>
                 </div>
               </div>
+
+              {/* Data Export Section */}
+              <div className="bg-[#0a0a0a] p-10 rounded-[48px] border border-white/5 space-y-10 shadow-2xl">
+                <h2 className="text-2xl font-black text-white border-r-4 border-emerald-500 pr-6">تخزين البيانات الخارجية</h2>
+                <div className="space-y-3">
+                    <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest mr-2">Google Sheets Webhook URL</label>
+                    <input type="text" value={localSettings.googleSheetUrl || ''} onChange={(e) => setLocalSettings({...localSettings, googleSheetUrl: e.target.value})} className="w-full p-5 bg-black border border-white/10 rounded-2xl text-white font-mono outline-none focus:border-emerald-500 shadow-inner" placeholder="https://script.google.com/macros/s/..." />
+                </div>
+              </div>
+
               <button type="submit" className="w-full bg-emerald-500 text-black py-7 rounded-[32px] font-black text-2xl shadow-3xl shadow-emerald-500/30 active:scale-95 transition-all flex items-center justify-center gap-4">
-                <Save size={32} /> حفظ الإعدادات
+                <Save size={32} /> حفظ كافة الإعدادات
               </button>
             </form>
           </div>
@@ -475,7 +521,7 @@ const Admin: React.FC = () => {
         {/* QR Sync Modal */}
         {showQRModal && (
           <div className="fixed inset-0 bg-black/98 backdrop-blur-3xl z-[3000] flex items-center justify-center p-4">
-             <div className="bg-[#111] p-12 rounded-[56px] border border-white/10 max-w-xl w-full text-center relative shadow-4xl">
+             <div className="bg-[#111] p-12 rounded-[56px] border border-white/10 max-w-xl w-full text-center relative shadow-4xl animate-in zoom-in duration-300">
                 <button onClick={() => setShowQRModal(false)} className="absolute top-10 left-10 text-gray-500 hover:text-white transition-colors p-3 bg-white/5 rounded-full"><X size={32}/></button>
                 <div className="bg-white p-8 rounded-[48px] mb-12 inline-block shadow-3xl">
                     <img src={qrImageUrl} className="w-[300px] h-[300px]" alt="Sync QR" />
