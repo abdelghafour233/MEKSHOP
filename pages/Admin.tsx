@@ -6,9 +6,9 @@ import { useOrders } from '../context/OrderContext';
 import { Product, Category, Order, OrderStatus } from '../types';
 import { 
   Plus, Edit, Trash2, X, Lock, Package, LogOut, Search, Save, 
-  LayoutDashboard, Smartphone, QrCode, Copy, Eye, EyeOff, 
-  UploadCloud, CheckCircle2, CreditCard, Settings, User, MapPin, Phone,
-  Clock, CheckCircle, Truck, BarChart3, Globe, Code2,
+  LayoutDashboard, Eye, EyeOff, 
+  UploadCloud, CheckCircle2, CreditCard, Settings, User, MapPin,
+  Truck, BarChart3, Globe, Code2,
   TrendingUp, ShoppingBag, Wallet, AlertCircle, KeyRound, ShieldAlert
 } from 'lucide-react';
 
@@ -39,7 +39,6 @@ const Admin: React.FC = () => {
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   
   const [orderSearch, setOrderSearch] = useState('');
-  const [showQRModal, setShowQRModal] = useState(false);
   const [localSettings, setLocalSettings] = useState(settings);
 
   useEffect(() => {
@@ -122,20 +121,6 @@ const Admin: React.FC = () => {
     }));
   };
 
-  const syncDataString = useMemo(() => {
-    const minimalProducts = products.slice(0, 15).map(p => ({
-        id: p.id, t: p.title, p: p.price, c: p.category
-    }));
-    const data = { p: minimalProducts, s: localSettings };
-    try {
-        return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-    } catch(e) {
-        return "error_data_too_large";
-    }
-  }, [products, localSettings]);
-
-  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(syncDataString)}&bgcolor=ffffff&color=000000&margin=15`;
-
   const handleSaveProduct = (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentProduct.imageUrl) {
@@ -200,11 +185,8 @@ const Admin: React.FC = () => {
             </div>
             
             <div className="flex items-center gap-3 w-full lg:w-auto">
-                <button onClick={() => setShowQRModal(true)} className="flex-1 lg:flex-none bg-white/5 text-white px-6 py-4 rounded-2xl border border-white/10 font-black flex items-center justify-center gap-2 hover:bg-emerald-500 hover:text-black transition-all">
-                    <QrCode size={18} /> <span className="text-sm">مزامنة الهاتف</span>
-                </button>
-                <button onClick={handleLogout} className="flex-1 lg:flex-none bg-rose-500/10 text-rose-500 px-6 py-4 rounded-2xl border border-rose-500/20 font-black hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center gap-2">
-                    <LogOut size={18} /> <span className="text-sm">خروج</span>
+                <button onClick={handleLogout} className="w-full lg:w-auto bg-rose-500/10 text-rose-500 px-10 py-4 rounded-2xl border border-rose-500/20 font-black hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center gap-2">
+                    <LogOut size={18} /> <span className="text-sm">خروج من النظام</span>
                 </button>
             </div>
         </div>
@@ -345,20 +327,7 @@ const Admin: React.FC = () => {
         {/* TAB: SETTINGS */}
         {activeTab === 'settings' && (
           <div className="max-w-6xl mx-auto space-y-10 pb-24 animate-in fade-in duration-500">
-            {/* Sync QR Section */}
-            <div className="bg-[#0a0a0a] p-10 rounded-[40px] border border-emerald-500/20 shadow-4xl text-center">
-              <h2 className="text-2xl font-black text-white mb-6 flex items-center justify-center gap-4"><Smartphone className="text-emerald-500" size={28}/> الربط السريع بالهاتف</h2>
-              <div className="bg-white p-6 rounded-[32px] inline-block mb-10 shadow-3xl">
-                  <img src={qrImageUrl} className="w-[280px] h-[280px]" alt="Sync QR" />
-              </div>
-              <div className="flex justify-center">
-                  <button onClick={() => { navigator.clipboard.writeText(syncDataString); alert('✅ تم نسخ كود المزامنة!'); }} className="px-10 py-5 bg-emerald-500 text-black rounded-2xl font-black flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl">
-                      <Copy size={18}/> نسخ الكود يدوياً
-                  </button>
-              </div>
-            </div>
-
-            {/* Change Password Section (NEW) */}
+            {/* Change Password Section */}
             <div className="bg-[#0a0a0a] p-10 rounded-[40px] border border-white/5 space-y-8 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2"></div>
                 <h2 className="text-xl font-black text-white flex items-center gap-3 border-r-4 border-amber-500 pr-5">
@@ -445,7 +414,7 @@ const Admin: React.FC = () => {
           </div>
         )}
 
-        {/* MODAL: PRODUCT EDITOR (FIXED) */}
+        {/* MODAL: PRODUCT EDITOR */}
         {isEditingProduct && (
           <div className="fixed inset-0 bg-black/98 backdrop-blur-3xl z-[2000] flex items-center justify-center p-4">
             <div className="bg-[#0b0b0b] border border-white/10 w-full max-w-5xl rounded-[40px] shadow-4xl animate-in zoom-in duration-300 flex flex-col max-h-[92vh]">
@@ -587,21 +556,6 @@ const Admin: React.FC = () => {
                     <button onClick={() => setIsEditingOrder(false)} className="px-8 bg-white/5 text-gray-400 rounded-2xl font-black hover:bg-white/10 transition-all border border-white/5">إلغاء</button>
                 </div>
             </div>
-          </div>
-        )}
-
-        {/* QR Sync Modal */}
-        {showQRModal && (
-          <div className="fixed inset-0 bg-black/98 backdrop-blur-3xl z-[3000] flex items-center justify-center p-4">
-             <div className="bg-[#111] p-12 rounded-[48px] border border-white/10 max-w-xl w-full text-center relative shadow-4xl animate-in zoom-in duration-300">
-                <button onClick={() => setShowQRModal(false)} className="absolute top-8 left-8 text-gray-500 hover:text-white transition-colors p-2 bg-white/5 rounded-full"><X size={28}/></button>
-                <div className="bg-white p-6 rounded-[32px] mb-10 inline-block shadow-3xl">
-                    <img src={qrImageUrl} className="w-[300px] h-[300px]" alt="Sync QR" />
-                </div>
-                <button onClick={() => { navigator.clipboard.writeText(syncDataString); alert('✅ تم النسخ!'); }} className="w-full py-5 bg-emerald-500 text-black rounded-2xl font-black flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl">
-                      <Copy size={20}/> نسخ كود البيانات للمزامنة
-                </button>
-             </div>
           </div>
         )}
       </div>
