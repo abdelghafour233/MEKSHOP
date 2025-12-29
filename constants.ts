@@ -5,6 +5,22 @@ import { Product, Category } from './types';
 export const FACEBOOK_PIXEL_ID = '1234567890'; 
 
 export const PRODUCTS: Product[] = [
+  {
+    id: 'p-manual-pump',
+    title: 'مضخة يدوية احترافية لنقل السوائل، الوقود، والزيوت',
+    price: 119,
+    oldPrice: 180,
+    category: Category.CAR_ACCESSORIES,
+    description: 'مضخة يدوية محمولة عالية الكفاءة مزودة بخرطوم PVC مرن، مثالية لنقل المياه، البنزين، الديزل، والزيوت بكل سهولة وأمان. تصميم عملي مزود بصمام أحادي الاتجاه لمنع الارتداد وضمان تدفق سلس وسريع للسوائل. أداة لا غنى عنها للسيارات، القوارب، والمنزل.',
+    features: [
+      'خرطوم PVC مرن عالي الجودة ومقاوم للتآكل',
+      'نقل سريع للسوائل دون الحاجة للكهرباء',
+      'صمام أمان لمنع تسرب السوائل أو ارتدادها',
+      'خفيفة الوزن وسهلة التخزين في صندوق السيارة'
+    ],
+    imageUrl: 'https://img.kwcdn.com/product/open/6dc61c3fd58b412cba8b606fd1a3aa5f-goods.jpeg',
+    additionalImages: [],
+  },
   // Electronics
   {
     id: 'e1',
