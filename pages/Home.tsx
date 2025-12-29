@@ -16,33 +16,33 @@ const Home: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-12 md:space-y-24 pb-20 bg-slate-50 dark:bg-black">
+    <div className="space-y-12 md:space-y-24 pb-20 bg-slate-50 dark:bg-black transition-colors">
       
       {/* Hero Section */}
-      <section className="relative min-h-[60vh] md:min-h-[85vh] flex items-center overflow-hidden bg-slate-900 dark:bg-black text-white px-4">
+      <section className="relative min-h-[50vh] md:min-h-[85vh] flex items-center overflow-hidden bg-slate-900 dark:bg-black text-white px-4">
         <div className="absolute inset-0 z-0">
-             <div className="absolute inset-0 bg-gradient-to-b from-green-900/20 via-slate-900/80 dark:via-black/80 to-slate-900 dark:to-black z-10"></div>
+             <div className="absolute inset-0 bg-gradient-to-b from-green-900/10 via-slate-900/70 dark:via-black/80 to-slate-900 dark:to-black z-10"></div>
              <img 
               src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=60" 
               alt="Background" 
-              className="w-full h-full object-cover opacity-30" 
+              className="w-full h-full object-cover opacity-20" 
               fetchPriority="high"
              />
         </div>
-        <div className="max-w-7xl mx-auto w-full relative z-20 text-center py-10 md:py-20">
+        <div className="max-w-7xl mx-auto w-full relative z-20 text-center py-8 md:py-20">
           <div className="inline-flex items-center gap-2 bg-green-500/20 border border-green-500/30 px-4 md:px-6 py-2 rounded-full text-green-400 text-[10px] md:text-sm font-black mb-6 animate-pulse mx-auto uppercase tracking-widest">
-            <Zap className="w-4 h-4" /> عروض حصرية لفترة محدودة
+            <Zap className="w-3 h-3 md:w-4 md:h-4" /> عروض حصرية لفترة محدودة
           </div>
           <h1 className="text-3xl sm:text-6xl md:text-8xl font-black mb-6 md:mb-10 leading-tight md:leading-[1.1] tracking-tighter">
             متجر <span className="text-green-500">بريمة</span><br/>قوة الجودة
           </h1>
           <p className="text-sm md:text-2xl text-slate-300 dark:text-gray-400 mb-8 md:mb-14 max-w-2xl mx-auto font-medium leading-relaxed px-4">
-            الوجهة الأولى في المغرب للإلكترونيات الذكية، الساعات الفاخرة، وإكسسوارات السيارات الفاخرة.
+            الوجهة الأولى في المغرب للإلكترونيات الذكية والساعات الفاخرة.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 px-4">
             <Link 
               to="/products" 
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-green-50 text-green-600 md:bg-green-500 md:text-black px-10 md:px-14 py-4 md:py-6 rounded-2xl md:rounded-3xl font-black text-lg md:text-2xl hover:bg-green-400 transition-all transform hover:scale-105 shadow-2xl"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-green-500 text-black px-10 md:px-14 py-4 md:py-6 rounded-2xl md:rounded-3xl font-black text-lg md:text-2xl hover:bg-green-400 transition-all transform hover:scale-105 shadow-2xl"
             >
               تسوق الآن
               <ArrowLeft className="h-5 w-5 md:h-6 md:w-6" />
@@ -52,8 +52,8 @@ const Home: React.FC = () => {
       </section>
 
       {/* Featured Products */}
-      <section className="max-w-7xl mx-auto px-4">
-        <div className="flex flex-col md:flex-row items-center md:items-end justify-between mb-8 md:mb-16 gap-4">
+      <section className="max-w-7xl mx-auto px-2 md:px-4">
+        <div className="flex flex-col md:flex-row items-center md:items-end justify-between mb-8 md:mb-16 px-2 gap-4">
             <div className="text-center md:text-right">
                 <p className="text-green-600 dark:text-green-500 font-black text-[10px] md:text-sm uppercase tracking-widest mb-2">اختياراتنا لك</p>
                 <h2 className="text-2xl md:text-5xl font-black text-slate-900 dark:text-white">الأكثر طلباً</h2>
@@ -63,8 +63,8 @@ const Home: React.FC = () => {
             </Link>
         </div>
         
-        {/* Grid: 2 columns on mobile, 4 on desktop */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-12">
+        {/* Grid: 2 columns on mobile, 4 on desktop - Improved Gap for clarity */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-8">
             {featuredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
             ))}
@@ -99,7 +99,7 @@ const Home: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4">
              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-10">
                 {homeCategories.map((item, idx) => (
-                  <Link key={idx} to={`/products?category=${item.cat}`} className="relative h-[180px] md:h-[450px] rounded-2xl md:rounded-[32px] overflow-hidden group border border-slate-200 dark:border-white/5 shadow-xl">
+                  <Link key={idx} to={`/products?category=${item.cat}`} className="relative h-[160px] md:h-[450px] rounded-2xl md:rounded-[32px] overflow-hidden group border border-slate-200 dark:border-white/5 shadow-xl">
                       <img src={item.img} alt={item.title} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60" />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900 dark:from-black via-transparent to-transparent flex flex-col justify-end p-6 md:p-12">
                           <h3 className="text-white text-xl md:text-4xl font-black mb-1 md:mb-3">{item.title}</h3>

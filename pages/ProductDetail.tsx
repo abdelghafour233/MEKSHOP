@@ -17,7 +17,40 @@ const ProductDetail: React.FC = () => {
 
   useEffect(() => {
     if (product) {
-      document.title = `${product.title} | berrima store`;
+      document.title = `${product.title} - ${product.price} د.م | berrima store`;
+      
+      // SEO: Product Schema Injection
+      const schemaData = {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": product.title,
+        "image": [product.imageUrl, ...(product.additionalImages || [])],
+        "description": product.description,
+        "sku": product.id,
+        "brand": {
+          "@type": "Brand",
+          "name": "berrima store"
+        },
+        "offers": {
+          "@type": "Offer",
+          "url": window.location.href,
+          "priceCurrency": "MAD",
+          "price": product.price,
+          "availability": "https://schema.org/InStock",
+          "itemCondition": "https://schema.org/NewCondition"
+        }
+      };
+
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.text = JSON.stringify(schemaData);
+      script.id = 'product-schema';
+      document.head.appendChild(script);
+
+      return () => {
+        const existingScript = document.getElementById('product-schema');
+        if (existingScript) existingScript.remove();
+      };
     }
   }, [product]);
 
@@ -42,9 +75,6 @@ const ProductDetail: React.FC = () => {
 
   return (
     <div className="bg-slate-50 dark:bg-black min-h-screen py-8 md:py-20">
-      {/* Version Tag for Debugging Cache */}
-      <div className="hidden">v2.1.0-share-fix</div>
-      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 dark:text-gray-500 hover:text-green-600 mb-8 font-black transition-colors group">
@@ -98,10 +128,10 @@ const ProductDetail: React.FC = () => {
             </div>
 
             <div className="bg-white dark:bg-[#0a0a0a] p-8 rounded-[32px] border border-slate-200 dark:border-white/5 shadow-sm mb-10">
-              <h3 className="font-black text-slate-900 dark:text-white mb-6 text-xl flex items-center gap-3">
+              <h2 className="font-black text-slate-900 dark:text-white mb-6 text-xl flex items-center gap-3">
                   <div className="w-1.5 h-6 bg-green-600 rounded-full"></div>
-                  وصف المنتج
-              </h3>
+                  مميزات المنتج
+              </h2>
               <p className="text-slate-600 dark:text-gray-400 leading-relaxed text-lg font-medium whitespace-pre-line">{product.description}</p>
             </div>
 
@@ -114,14 +144,8 @@ const ProductDetail: React.FC = () => {
                 <span className="text-[10px] opacity-70 mt-1 font-bold uppercase tracking-widest">توصيل منزلي مجاني وسريع 🚚</span>
               </button>
 
-              {/* Ultra-Prominent Share Section */}
               <div className="bg-slate-100 dark:bg-[#0a0a0a] p-10 rounded-[48px] border-2 border-dashed border-slate-200 dark:border-white/10 shadow-inner">
-                <ShareButtons 
-                   url={currentUrl} 
-                   title={product.title} 
-                   image={product.imageUrl} 
-                   variant="large" 
-                 />
+                <ShareButtons url={currentUrl} title={product.title} image={product.imageUrl} variant="large" />
               </div>
             </div>
           </div>

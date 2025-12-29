@@ -21,17 +21,26 @@ const ScrollToTop = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     
-    // SEO: Dynamic Page Titles
+    // SEO: Dynamic Titles and Descriptions
     const siteName = "berrima store | متجر بريمة";
     let pageTitle = siteName;
+    let pageDesc = "تسوق أفضل المنتجات في المغرب مع توصيل مجاني والدفع عند الاستلام.";
 
-    if (pathname === '/') pageTitle = `${siteName} - الرئيسية`;
-    else if (pathname === '/products') pageTitle = `جميع المنتجات - ${siteName}`;
-    else if (pathname === '/checkout') pageTitle = `تأكيد الطلب - ${siteName}`;
-    else if (pathname === '/admin') pageTitle = `لوحة التحكم - ${siteName}`;
-    else if (pathname === '/privacy') pageTitle = `سياسة الخصوصية - ${siteName}`;
+    if (pathname === '/') {
+      pageTitle = `${siteName} - الصفحة الرئيسية`;
+    } else if (pathname === '/products') {
+      pageTitle = `تصفح المنتجات - ${siteName}`;
+      pageDesc = "استكشف مجموعتنا الواسعة من الإلكترونيات، الساعات، وإكسسوارات السيارات بجودة عالية.";
+    } else if (pathname === '/checkout') {
+      pageTitle = `تأكيد طلبك - ${siteName}`;
+      pageDesc = "أكمل طلبك الآن واستفد من التوصيل المجاني والدفع عند الاستلام.";
+    } else if (pathname === '/admin') {
+      pageTitle = `لوحة التحكم - ${siteName}`;
+    }
     
     document.title = pageTitle;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', pageDesc);
   }, [pathname]);
   return null;
 };
