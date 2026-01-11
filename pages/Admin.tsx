@@ -6,7 +6,8 @@ import { useOrders } from '../context/OrderContext';
 import { Product, Category, Order } from '../types';
 import { 
   Plus, Edit, Trash2, X, Lock, Package, LogOut, LayoutDashboard, 
-  UploadCloud, CreditCard, Settings, Link as LinkIcon, Share2, Zap, AlertCircle
+  UploadCloud, CreditCard, Settings, Link as LinkIcon, Share2, Zap, AlertCircle,
+  ImagePlus, ImageIcon
 } from 'lucide-react';
 
 const Admin: React.FC = () => {
@@ -18,7 +19,6 @@ const Admin: React.FC = () => {
   const [passwordInput, setPasswordInput] = useState('');
   const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'sync' | 'settings'>('orders');
   
-  const [importJson, setImportJson] = useState('');
   const [isEditingProduct, setIsEditingProduct] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Partial<Product>>({
     title: '', price: 0, oldPrice: 0, category: Category.ELECTRONICS,
@@ -28,6 +28,7 @@ const Admin: React.FC = () => {
   const [orderSearch, setOrderSearch] = useState('');
 
   const mainImageInputRef = useRef<HTMLInputElement>(null);
+  const additionalImagesInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,13 +66,38 @@ const Admin: React.FC = () => {
     setIsEditingProduct(false);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMainImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => { setCurrentProduct(prev => ({ ...prev, imageUrl: reader.result as string })); };
-      reader.readAsDataURL(file);
+      // Fix: Casting 'file' as Blob because TypeScript might infer it as 'unknown' on line 89
+      reader.readAsDataURL(file as Blob);
     }
+  };
+
+  const handleAdditionalImagesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      // Fix: Casting file as Blob to prevent 'unknown' type error in Array.from(files)
+      Array.from(files).forEach((file: File) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setCurrentProduct(prev => ({
+            ...prev,
+            additionalImages: [...(prev.additionalImages || []), reader.result as string]
+          }));
+        };
+        reader.readAsDataURL(file as Blob);
+      });
+    }
+  };
+
+  const removeAdditionalImage = (index: number) => {
+    setCurrentProduct(prev => ({
+      ...prev,
+      additionalImages: (prev.additionalImages || []).filter((_, i) => i !== index)
+    }));
   };
 
   if (!isAuthenticated) {
@@ -158,6 +184,7 @@ const Admin: React.FC = () => {
           </div>
         )}
 
+        {/* Orders Tab is handled as before */}
         {activeTab === 'orders' && (
           <div className="space-y-6">
             <input type="text" placeholder="ابحث باسم الزبون أو الهاتف..." value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} className="w-full p-5 bg-[#0a0a0a] border border-white/5 rounded-2xl text-white outline-none focus:border-emerald-500 font-bold" />
@@ -185,31 +212,72 @@ const Admin: React.FC = () => {
 
         {isEditingProduct && (
           <div className="fixed inset-0 bg-black/95 z-[2000] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-[#0b0b0b] border border-white/10 w-full max-w-4xl rounded-[40px] shadow-4xl p-8 max-h-[90vh] overflow-y-auto scrollbar-hide">
+            <div className="bg-[#0b0b0b] border border-white/10 w-full max-w-5xl rounded-[40px] shadow-4xl p-8 max-h-[90vh] overflow-y-auto scrollbar-hide">
               <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
                 <h2 className="text-2xl font-black text-white">{currentProduct.id ? 'تعديل المنتج' : 'إضافة منتج جديد'}</h2>
                 <button onClick={() => setIsEditingProduct(false)} className="text-gray-500 hover:text-white transition-colors"><X size={32} /></button>
               </div>
               <form onSubmit={handleSaveProduct} className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                    <div className="space-y-4">
-                        <div onClick={() => mainImageInputRef.current?.click()} className="aspect-square bg-black border-2 border-dashed border-white/10 rounded-[32px] flex items-center justify-center overflow-hidden cursor-pointer relative group">
-                            {currentProduct.imageUrl ? <img src={currentProduct.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform" /> : <UploadCloud size={48} className="text-emerald-500/50" />}
-                            <input type="file" ref={mainImageInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                    {/* Left Side: Images */}
+                    <div className="lg:col-span-5 space-y-6">
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2">الصورة الرئيسية</label>
+                           <div onClick={() => mainImageInputRef.current?.click()} className="aspect-square bg-black border-2 border-dashed border-white/10 rounded-[32px] flex items-center justify-center overflow-hidden cursor-pointer relative group">
+                               {currentProduct.imageUrl ? <img src={currentProduct.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform" /> : <UploadCloud size={48} className="text-emerald-500/50" />}
+                               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                   <span className="text-white font-black text-xs uppercase tracking-widest">تغيير الصورة</span>
+                               </div>
+                               <input type="file" ref={mainImageInputRef} onChange={handleMainImageUpload} className="hidden" accept="image/*" />
+                           </div>
+                        </div>
+
+                        {/* Additional Images Section */}
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2">صور إضافية للمعرض</label>
+                                <button type="button" onClick={() => additionalImagesInputRef.current?.click()} className="text-emerald-500 font-black text-[10px] flex items-center gap-1 hover:text-white transition-colors">
+                                    <Plus size={14}/> إضافة صور
+                                </button>
+                                <input type="file" multiple ref={additionalImagesInputRef} onChange={handleAdditionalImagesUpload} className="hidden" accept="image/*" />
+                            </div>
+                            <div className="grid grid-cols-3 gap-3">
+                                {currentProduct.additionalImages?.map((img, idx) => (
+                                    <div key={idx} className="aspect-square bg-black border border-white/5 rounded-2xl relative overflow-hidden group">
+                                        <img src={img} className="w-full h-full object-cover" />
+                                        <button 
+                                            type="button" 
+                                            onClick={() => removeAdditionalImage(idx)}
+                                            className="absolute top-1 left-1 p-1.5 bg-rose-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <X size={12}/>
+                                        </button>
+                                    </div>
+                                ))}
+                                <button 
+                                    type="button"
+                                    onClick={() => additionalImagesInputRef.current?.click()}
+                                    className="aspect-square border-2 border-dashed border-white/10 rounded-2xl flex items-center justify-center text-gray-600 hover:text-emerald-500 hover:border-emerald-500/50 transition-all"
+                                >
+                                    <ImagePlus size={24} />
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <div className="space-y-6">
+
+                    {/* Right Side: Data */}
+                    <div className="lg:col-span-7 space-y-6">
                         <div className="space-y-2">
                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2">اسم المنتج</label>
                            <input required value={currentProduct.title || ''} onChange={(e) => setCurrentProduct({...currentProduct, title: e.target.value})} placeholder="اسم المنتج" className="w-full p-4 bg-black border border-white/10 rounded-2xl text-white font-black outline-none focus:border-emerald-500 shadow-inner" />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                               <label className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mr-2">السعر</label>
+                               <label className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mr-2">السعر الحالي</label>
                                <input type="number" required value={currentProduct.price || ''} onChange={(e) => setCurrentProduct({...currentProduct, price: Number(e.target.value)})} placeholder="0.00" className="w-full p-4 bg-black border border-emerald-500/20 rounded-2xl text-emerald-500 font-black outline-none text-center shadow-inner" />
                             </div>
                             <div className="space-y-2">
-                               <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest mr-2">السعر القديم</label>
+                               <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest mr-2">السعر القديم (اختياري)</label>
                                <input type="number" value={currentProduct.oldPrice || ''} onChange={(e) => setCurrentProduct({...currentProduct, oldPrice: Number(e.target.value)})} placeholder="0.00" className="w-full p-4 bg-black border border-white/10 rounded-2xl text-gray-500 font-black outline-none text-center shadow-inner" />
                             </div>
                         </div>
@@ -220,12 +288,12 @@ const Admin: React.FC = () => {
                            </select>
                         </div>
                         <div className="space-y-2">
-                           <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2">الوصف</label>
-                           <textarea required rows={4} value={currentProduct.description || ''} onChange={(e) => setCurrentProduct({...currentProduct, description: e.target.value})} placeholder="وصف المنتج..." className="w-full p-4 bg-black border border-white/10 rounded-2xl text-gray-300 font-bold outline-none resize-none shadow-inner" />
+                           <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2">الوصف التفصيلي</label>
+                           <textarea required rows={6} value={currentProduct.description || ''} onChange={(e) => setCurrentProduct({...currentProduct, description: e.target.value})} placeholder="اكتب وصفاً جذاباً للمنتج..." className="w-full p-4 bg-black border border-white/10 rounded-2xl text-gray-300 font-bold outline-none resize-none shadow-inner" />
                         </div>
                     </div>
                 </div>
-                <button type="submit" className="w-full bg-emerald-500 text-black py-6 rounded-[28px] font-black text-2xl shadow-xl shadow-emerald-500/20 active:scale-95 transition-all">حفظ ونشر المنتج</button>
+                <button type="submit" className="w-full bg-emerald-500 text-black py-6 rounded-[28px] font-black text-2xl shadow-xl shadow-emerald-500/20 active:scale-95 transition-all">حفظ وتحديث المنتج</button>
               </form>
             </div>
           </div>
