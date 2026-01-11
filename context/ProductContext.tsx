@@ -15,8 +15,9 @@ interface ProductContextType {
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'berrima_v2_products';
-const DELETED_KEY = 'berrima_v2_deleted_ids';
+// تم تغيير المفتاح إلى v3 لمسح أي بيانات قديمة عالقة في متصفح المستخدم
+const STORAGE_KEY = 'berrima_v3_products';
+const DELETED_KEY = 'berrima_v3_deleted_ids';
 
 export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -45,7 +46,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
       } catch (e) { console.error(e); }
     }
 
-    // ثانياً: دمج المنتجات الافتراضية (فقط إذا لم تُحذف ولم تكن موجودة بالفعل)
+    // ثانياً: دمج المنتجات الافتراضية (التي هي فارغة الآن في constants.ts)
     INITIAL_PRODUCTS.forEach(initProd => {
       const wasDeleted = currentDeleted.includes(initProd.id);
       const existsInSaved = finalProducts.some(p => p.id === initProd.id);
@@ -76,14 +77,12 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, []);
 
   const deleteProduct = useCallback((id: string) => {
-    // تحديث قائمة المحذوفات أولاً (هذا يمنع ظهورها مرة أخرى)
     setDeletedIds(prev => prev.includes(id) ? prev : [...prev, id]);
-    // مسح المنتج من القائمة الحالية
     setProducts(prev => prev.filter(p => p.id !== id));
   }, []);
 
   const clearAllProducts = useCallback(() => {
-    if (window.confirm("⚠️ هل تريد حقاً مسح كافة المنتجات؟ سيتم تسجيل جميع الأرقام الحالية كمحذوفة.")) {
+    if (window.confirm("⚠️ هل تريد حقاً مسح كافة المنتجات؟")) {
       const allIds = products.map(p => p.id);
       setDeletedIds(prev => Array.from(new Set([...prev, ...allIds])));
       setProducts([]);
