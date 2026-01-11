@@ -4,15 +4,16 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Truck, ShieldCheck, Headphones, Zap } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
 import ProductCard from '../components/ProductCard';
+import { Category } from '../types';
 
 const Home: React.FC = () => {
   const { products } = useProducts();
   const featuredProducts = products.slice(0, 4);
 
   const homeCategories = [
-    { cat: 'electronics', title: 'إلكترونيات', img: 'https://images.unsplash.com/photo-1498049384371-061895450719?auto=format&fit=crop&w=800&q=80' },
-    { cat: 'car_accessories', title: 'إكسسوارات سيارات', img: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=800&q=80' },
-    { cat: 'glasses', title: 'نظارات شمسية', img: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=800&q=80' }
+    { cat: Category.ELECTRONICS, title: 'إلكترونيات', img: 'https://images.unsplash.com/photo-1498049384371-061895450719?auto=format&fit=crop&w=800&q=80' },
+    { cat: Category.CAR_ACCESSORIES, title: 'إكسسوارات سيارات', img: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=800&q=80' },
+    { cat: Category.GLASSES, title: 'نظارات شمسية', img: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=800&q=80' }
   ];
 
   return (

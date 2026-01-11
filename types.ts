@@ -1,10 +1,17 @@
 
 export enum Category {
-  ELECTRONICS = 'إلكترونيات',
-  CAR_ACCESSORIES = 'إكسسوارات السيارات',
-  GLASSES = 'نظارات',
-  OTHER = 'أخرى',
+  ELECTRONICS = 'electronics',
+  CAR_ACCESSORIES = 'car_accessories',
+  GLASSES = 'glasses',
+  OTHER = 'other',
 }
+
+export const CATEGORY_LABELS: Record<Category, string> = {
+  [Category.ELECTRONICS]: 'إلكترونيات',
+  [Category.CAR_ACCESSORIES]: 'إكسسوارات السيارات',
+  [Category.GLASSES]: 'نظارات',
+  [Category.OTHER]: 'أخرى',
+};
 
 export type OrderStatus = 'Pending' | 'Confirmed' | 'Shipped' | 'Cancelled';
 
@@ -38,5 +45,5 @@ export interface Order {
   items: CartItem[];
   total: number;
   status: OrderStatus;
-  notes?: string; // ملاحظات الإدارة
+  notes?: string;
 }

@@ -1,7 +1,7 @@
 
 import React, { useMemo } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Category } from '../types';
+import { Category, CATEGORY_LABELS } from '../types';
 import ProductCard from '../components/ProductCard';
 import { useProducts } from '../context/ProductContext';
 
@@ -18,10 +18,10 @@ const ProductList: React.FC = () => {
 
   const categories = [
     { id: 'all', name: 'الكل' },
-    { id: Category.ELECTRONICS, name: 'إلكترونيات' },
-    { id: Category.CAR_ACCESSORIES, name: 'إكسسوارات سيارات' },
-    { id: Category.GLASSES, name: 'نظارات' },
-    { id: Category.OTHER, name: 'أخرى' },
+    { id: Category.ELECTRONICS, name: CATEGORY_LABELS[Category.ELECTRONICS] },
+    { id: Category.CAR_ACCESSORIES, name: CATEGORY_LABELS[Category.CAR_ACCESSORIES] },
+    { id: Category.GLASSES, name: CATEGORY_LABELS[Category.GLASSES] },
+    { id: Category.OTHER, name: CATEGORY_LABELS[Category.OTHER] },
   ];
 
   return (
@@ -36,7 +36,6 @@ const ProductList: React.FC = () => {
             <p className="text-slate-500 dark:text-gray-500 max-w-xl mx-auto font-bold text-[11px] md:text-base px-4">ننتقي لك الأفضل بعناية فائقة من جميع الأصناف.</p>
         </div>
 
-        {/* Categories Bar */}
         <div className="flex overflow-x-auto gap-2 md:gap-4 mb-8 md:mb-20 pb-4 scrollbar-hide px-2">
           {categories.map((cat) => (
             <Link 
@@ -53,7 +52,6 @@ const ProductList: React.FC = () => {
           ))}
         </div>
 
-        {/* Grid: 2 columns on mobile, 4 on desktop */}
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-8">
             {filteredProducts.map((product) => (

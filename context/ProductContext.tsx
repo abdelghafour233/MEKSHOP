@@ -15,9 +15,9 @@ interface ProductContextType {
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-// تحديث المفتاح إلى v5 لضمان إعادة تعيين البيانات وظهور المنتج الجديد
-const STORAGE_KEY = 'berrima_v5_products';
-const DELETED_KEY = 'berrima_v5_deleted_ids';
+// تحديث المفتاح إلى v6 لمسح أي تضارب سابق
+const STORAGE_KEY = 'berrima_v6_products';
+const DELETED_KEY = 'berrima_v6_deleted_ids';
 
 export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -38,15 +38,12 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     let finalProducts: Product[] = [];
     
-    // محاولة تحميل المنتجات المحفوظة
     if (savedProducts) {
       try {
         finalProducts = JSON.parse(savedProducts);
       } catch (e) { console.error(e); }
     }
 
-    // دمج المنتجات الأساسية من constants.ts
-    // نتحقق من INITIAL_PRODUCTS ونضيفها إذا لم تكن موجودة ولم يتم حذفها عمداً
     INITIAL_PRODUCTS.forEach(initProd => {
       const wasDeleted = currentDeleted.includes(initProd.id);
       const existsInFinal = finalProducts.some(p => p.id === initProd.id);
@@ -69,7 +66,6 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const addProduct = useCallback((product: Product) => {
     setProducts(prev => [product, ...prev]);
-    // إذا أضفنا منتجاً كان محذوفاً سابقاً، نزيله من قائمة المحذوفات
     setDeletedIds(prev => prev.filter(id => id !== product.id));
   }, []);
 

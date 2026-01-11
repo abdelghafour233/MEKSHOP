@@ -9,7 +9,7 @@ export const WHATSAPP_NUMBER = '212688775968';
  */
 export const PRODUCTS: Product[] = [
   {
-    id: 'smart-glasses-bluetooth-v1',
+    id: 'smart-glasses-v6',
     title: 'نظارات ذكية بلوتوث - موسيقى ومكالمات',
     price: 199,
     oldPrice: 299,

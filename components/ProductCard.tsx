@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, ImageIcon } from 'lucide-react';
-import { Product } from '../types';
+import { Product, CATEGORY_LABELS } from '../types';
 import { useCart } from '../context/CartContext';
 import ShareButtons from './ShareButtons';
 
@@ -24,7 +24,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <div className="bg-white dark:bg-[#0a0a0a] rounded-2xl md:rounded-[32px] shadow-lg dark:shadow-2xl overflow-hidden hover:shadow-green-500/20 dark:hover:shadow-green-500/10 transition-all duration-300 flex flex-col h-full border border-slate-100 dark:border-white/5 hover:border-green-500/40 group relative">
-      {/* Product Image Section */}
       <Link to={`/products/${product.id}`} className="block relative aspect-square overflow-hidden bg-slate-100 dark:bg-[#111] img-placeholder">
         {!imageLoaded && (
           <div className="absolute inset-0 flex items-center justify-center opacity-20">
@@ -45,10 +44,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         )}
       </Link>
       
-      {/* Product Details Section */}
       <div className="p-3 md:p-5 flex-1 flex flex-col">
         <div className="flex-1">
-          <p className="text-[8px] md:text-[10px] text-green-600 dark:text-green-500 font-black mb-1 uppercase tracking-widest">{product.category}</p>
+          <p className="text-[8px] md:text-[10px] text-green-600 dark:text-green-500 font-black mb-1 uppercase tracking-widest">
+            {CATEGORY_LABELS[product.category] || product.category}
+          </p>
           <Link to={`/products/${product.id}`}>
             <h3 className="text-slate-900 dark:text-white font-black text-[13px] md:text-base mb-2 leading-snug hover:text-green-500 transition-colors line-clamp-2 min-h-[2.5rem]">
                 {product.title}
@@ -72,7 +72,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </button>
         </div>
 
-        {/* Share Section (Desktop only for cleaner mobile) */}
         <div className="hidden md:flex mt-auto pt-4 border-t border-slate-100 dark:border-white/5 items-center justify-between bg-slate-50/50 dark:bg-white/5 -mx-5 px-5 py-3">
           <span className="text-[8px] font-black text-slate-500 dark:text-gray-500 uppercase tracking-widest">مشاركة:</span>
           <ShareButtons url={productUrl} title={product.title} image={product.imageUrl} variant="minimal" />
