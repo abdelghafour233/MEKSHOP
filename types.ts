@@ -2,7 +2,6 @@
 export enum Category {
   ELECTRONICS = 'إلكترونيات',
   CAR_ACCESSORIES = 'إكسسوارات السيارات',
-  WATCHES = 'ساعات',
   GLASSES = 'نظارات',
   OTHER = 'أخرى',
 }

@@ -12,7 +12,7 @@ const Home: React.FC = () => {
   const homeCategories = [
     { cat: 'electronics', title: 'إلكترونيات', img: 'https://images.unsplash.com/photo-1498049384371-061895450719?auto=format&fit=crop&w=800&q=80' },
     { cat: 'car_accessories', title: 'إكسسوارات سيارات', img: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=800&q=80' },
-    { cat: 'watches', title: 'ساعات', img: 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=800&q=80' }
+    { cat: 'glasses', title: 'نظارات شمسية', img: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=800&q=80' }
   ];
 
   return (
@@ -37,7 +37,7 @@ const Home: React.FC = () => {
             متجر <span className="text-green-500">بريمة</span><br/>قوة الجودة
           </h1>
           <p className="text-sm md:text-2xl text-slate-300 dark:text-gray-400 mb-8 md:mb-14 max-w-2xl mx-auto font-medium leading-relaxed px-4">
-            الوجهة الأولى في المغرب للإلكترونيات الذكية والساعات الفاخرة.
+            الوجهة الأولى في المغرب للإلكترونيات الذكية والمنتجات الفاخرة.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 px-4">
             <Link 
@@ -63,11 +63,14 @@ const Home: React.FC = () => {
             </Link>
         </div>
         
-        {/* Grid: 2 columns on mobile, 4 on desktop - Improved Gap for clarity */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-8">
-            {featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-            ))}
+            {featuredProducts.length > 0 ? (
+                featuredProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                ))
+            ) : (
+                <div className="col-span-full py-12 text-center text-slate-500 font-bold">لا توجد منتجات مميزة حالياً.</div>
+            )}
         </div>
       </section>
 

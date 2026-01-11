@@ -20,7 +20,6 @@ const ProductList: React.FC = () => {
     { id: 'all', name: 'الكل' },
     { id: Category.ELECTRONICS, name: 'إلكترونيات' },
     { id: Category.CAR_ACCESSORIES, name: 'إكسسوارات سيارات' },
-    { id: Category.WATCHES, name: 'ساعات' },
     { id: Category.GLASSES, name: 'نظارات' },
     { id: Category.OTHER, name: 'أخرى' },
   ];
