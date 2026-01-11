@@ -7,11 +7,11 @@ import { Product, Category, Order } from '../types';
 import { 
   Plus, Edit, Trash2, X, Lock, Package, LogOut, LayoutDashboard, 
   UploadCloud, CreditCard, Settings, Link as LinkIcon, Share2, Zap, AlertCircle,
-  ImagePlus, ImageIcon
+  ImagePlus, ImageIcon, Code, Copy, Check
 } from 'lucide-react';
 
 const Admin: React.FC = () => {
-  const { products, addProduct, updateProduct, deleteProduct, clearAllProducts, importProducts } = useProducts();
+  const { products, addProduct, updateProduct, deleteProduct, clearAllProducts } = useProducts();
   const { settings } = useSettings();
   const { orders, deleteOrder } = useOrders();
   
@@ -26,6 +26,7 @@ const Admin: React.FC = () => {
   });
   
   const [orderSearch, setOrderSearch] = useState('');
+  const [copiedCode, setCopiedCode] = useState(false);
 
   const mainImageInputRef = useRef<HTMLInputElement>(null);
   const additionalImagesInputRef = useRef<HTMLInputElement>(null);
@@ -44,12 +45,20 @@ const Admin: React.FC = () => {
     }
   };
 
+  const copyStoreCode = () => {
+    const code = JSON.stringify(products, null, 2);
+    navigator.clipboard.writeText(code);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 3000);
+  };
+
   const copySmartLink = (product: Product) => {
     try {
       const minData = { 
         id: product.id, title: product.title, price: product.price, 
         oldPrice: product.oldPrice, category: product.category,
-        description: product.description, imageUrl: product.imageUrl, features: product.features
+        description: product.description, imageUrl: product.imageUrl, 
+        additionalImages: product.additionalImages || [], features: product.features
       }; 
       const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(minData))));
       const link = `${window.location.origin}${window.location.pathname}#/products/${product.id}?pdata=${encoded}`;
@@ -71,7 +80,6 @@ const Admin: React.FC = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => { setCurrentProduct(prev => ({ ...prev, imageUrl: reader.result as string })); };
-      // Fix: Casting 'file' as Blob because TypeScript might infer it as 'unknown' on line 89
       reader.readAsDataURL(file as Blob);
     }
   };
@@ -79,7 +87,6 @@ const Admin: React.FC = () => {
   const handleAdditionalImagesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      // Fix: Casting file as Blob to prevent 'unknown' type error in Array.from(files)
       Array.from(files).forEach((file: File) => {
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -128,8 +135,8 @@ const Admin: React.FC = () => {
                 <div><h1 className="text-xl md:text-2xl font-black text-white">لوحة التحكم</h1></div>
             </div>
             <div className="flex gap-4">
-                <button onClick={clearAllProducts} className="bg-rose-500/10 text-rose-500 px-6 py-4 rounded-2xl border border-rose-500/20 font-black flex items-center gap-2 hover:bg-rose-500 hover:text-white transition-all">
-                    <Trash2 size={18}/> مسح كل المنتجات
+                <button onClick={clearAllProducts} className="bg-rose-500/10 text-rose-500 px-6 py-4 rounded-2xl border border-rose-500/20 font-black flex items-center gap-2 hover:bg-rose-500 hover:text-white transition-all text-sm">
+                    <Trash2 size={16}/> مسح الكل
                 </button>
                 <button onClick={handleLogout} className="bg-white/5 text-gray-400 px-8 py-4 rounded-2xl border border-white/10 font-black hover:bg-white/10 hover:text-white transition-all">خروج</button>
             </div>
@@ -139,7 +146,7 @@ const Admin: React.FC = () => {
             {(['orders', 'products', 'sync', 'settings'] as const).map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 min-w-[120px] py-4 rounded-[22px] font-black transition-all text-sm flex items-center justify-center gap-2 ${activeTab === tab ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/10' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}>
                 {tab === 'orders' ? <CreditCard size={18}/> : tab === 'products' ? <Package size={18}/> : tab === 'sync' ? <Share2 size={18}/> : <Settings size={18}/>}
-                {tab === 'orders' ? 'الطلبيات' : tab === 'products' ? 'المنتجات' : tab === 'sync' ? 'المزامنة' : 'الإعدادات'}
+                {tab === 'orders' ? 'الطلبيات' : tab === 'products' ? 'المنتجات' : tab === 'sync' ? 'تصدير الكود' : 'الإعدادات'}
               </button>
             ))}
         </div>
@@ -151,7 +158,7 @@ const Admin: React.FC = () => {
             {products.length === 0 ? (
                 <div className="bg-[#0a0a0a] p-20 rounded-[40px] border border-white/5 text-center space-y-4">
                     <AlertCircle className="w-16 h-16 text-gray-700 mx-auto" />
-                    <p className="text-gray-500 font-black text-xl">لا توجد منتجات حالياً. أضف منتجك الأول!</p>
+                    <p className="text-gray-500 font-black text-xl">لا توجد منتجات حالياً.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -161,7 +168,7 @@ const Admin: React.FC = () => {
                     <div key={product.id} className={`bg-[#0a0a0a] rounded-[32px] border ${isManual ? 'border-emerald-500/40' : 'border-white/5'} overflow-hidden shadow-2xl group flex flex-col hover:scale-[1.02] transition-all`}>
                         <div className="aspect-square bg-black relative overflow-hidden">
                             <img src={product.imageUrl} className="w-full h-full object-cover opacity-80" alt={product.title} />
-                            {isManual && <div className="absolute top-4 left-4 bg-emerald-500 text-black px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1"><Zap size={10}/> مضاف</div>}
+                            {isManual && <div className="absolute top-4 left-4 bg-emerald-500 text-black px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1"><Zap size={10}/> مضاف محلياً</div>}
                         </div>
                         <div className="p-6 flex-1 flex flex-col">
                         <h3 className="text-white font-black text-lg mb-4 line-clamp-1">{product.title}</h3>
@@ -184,7 +191,34 @@ const Admin: React.FC = () => {
           </div>
         )}
 
-        {/* Orders Tab is handled as before */}
+        {activeTab === 'sync' && (
+          <div className="max-w-3xl mx-auto space-y-8 animate-in slide-in-from-bottom duration-500">
+            <div className="bg-[#0a0a0a] p-10 rounded-[40px] border border-emerald-500/20 text-center space-y-6">
+                <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto text-emerald-500 shadow-2xl shadow-emerald-500/10">
+                    <Code size={40} />
+                </div>
+                <h2 className="text-3xl font-black text-white">تثبيت المنتجات بشكل دائم</h2>
+                <p className="text-gray-400 font-bold leading-relaxed">
+                    لضمان ظهور المنتجات لجميع الزبائن على الهاتف وبسرعة عالية، قم بنسخ هذا الكود وأرسله لي في الدردشة لأقوم بدمجه في الموقع بشكل نهائي.
+                </p>
+                <button 
+                    onClick={copyStoreCode} 
+                    className={`w-full py-6 rounded-3xl font-black text-xl transition-all flex items-center justify-center gap-3 ${copiedCode ? 'bg-green-500 text-black' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500 hover:text-black'}`}
+                >
+                    {copiedCode ? <Check size={24}/> : <Copy size={24}/>}
+                    {copiedCode ? 'تم نسخ الكود بنجاح' : 'إضغط هنا لنسخ كود المتجر'}
+                </button>
+            </div>
+            
+            <div className="bg-rose-500/5 border border-rose-500/10 p-6 rounded-3xl">
+                <p className="text-rose-500 text-xs font-black text-center">
+                    ⚠️ تنبيه: المنتجات المضافة يدوياً تُحفظ في متصفحك الحالي فقط. الإجراء أعلاه هو الحل الاحترافي لتثبيتها للجميع.
+                </p>
+            </div>
+          </div>
+        )}
+
+        {/* بقية التابات (Orders, Settings) تبقى كما هي */}
         {activeTab === 'orders' && (
           <div className="space-y-6">
             <input type="text" placeholder="ابحث باسم الزبون أو الهاتف..." value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} className="w-full p-5 bg-[#0a0a0a] border border-white/5 rounded-2xl text-white outline-none focus:border-emerald-500 font-bold" />
@@ -219,7 +253,6 @@ const Admin: React.FC = () => {
               </div>
               <form onSubmit={handleSaveProduct} className="space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                    {/* Left Side: Images */}
                     <div className="lg:col-span-5 space-y-6">
                         <div className="space-y-2">
                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2">الصورة الرئيسية</label>
@@ -231,8 +264,6 @@ const Admin: React.FC = () => {
                                <input type="file" ref={mainImageInputRef} onChange={handleMainImageUpload} className="hidden" accept="image/*" />
                            </div>
                         </div>
-
-                        {/* Additional Images Section */}
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
                                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2">صور إضافية للمعرض</label>
@@ -245,31 +276,17 @@ const Admin: React.FC = () => {
                                 {currentProduct.additionalImages?.map((img, idx) => (
                                     <div key={idx} className="aspect-square bg-black border border-white/5 rounded-2xl relative overflow-hidden group">
                                         <img src={img} className="w-full h-full object-cover" />
-                                        <button 
-                                            type="button" 
-                                            onClick={() => removeAdditionalImage(idx)}
-                                            className="absolute top-1 left-1 p-1.5 bg-rose-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                            <X size={12}/>
-                                        </button>
+                                        <button type="button" onClick={() => removeAdditionalImage(idx)} className="absolute top-1 left-1 p-1.5 bg-rose-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"><X size={12}/></button>
                                     </div>
                                 ))}
-                                <button 
-                                    type="button"
-                                    onClick={() => additionalImagesInputRef.current?.click()}
-                                    className="aspect-square border-2 border-dashed border-white/10 rounded-2xl flex items-center justify-center text-gray-600 hover:text-emerald-500 hover:border-emerald-500/50 transition-all"
-                                >
-                                    <ImagePlus size={24} />
-                                </button>
+                                <button type="button" onClick={() => additionalImagesInputRef.current?.click()} className="aspect-square border-2 border-dashed border-white/10 rounded-2xl flex items-center justify-center text-gray-600 hover:text-emerald-500 hover:border-emerald-500/50 transition-all"><ImagePlus size={24} /></button>
                             </div>
                         </div>
                     </div>
-
-                    {/* Right Side: Data */}
                     <div className="lg:col-span-7 space-y-6">
                         <div className="space-y-2">
                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2">اسم المنتج</label>
-                           <input required value={currentProduct.title || ''} onChange={(e) => setCurrentProduct({...currentProduct, title: e.target.value})} placeholder="اسم المنتج" className="w-full p-4 bg-black border border-white/10 rounded-2xl text-white font-black outline-none focus:border-emerald-500 shadow-inner" />
+                           <input required value={currentProduct.title || ''} onChange={(e) => setCurrentProduct({...currentProduct, title: e.target.value})} placeholder="مثال: ساعة ذكية فاخرة" className="w-full p-4 bg-black border border-white/10 rounded-2xl text-white font-black outline-none focus:border-emerald-500 shadow-inner" />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
@@ -277,7 +294,7 @@ const Admin: React.FC = () => {
                                <input type="number" required value={currentProduct.price || ''} onChange={(e) => setCurrentProduct({...currentProduct, price: Number(e.target.value)})} placeholder="0.00" className="w-full p-4 bg-black border border-emerald-500/20 rounded-2xl text-emerald-500 font-black outline-none text-center shadow-inner" />
                             </div>
                             <div className="space-y-2">
-                               <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest mr-2">السعر القديم (اختياري)</label>
+                               <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest mr-2">السعر القديم</label>
                                <input type="number" value={currentProduct.oldPrice || ''} onChange={(e) => setCurrentProduct({...currentProduct, oldPrice: Number(e.target.value)})} placeholder="0.00" className="w-full p-4 bg-black border border-white/10 rounded-2xl text-gray-500 font-black outline-none text-center shadow-inner" />
                             </div>
                         </div>
@@ -289,7 +306,7 @@ const Admin: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mr-2">الوصف التفصيلي</label>
-                           <textarea required rows={6} value={currentProduct.description || ''} onChange={(e) => setCurrentProduct({...currentProduct, description: e.target.value})} placeholder="اكتب وصفاً جذاباً للمنتج..." className="w-full p-4 bg-black border border-white/10 rounded-2xl text-gray-300 font-bold outline-none resize-none shadow-inner" />
+                           <textarea required rows={6} value={currentProduct.description || ''} onChange={(e) => setCurrentProduct({...currentProduct, description: e.target.value})} placeholder="اشرح مميزات المنتج بوضوح..." className="w-full p-4 bg-black border border-white/10 rounded-2xl text-gray-300 font-bold outline-none resize-none shadow-inner" />
                         </div>
                     </div>
                 </div>
