@@ -1,186 +1,209 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Truck, ArrowRight, ShieldCheck, CheckCircle, AlertTriangle, Home, DownloadCloud, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { ShoppingCart, Truck, ArrowRight, ShieldCheck, Timer, Zap, MessageCircle } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
 import { useCart } from '../context/CartContext';
 import ShareButtons from '../components/ShareButtons';
+import { WHATSAPP_NUMBER } from '../constants';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const location = useLocation();
   const navigate = useNavigate();
-  const { products, importProducts } = useProducts();
+  const { products } = useProducts();
   const { addToCart } = useCart();
   
   const [product, setProduct] = useState(products.find((p) => p.id === id));
   const [activeImage, setActiveImage] = useState<string>('');
-  const [isImporting, setIsImporting] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 45, seconds: 0 });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
+        if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+        if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        return prev;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const foundProduct = products.find((p) => p.id === id);
     if (foundProduct) {
       setProduct(foundProduct);
-      if (!activeImage) setActiveImage(foundProduct.imageUrl);
-    } else {
-      const params = new URLSearchParams(location.search);
-      const encodedData = params.get('pdata');
-      if (encodedData) {
-        try {
-          setIsImporting(true);
-          const decodedData = JSON.parse(atob(encodedData));
-          if (decodedData && decodedData.id === id) {
-            importProducts(JSON.stringify([decodedData]));
-            setProduct(decodedData);
-            setActiveImage(decodedData.imageUrl);
-          }
-        } catch (e) {
-          console.error("Failed to decode magic link", e);
-        } finally {
-          setIsImporting(false);
-        }
-      }
+      setActiveImage(foundProduct.imageUrl);
     }
-  }, [id, products, location.search, importProducts]);
-
-  useEffect(() => {
-    if (product) {
-      document.title = `${product.title} - ${product.price} د.م | berrima store`;
-    }
-  }, [product]);
-
-  if (isImporting) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-white font-black">جاري تحميل بيانات المنتج...</p>
-        </div>
-      </div>
-    );
-  }
+  }, [id, products]);
 
   if (!product) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-black px-4">
-        <div className="max-w-md w-full text-center space-y-8 bg-white dark:bg-[#0a0a0a] p-12 rounded-[48px] shadow-3xl border border-slate-200 dark:border-white/5 animate-in fade-in zoom-in duration-500">
-          <div className="w-24 h-24 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto text-amber-500">
-            <AlertTriangle size={48} />
-          </div>
-          <div className="space-y-3">
-            <h2 className="text-3xl font-black text-slate-900 dark:text-white">المنتج غير متوفر حالياً</h2>
-            <p className="text-slate-500 dark:text-gray-500 font-bold leading-relaxed">
-                هذا المنتج قد تم حذفه أو تم تغيير الرابط الخاص به.
-            </p>
-          </div>
-          <div className="pt-4 flex flex-col gap-3">
-              <Link to="/products" className="bg-green-600 dark:bg-green-500 text-white dark:text-black py-5 rounded-2xl font-black text-lg shadow-xl shadow-green-500/20 hover:scale-105 transition-all flex items-center justify-center gap-2">
-                <ShoppingCart size={20} /> العودة للمتجر
-              </Link>
-          </div>
-        </div>
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+        <h2 className="text-2xl font-black mb-4">عذراً، المنتج غير موجود</h2>
+        <Link to="/products" className="text-green-600 font-bold flex items-center gap-2">
+          <ArrowRight size={20} /> العودة للمتجر
+        </Link>
       </div>
     );
   }
 
-  const handleOrderNow = () => { addToCart(product); navigate('/checkout'); };
+  const handleWhatsAppOrder = () => {
+    const text = `السلام عليكم، أريد طلب منتج: ${product.title}\nالسعر: ${product.price} د.م\nالرابط: ${window.location.href}`;
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const handleOrderNow = () => { 
+    addToCart(product); 
+    navigate('/checkout'); 
+  };
+
   const gallery = [product.imageUrl, ...(product.additionalImages || [])];
-  const productUrl = window.location.href;
 
   return (
-    <div className="bg-slate-50 dark:bg-black min-h-screen py-6 md:py-20 transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="bg-slate-50 dark:bg-black min-h-screen pb-32 lg:pb-20 transition-colors">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
         
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 dark:text-gray-400 hover:text-green-500 mb-8 font-black transition-colors group">
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /> العودة للتسوق
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 dark:text-gray-400 hover:text-green-500 mb-8 font-bold transition-colors">
+            <ArrowRight className="w-5 h-5" /> العودة
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-start">
-          
           {/* Gallery Section */}
-          <div className="space-y-4 md:space-y-6">
-            <div className="relative aspect-square rounded-[32px] md:rounded-[48px] overflow-hidden shadow-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#0a0a0a] group">
-              <img 
-                src={activeImage || product.imageUrl} 
-                alt={product.title} 
-                className="w-full h-full object-cover transition-opacity duration-300"
-              />
-              {gallery.length > 1 && (
-                <div className="absolute inset-x-0 bottom-6 flex justify-center gap-2">
-                    {gallery.map((_, i) => (
-                        <div key={i} className={`h-1.5 rounded-full transition-all ${activeImage === gallery[i] ? 'w-8 bg-green-500' : 'w-2 bg-white/40'}`}></div>
-                    ))}
+          <div className="space-y-6">
+            <div className="relative aspect-square rounded-[2.5rem] overflow-hidden shadow-2xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/5 group">
+              <img src={activeImage} alt={product.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              {product.oldPrice && (
+                <div className="absolute top-6 right-6 bg-red-600 text-white px-5 py-2 rounded-full font-black text-xs shadow-xl animate-pulse z-10">
+                  تخفيض {Math.round((product.oldPrice - product.price) / product.oldPrice * 100)}%
                 </div>
               )}
             </div>
-
+            
             {gallery.length > 1 && (
-                <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
-                    {gallery.map((img, idx) => (
-                        <button 
-                            key={idx} 
-                            onClick={() => setActiveImage(img)} 
-                            className={`flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-2xl border-2 overflow-hidden transition-all transform active:scale-90 ${activeImage === img ? 'border-green-600 scale-105 shadow-lg' : 'border-slate-200 dark:border-white/5 opacity-60 hover:opacity-100'}`}
-                        >
-                            <img src={img} alt={`${product.title} view ${idx}`} className="w-full h-full object-cover" />
-                        </button>
-                    ))}
-                </div>
+              <div className="flex gap-3 overflow-x-auto py-2 scrollbar-hide">
+                {gallery.map((img, idx) => (
+                  <button 
+                    key={idx} 
+                    onClick={() => setActiveImage(img)} 
+                    className={`flex-shrink-0 w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all ${activeImage === img ? 'border-green-500 scale-105 shadow-lg shadow-green-500/20' : 'border-transparent opacity-50 hover:opacity-100'}`}
+                  >
+                    <img src={img} className="w-full h-full object-cover" alt={`عرض ${idx + 1}`} />
+                  </button>
+                ))}
+              </div>
             )}
           </div>
 
-          {/* Details Section */}
-          <div className="flex flex-col h-full space-y-8">
-            <div>
-                <div className="inline-block bg-green-500/10 text-green-600 dark:text-green-500 px-4 py-1.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest mb-6 border border-green-500/20">{product.category}</div>
-                <h1 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white mb-6 leading-tight tracking-tight">{product.title}</h1>
-                
-                <div className="flex items-center gap-6 mb-8 bg-white dark:bg-[#0a0a0a] p-6 md:p-8 rounded-[32px] md:rounded-[40px] border border-slate-200 dark:border-white/5 w-fit shadow-2xl shadow-green-500/5">
-                  <div className="flex flex-col">
-                    <span className="text-4xl md:text-6xl font-black text-green-600 dark:text-green-500 tracking-tighter">{product.price} <span className="text-xl md:text-2xl font-bold">د.م</span></span>
-                    {product.oldPrice && <span className="text-xl text-slate-400 line-through font-bold">{product.oldPrice} د.م</span>}
-                  </div>
-                  {product.oldPrice && (
-                    <div className="bg-rose-500 text-white px-4 py-2 rounded-2xl text-xs font-black animate-bounce shadow-lg shadow-rose-500/20">وفر {(product.oldPrice - product.price)} د.م</div>
-                  )}
-                </div>
+          {/* Product Details Section */}
+          <div className="space-y-8">
+            <div className="bg-amber-500/10 text-amber-700 dark:text-amber-400 p-5 rounded-3xl flex items-center justify-between border border-amber-500/20 shadow-sm">
+               <div className="flex items-center gap-3 font-black text-sm md:text-base">
+                 <Timer size={20} className="animate-spin-slow" /> عرض محدود ينتهي خلال:
+               </div>
+               <div className="font-mono font-black text-lg md:text-xl" dir="ltr">
+                 {String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}
+               </div>
             </div>
 
-            <div className="bg-white dark:bg-[#0a0a0a] p-8 md:p-10 rounded-[40px] border border-slate-200 dark:border-white/5 shadow-sm">
-              <h2 className="font-black text-slate-900 dark:text-white mb-6 text-xl flex items-center gap-3">
-                <div className="w-1.5 h-6 bg-green-600 rounded-full"></div> 
-                تفاصيل المنتج
-              </h2>
-              <p className="text-slate-600 dark:text-gray-400 leading-relaxed text-lg font-medium whitespace-pre-line">{product.description}</p>
+            <div className="space-y-4">
+              <span className="inline-block px-4 py-1.5 bg-green-500/10 text-green-600 dark:text-green-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-500/20">{product.category}</span>
+              <h1 className="text-3xl md:text-6xl font-black text-slate-900 dark:text-white leading-tight">{product.title}</h1>
               
-              {product.features && product.features.length > 0 && (
-                <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {product.features.map((feat, i) => (
-                        <div key={i} className="flex items-center gap-3 text-slate-700 dark:text-gray-300 font-bold text-sm">
-                            <CheckCircle size={18} className="text-green-500" />
-                            {feat}
-                        </div>
+              <div className="flex items-center gap-6 pt-2">
+                <span className="text-4xl md:text-6xl font-black text-green-600 dark:text-green-500">{product.price} <small className="text-xl">د.م</small></span>
+                {product.oldPrice && (
+                  <span className="text-2xl text-slate-400 line-through font-bold">{product.oldPrice} د.م</span>
+                )}
+              </div>
+              
+              <div className="flex items-center gap-2 text-red-500 font-black text-sm md:text-base bg-red-500/5 p-3 rounded-xl inline-flex border border-red-500/10">
+                <Zap size={18} fill="currentColor" /> متوفر حالياً 5 قطع فقط في المخزون!
+              </div>
+            </div>
+
+            <div className="prose dark:prose-invert max-w-none">
+              <div className="bg-white dark:bg-[#0a0a0a] p-8 rounded-[32px] border border-slate-200 dark:border-white/5 shadow-sm">
+                <h3 className="font-black text-xl mb-6 flex items-center gap-3">
+                  <div className="w-1.5 h-6 bg-green-600 rounded-full"></div>
+                  وصف المنتج
+                </h3>
+                <p className="text-slate-600 dark:text-gray-400 leading-relaxed text-lg whitespace-pre-line">
+                  {product.description}
+                </p>
+                
+                {product.features && product.features.length > 0 && (
+                  <ul className="mt-8 space-y-4">
+                    {product.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-center gap-3 font-bold text-slate-700 dark:text-gray-300">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        {feature}
+                      </li>
                     ))}
-                </div>
-              )}
+                  </ul>
+                )}
+              </div>
             </div>
 
-            <div className="sticky bottom-6 md:static z-40 px-2 md:px-0">
-                <button 
-                    onClick={handleOrderNow} 
-                    className="w-full bg-green-600 dark:bg-green-500 text-white dark:text-black py-6 md:py-8 rounded-[32px] md:rounded-[40px] font-black text-xl md:text-3xl hover:bg-green-500 transition-all shadow-3xl shadow-green-500/30 flex flex-col items-center justify-center group active:scale-95 border-b-8 border-green-800 dark:border-green-700"
-                >
-                    اطلب الآن - الدفع عند الاستلام
-                    <span className="text-[10px] md:text-xs opacity-70 mt-1 font-black uppercase tracking-widest flex items-center gap-2">
-                        <Truck size={14} className="animate-bounce" /> توصيل منزلي مجاني لجميع المدن 🚚
-                    </span>
-                </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <div className="p-6 bg-slate-100 dark:bg-white/5 rounded-3xl flex items-center gap-4">
+                  <Truck className="text-green-600" size={32} />
+                  <div>
+                    <p className="font-black text-sm">توصيل سريع</p>
+                    <p className="text-xs text-slate-500">لجميع المدن المغربية</p>
+                  </div>
+               </div>
+               <div className="p-6 bg-slate-100 dark:bg-white/5 rounded-3xl flex items-center gap-4">
+                  <ShieldCheck className="text-green-600" size={32} />
+                  <div>
+                    <p className="font-black text-sm">دفع عند الاستلام</p>
+                    <p className="text-xs text-slate-500">ثقة وأمان 100%</p>
+                  </div>
+               </div>
             </div>
 
-            <div className="pt-8">
-                <ShareButtons url={productUrl} title={product.title} image={product.imageUrl} />
-            </div>
+            <ShareButtons url={window.location.href} title={product.title} />
           </div>
+        </div>
+      </div>
+
+      {/* Floating Action Buttons for Mobile */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-black/90 backdrop-blur-xl border-t border-slate-200 dark:border-white/10 z-[100] lg:hidden">
+        <div className="flex gap-3">
+          <button 
+            onClick={handleWhatsAppOrder}
+            className="flex-1 bg-green-500 text-black py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-xl shadow-green-500/20"
+          >
+            <MessageCircle size={20} /> اطلب واتساب
+          </button>
+          <button 
+            onClick={handleOrderNow}
+            className="flex-[1.5] bg-slate-900 dark:bg-white text-white dark:text-black py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-xl"
+          >
+            <ShoppingCart size={20} /> اشتري الآن
+          </button>
+        </div>
+      </div>
+      
+      {/* Desktop Purchase Buttons */}
+      <div className="hidden lg:block fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom duration-700">
+        <div className="bg-white/80 dark:bg-black/80 backdrop-blur-2xl p-3 rounded-[32px] border border-slate-200 dark:border-white/10 shadow-3xl flex gap-4 items-center px-6">
+            <div className="flex flex-col ml-8">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">السعر النهائي</span>
+              <span className="text-2xl font-black text-green-600">{product.price} د.م</span>
+            </div>
+            <button 
+              onClick={handleWhatsAppOrder}
+              className="bg-green-500/10 text-green-600 hover:bg-green-500 hover:text-black px-8 py-4 rounded-2xl font-black flex items-center gap-3 transition-all"
+            >
+              <MessageCircle size={22} /> اطلب عبر واتساب
+            </button>
+            <button 
+              onClick={handleOrderNow}
+              className="bg-green-600 text-white px-12 py-4 rounded-2xl font-black flex items-center gap-3 shadow-xl shadow-green-600/20 hover:scale-105 transition-all"
+            >
+              <ShoppingCart size={22} /> أضف للسلة وأكمل الطلب
+            </button>
         </div>
       </div>
     </div>
