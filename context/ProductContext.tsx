@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product } from '../types';
 import { PRODUCTS as INITIAL_PRODUCTS } from '../constants';
@@ -7,6 +8,7 @@ interface ProductContextType {
   addProduct: (product: Product) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (id: string) => void;
+  importProducts: (jsonProducts: string) => boolean;
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
@@ -14,12 +16,20 @@ const ProductContext = createContext<ProductContextType | undefined>(undefined);
 export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
 
-  // Load products from local storage on mount, or use initial constants
+  // Load products from local storage on mount
   useEffect(() => {
     const savedProducts = localStorage.getItem('souqMaghrebProducts');
     if (savedProducts) {
       try {
-        setProducts(JSON.parse(savedProducts));
+        const parsed = JSON.parse(savedProducts);
+        // Merge initial constants with saved products to ensure core products always exist
+        const merged = [...parsed];
+        INITIAL_PRODUCTS.forEach(initial => {
+          if (!merged.find(p => p.id === initial.id)) {
+            merged.push(initial);
+          }
+        });
+        setProducts(merged);
       } catch (e) {
         console.error("Failed to parse products", e);
         setProducts(INITIAL_PRODUCTS);
@@ -50,8 +60,32 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
     setProducts((prev) => prev.filter((p) => p.id !== id));
   };
 
+  const importProducts = (jsonProducts: string): boolean => {
+    try {
+      const parsed = JSON.parse(jsonProducts);
+      if (Array.isArray(parsed)) {
+        setProducts(prev => {
+          const newProducts = [...prev];
+          parsed.forEach(p => {
+            const index = newProducts.findIndex(existing => existing.id === p.id);
+            if (index !== -1) {
+              newProducts[index] = p; // Update if exists
+            } else {
+              newProducts.unshift(p); // Add if new
+            }
+          });
+          return newProducts;
+        });
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  };
+
   return (
-    <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct }}>
+    <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct, importProducts }}>
       {children}
     </ProductContext.Provider>
   );
