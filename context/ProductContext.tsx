@@ -15,16 +15,15 @@ interface ProductContextType {
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-// تم تغيير المفتاح إلى v3 لمسح أي بيانات قديمة عالقة في متصفح المستخدم
-const STORAGE_KEY = 'berrima_v3_products';
-const DELETED_KEY = 'berrima_v3_deleted_ids';
+// تحديث المفتاح إلى v5 لضمان إعادة تعيين البيانات وظهور المنتج الجديد
+const STORAGE_KEY = 'berrima_v5_products';
+const DELETED_KEY = 'berrima_v5_deleted_ids';
 
 export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [deletedIds, setDeletedIds] = useState<string[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // 1. تحميل أولي للبيانات
   useEffect(() => {
     const savedDeleted = localStorage.getItem(DELETED_KEY);
     const savedProducts = localStorage.getItem(STORAGE_KEY);
@@ -39,18 +38,20 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     let finalProducts: Product[] = [];
     
-    // أولاً: تحميل المنتجات المحفوظة في المتصفح
+    // محاولة تحميل المنتجات المحفوظة
     if (savedProducts) {
       try {
         finalProducts = JSON.parse(savedProducts);
       } catch (e) { console.error(e); }
     }
 
-    // ثانياً: دمج المنتجات الافتراضية (التي هي فارغة الآن في constants.ts)
+    // دمج المنتجات الأساسية من constants.ts
+    // نتحقق من INITIAL_PRODUCTS ونضيفها إذا لم تكن موجودة ولم يتم حذفها عمداً
     INITIAL_PRODUCTS.forEach(initProd => {
       const wasDeleted = currentDeleted.includes(initProd.id);
-      const existsInSaved = finalProducts.some(p => p.id === initProd.id);
-      if (!wasDeleted && !existsInSaved) {
+      const existsInFinal = finalProducts.some(p => p.id === initProd.id);
+      
+      if (!wasDeleted && !existsInFinal) {
         finalProducts.push(initProd);
       }
     });
@@ -59,7 +60,6 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
     setIsInitialized(true);
   }, []);
 
-  // 2. مزامنة البيانات مع التخزين المحلي عند أي تغيير
   useEffect(() => {
     if (isInitialized) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
@@ -69,6 +69,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const addProduct = useCallback((product: Product) => {
     setProducts(prev => [product, ...prev]);
+    // إذا أضفنا منتجاً كان محذوفاً سابقاً، نزيله من قائمة المحذوفات
     setDeletedIds(prev => prev.filter(id => id !== product.id));
   }, []);
 
