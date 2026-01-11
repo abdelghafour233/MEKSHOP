@@ -9,8 +9,8 @@ export const WHATSAPP_NUMBER = '212688775968';
  */
 export const PRODUCTS: Product[] = [
   {
-    id: 'smart-glasses-v6',
-    title: 'نظارات ذكية بلوتوث - موسيقى ومكالمات',
+    id: 'smart-glasses-official-v10',
+    title: 'نظارات ذكية بلوتوث - موسيقى ومكالمات لاسلكية',
     price: 199,
     oldPrice: 299,
     category: Category.GLASSES,
@@ -30,9 +30,9 @@ export const PRODUCTS: Product[] = [
     features: [
       "استماع للموسيقى بجودة صوت واضحة",
       "إجراء واستقبال المكالمات لاسلكياً",
-      "حماية العين وتصميم عصري",
-      "بطارية تدوم طويلاً",
-      "متوافقة مع أندرويد و آيفون"
+      "حماية العين وتصميم عصري للجنسين",
+      "بطارية تدوم طويلاً وشحن سريع",
+      "متوافقة مع أندرويد و آيفون (Bluetooth)"
     ],
     imageUrl: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=800&q=80',
     additionalImages: [

@@ -15,9 +15,9 @@ interface ProductContextType {
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-// تحديث المفتاح إلى v6 لمسح أي تضارب سابق
-const STORAGE_KEY = 'berrima_v6_products';
-const DELETED_KEY = 'berrima_v6_deleted_ids';
+// تحديث المفتاح إلى v10 لمسح أي تضارب سابق وضمان ظهور المنتج الجديد فوراً
+const STORAGE_KEY = 'berrima_v10_products';
+const DELETED_KEY = 'berrima_v10_deleted_ids';
 
 export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -44,6 +44,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
       } catch (e) { console.error(e); }
     }
 
+    // دمج المنتجات الأساسية من constants.ts بشكل إجباري إذا لم تكن موجودة
     INITIAL_PRODUCTS.forEach(initProd => {
       const wasDeleted = currentDeleted.includes(initProd.id);
       const existsInFinal = finalProducts.some(p => p.id === initProd.id);
