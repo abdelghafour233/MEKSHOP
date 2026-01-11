@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { Product } from '../types';
 import { PRODUCTS as INITIAL_PRODUCTS } from '../constants';
 
@@ -8,84 +8,101 @@ interface ProductContextType {
   addProduct: (product: Product) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (id: string) => void;
+  clearAllProducts: () => void;
   importProducts: (jsonProducts: string) => boolean;
   deletedIds: string[];
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
+const STORAGE_KEY = 'berrima_v2_products';
+const DELETED_KEY = 'berrima_v2_deleted_ids';
+
 export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [deletedIds, setDeletedIds] = useState<string[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // 1. تحميل قائمة المعرفات المحذوفة والمنتجات عند البداية
+  // 1. تحميل أولي للبيانات
   useEffect(() => {
-    const savedDeleted = localStorage.getItem('berrima_deleted_ids');
-    const savedProducts = localStorage.getItem('souqMaghrebProducts');
+    const savedDeleted = localStorage.getItem(DELETED_KEY);
+    const savedProducts = localStorage.getItem(STORAGE_KEY);
     
     let currentDeleted: string[] = [];
     if (savedDeleted) {
-      try { currentDeleted = JSON.parse(savedDeleted); setDeletedIds(currentDeleted); } catch (e) { console.error(e); }
+      try {
+        currentDeleted = JSON.parse(savedDeleted);
+        setDeletedIds(currentDeleted);
+      } catch (e) { console.error(e); }
     }
 
+    let finalProducts: Product[] = [];
+    
+    // أولاً: تحميل المنتجات المحفوظة في المتصفح
     if (savedProducts) {
       try {
-        const parsed = JSON.parse(savedProducts);
-        // ندمج المنتجات المحفوظة مع الافتراضية مع استثناء أي ID موجود في قائمة المحذوفات
-        const merged = [...parsed];
-        INITIAL_PRODUCTS.forEach(initial => {
-          const isDeleted = currentDeleted.includes(initial.id);
-          const alreadyExists = merged.find(p => p.id === initial.id);
-          if (!isDeleted && !alreadyExists) {
-            merged.push(initial);
-          }
-        });
-        setProducts(merged);
-      } catch (e) {
-        setProducts(INITIAL_PRODUCTS.filter(p => !currentDeleted.includes(p.id)));
-      }
-    } else {
-      setProducts(INITIAL_PRODUCTS.filter(p => !currentDeleted.includes(p.id)));
+        finalProducts = JSON.parse(savedProducts);
+      } catch (e) { console.error(e); }
     }
+
+    // ثانياً: دمج المنتجات الافتراضية (فقط إذا لم تُحذف ولم تكن موجودة بالفعل)
+    INITIAL_PRODUCTS.forEach(initProd => {
+      const wasDeleted = currentDeleted.includes(initProd.id);
+      const existsInSaved = finalProducts.some(p => p.id === initProd.id);
+      if (!wasDeleted && !existsInSaved) {
+        finalProducts.push(initProd);
+      }
+    });
+
+    setProducts(finalProducts);
+    setIsInitialized(true);
   }, []);
 
-  // 2. حفظ البيانات عند التغيير
+  // 2. مزامنة البيانات مع التخزين المحلي عند أي تغيير
   useEffect(() => {
-    localStorage.setItem('souqMaghrebProducts', JSON.stringify(products));
-    localStorage.setItem('berrima_deleted_ids', JSON.stringify(deletedIds));
-  }, [products, deletedIds]);
+    if (isInitialized) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+      localStorage.setItem(DELETED_KEY, JSON.stringify(deletedIds));
+    }
+  }, [products, deletedIds, isInitialized]);
 
-  const addProduct = (product: Product) => {
-    setProducts((prev) => [product, ...prev]);
-    // إذا كان المنتج قد حذف سابقاً وأعدنا إضافته، نزيله من قائمة المحذوفات
+  const addProduct = useCallback((product: Product) => {
+    setProducts(prev => [product, ...prev]);
     setDeletedIds(prev => prev.filter(id => id !== product.id));
-  };
+  }, []);
 
-  const updateProduct = (updatedProduct: Product) => {
-    setProducts((prev) => 
-      prev.map((p) => p.id === updatedProduct.id ? updatedProduct : p)
-    );
-  };
+  const updateProduct = useCallback((updatedProduct: Product) => {
+    setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+  }, []);
 
-  const deleteProduct = (id: string) => {
-    setDeletedIds(prev => [...prev, id]);
-    setProducts((prev) => prev.filter((p) => p.id !== id));
-  };
+  const deleteProduct = useCallback((id: string) => {
+    // تحديث قائمة المحذوفات أولاً (هذا يمنع ظهورها مرة أخرى)
+    setDeletedIds(prev => prev.includes(id) ? prev : [...prev, id]);
+    // مسح المنتج من القائمة الحالية
+    setProducts(prev => prev.filter(p => p.id !== id));
+  }, []);
 
-  const importProducts = (jsonProducts: string): boolean => {
+  const clearAllProducts = useCallback(() => {
+    if (window.confirm("⚠️ هل تريد حقاً مسح كافة المنتجات؟ سيتم تسجيل جميع الأرقام الحالية كمحذوفة.")) {
+      const allIds = products.map(p => p.id);
+      setDeletedIds(prev => Array.from(new Set([...prev, ...allIds])));
+      setProducts([]);
+    }
+  }, [products]);
+
+  const importProducts = useCallback((jsonProducts: string): boolean => {
     try {
       const parsed = JSON.parse(jsonProducts);
       const itemsToImport = Array.isArray(parsed) ? parsed : [parsed];
+      const importedIds = itemsToImport.map(p => p.id);
       
+      setDeletedIds(prev => prev.filter(id => !importedIds.includes(id)));
       setProducts(prev => {
         const newProducts = [...prev];
         itemsToImport.forEach(p => {
           const index = newProducts.findIndex(existing => existing.id === p.id);
-          if (index !== -1) {
-            newProducts[index] = p;
-          } else {
-            newProducts.unshift(p);
-          }
+          if (index !== -1) newProducts[index] = p;
+          else newProducts.unshift(p);
         });
         return newProducts;
       });
@@ -93,10 +110,10 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
     } catch (e) {
       return false;
     }
-  };
+  }, []);
 
   return (
-    <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct, importProducts, deletedIds }}>
+    <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct, clearAllProducts, importProducts, deletedIds }}>
       {children}
     </ProductContext.Provider>
   );
@@ -104,8 +121,6 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
 
 export const useProducts = () => {
   const context = useContext(ProductContext);
-  if (context === undefined) {
-    throw new Error('useProducts must be used within a ProductProvider');
-  }
+  if (context === undefined) throw new Error('useProducts must be used within a ProductProvider');
   return context;
 };
