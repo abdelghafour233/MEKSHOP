@@ -8,8 +8,8 @@ export enum Category {
 
 export const CATEGORY_LABELS: Record<Category, string> = {
   [Category.ELECTRONICS]: 'إلكترونيات',
-  [Category.CAR_ACCESSORIES]: 'إكسسوارات السيارات',
-  [Category.GLASSES]: 'نظارات',
+  [Category.CAR_ACCESSORIES]: 'إكسسوارات سيارات',
+  [Category.GLASSES]: 'نظارات ذكية',
   [Category.OTHER]: 'أخرى',
 };
 

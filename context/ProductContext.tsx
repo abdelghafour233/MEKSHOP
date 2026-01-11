@@ -15,9 +15,9 @@ interface ProductContextType {
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-// تحديث المفتاح إلى v10 لمسح أي تضارب سابق وضمان ظهور المنتج الجديد فوراً
-const STORAGE_KEY = 'berrima_v10_products';
-const DELETED_KEY = 'berrima_v10_deleted_ids';
+// نسخة v11 لضمان تحديث المتجر بالكامل عند الزبون
+const STORAGE_KEY = 'berrima_v11_products';
+const DELETED_KEY = 'berrima_v11_deleted_ids';
 
 export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -44,7 +44,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
       } catch (e) { console.error(e); }
     }
 
-    // دمج المنتجات الأساسية من constants.ts بشكل إجباري إذا لم تكن موجودة
+    // دمج المنتجات الجديدة دائماً
     INITIAL_PRODUCTS.forEach(initProd => {
       const wasDeleted = currentDeleted.includes(initProd.id);
       const existsInFinal = finalProducts.some(p => p.id === initProd.id);
@@ -75,14 +75,13 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, []);
 
   const deleteProduct = useCallback((id: string) => {
-    setDeletedIds(prev => prev.includes(id) ? prev : [...prev, id]);
+    setDeletedIds(prev => [...prev, id]);
     setProducts(prev => prev.filter(p => p.id !== id));
   }, []);
 
   const clearAllProducts = useCallback(() => {
-    if (window.confirm("⚠️ هل تريد حقاً مسح كافة المنتجات؟")) {
-      const allIds = products.map(p => p.id);
-      setDeletedIds(prev => Array.from(new Set([...prev, ...allIds])));
+    if (window.confirm("⚠️ مسح كافة المنتجات؟")) {
+      setDeletedIds(prev => [...prev, ...products.map(p => p.id)]);
       setProducts([]);
     }
   }, [products]);
